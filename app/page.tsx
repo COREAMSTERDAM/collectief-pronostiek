@@ -2,6 +2,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-950 text-white p-6">
       <div className="max-w-md mx-auto pt-10">
+        <img src="/logo.png" alt="Logo" />
         <h1 className="text-3xl font-bold mb-2">
           Collectief Pronostiek
         </h1>
