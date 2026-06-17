@@ -14,12 +14,6 @@ type Prediction = {
   match_id: number;
 };
 
-type Match = {
-  id: number;
-  status: string;
-  kickoff: string;
-};
-
 type Ranking = {
   user_id: string;
   name: string;
@@ -29,9 +23,13 @@ type Ranking = {
 
 export default function KlassementPage() {
   const [ranking, setRanking] = useState<Ranking[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadRanking() {
+      const { data: userData } = await supabase.auth.getUser();
+      setCurrentUserId(userData.user?.id || null);
+
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, name");
@@ -195,26 +193,41 @@ export default function KlassementPage() {
         <h2 className="text-xl font-bold mb-4">Volledig klassement</h2>
 
         <div className="space-y-3">
-          {ranking.map((player, index) => (
-            <div
-              key={player.user_id}
-              className="rounded-xl bg-slate-800 p-4 flex justify-between items-center"
-            >
-              <div>
-                <p className="font-bold">
-                  {index === 0 && "🥇 "}
-                  {index === 1 && "🥈 "}
-                  {index === 2 && "🥉 "}
-                  {index + 1}. {player.name}
-                </p>
-                <p className={`text-sm font-bold ${movementClass(player.movement)}`}>
-                  {movementLabel(player.movement)}
-                </p>
-              </div>
+          {ranking.map((player, index) => {
+            const isCurrentUser = player.user_id === currentUserId;
 
-              <p className="font-bold">{player.total_points} punten</p>
-            </div>
-          ))}
+            return (
+              <div
+                key={player.user_id}
+                className={`rounded-xl p-4 flex justify-between items-center ${
+                  isCurrentUser
+                    ? "bg-green-900 border border-green-500"
+                    : "bg-slate-800"
+                }`}
+              >
+                <div>
+                  <p className="font-bold">
+                    {index === 0 && "🥇 "}
+                    {index === 1 && "🥈 "}
+                    {index === 2 && "🥉 "}
+                    {index + 1}. {player.name}
+                    {isCurrentUser && (
+                      <span className="text-green-300"> — jij</span>
+                    )}
+                  </p>
+                  <p
+                    className={`text-sm font-bold ${movementClass(
+                      player.movement
+                    )}`}
+                  >
+                    {movementLabel(player.movement)}
+                  </p>
+                </div>
+
+                <p className="font-bold">{player.total_points} punten</p>
+              </div>
+            );
+          })}
 
           {ranking.length === 0 && (
             <p className="text-slate-300">Nog geen spelers beschikbaar.</p>
