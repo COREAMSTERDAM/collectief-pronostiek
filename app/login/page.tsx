@@ -52,6 +52,13 @@ export default function LoginPage() {
           >
             Inloggen
           </button>
+
+          <a
+            href="/wachtwoord-vergeten"
+            className="block text-center text-slate-300 underline mt-4"
+          >
+            Wachtwoord vergeten?
+          </a>
         </form>
       </div>
     </main>
