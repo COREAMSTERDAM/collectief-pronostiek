@@ -11,12 +11,20 @@ type Profile = {
 type Prediction = {
   user_id: string;
   points: number;
+  match_id: number;
+};
+
+type Match = {
+  id: number;
+  status: string;
+  kickoff: string;
 };
 
 type Ranking = {
   user_id: string;
   name: string;
   total_points: number;
+  movement: number;
 };
 
 export default function KlassementPage() {
@@ -35,34 +43,75 @@ export default function KlassementPage() {
 
       const { data: predictions, error: predictionsError } = await supabase
         .from("predictions")
-        .select("user_id, points");
+        .select("user_id, points, match_id");
 
       if (predictionsError) {
         alert(predictionsError.message);
         return;
       }
 
-      const totals =
-        profiles?.map((profile: Profile) => {
-          const userPredictions =
-            predictions?.filter(
-              (prediction: Prediction) => prediction.user_id === profile.id
-            ) || [];
+      const { data: matches, error: matchesError } = await supabase
+        .from("matches")
+        .select("id, status, kickoff")
+        .eq("status", "afgewerkt")
+        .order("kickoff", { ascending: false });
 
-          const totalPoints = userPredictions.reduce(
-            (sum, prediction) => sum + (prediction.points || 0),
-            0
-          );
+      if (matchesError) {
+        alert(matchesError.message);
+        return;
+      }
 
-          return {
-            user_id: profile.id,
-            name: profile.name,
-            total_points: totalPoints,
-          };
-        }) || [];
+      const latestFinishedMatchId = matches?.[0]?.id;
 
-      totals.sort((a, b) => b.total_points - a.total_points);
-      setRanking(totals);
+      function buildRanking(excludeMatchId?: number) {
+        const totals =
+          profiles?.map((profile: Profile) => {
+            const userPredictions =
+              predictions?.filter((prediction: Prediction) => {
+                const sameUser = prediction.user_id === profile.id;
+                const notExcluded =
+                  !excludeMatchId || prediction.match_id !== excludeMatchId;
+
+                return sameUser && notExcluded;
+              }) || [];
+
+            const totalPoints = userPredictions.reduce(
+              (sum, prediction) => sum + (prediction.points || 0),
+              0
+            );
+
+            return {
+              user_id: profile.id,
+              name: profile.name,
+              total_points: totalPoints,
+              movement: 0,
+            };
+          }) || [];
+
+        totals.sort((a, b) => b.total_points - a.total_points);
+        return totals;
+      }
+
+      const currentRanking = buildRanking();
+      const previousRanking = latestFinishedMatchId
+        ? buildRanking(latestFinishedMatchId)
+        : currentRanking;
+
+      const rankingWithMovement = currentRanking.map((player, currentIndex) => {
+        const previousIndex = previousRanking.findIndex(
+          (oldPlayer) => oldPlayer.user_id === player.user_id
+        );
+
+        const movement =
+          previousIndex >= 0 ? previousIndex - currentIndex : 0;
+
+        return {
+          ...player,
+          movement,
+        };
+      });
+
+      setRanking(rankingWithMovement);
     }
 
     loadRanking();
@@ -71,7 +120,18 @@ export default function KlassementPage() {
   const first = ranking[0];
   const second = ranking[1];
   const third = ranking[2];
-  const rest = ranking.slice(3);
+
+  function movementLabel(movement: number) {
+    if (movement > 0) return `↑${movement}`;
+    if (movement < 0) return `↓${Math.abs(movement)}`;
+    return "—";
+  }
+
+  function movementClass(movement: number) {
+    if (movement > 0) return "text-green-400";
+    if (movement < 0) return "text-red-400";
+    return "text-slate-400";
+  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-white p-6">
@@ -88,6 +148,9 @@ export default function KlassementPage() {
                   <p className="text-slate-300 text-sm">
                     {second.total_points} punten
                   </p>
+                  <p className={`font-bold ${movementClass(second.movement)}`}>
+                    {movementLabel(second.movement)}
+                  </p>
                   <div className="mt-3 h-16 rounded-lg bg-slate-600 flex items-center justify-center font-bold">
                     2
                   </div>
@@ -101,6 +164,9 @@ export default function KlassementPage() {
                   <p className="text-yellow-100 text-sm">
                     {first.total_points} punten
                   </p>
+                  <p className={`font-bold ${movementClass(first.movement)}`}>
+                    {movementLabel(first.movement)}
+                  </p>
                   <div className="mt-3 h-24 rounded-lg bg-yellow-700 flex items-center justify-center font-bold text-xl">
                     1
                   </div>
@@ -113,6 +179,9 @@ export default function KlassementPage() {
                   <p className="font-bold text-sm">{third.name}</p>
                   <p className="text-orange-100 text-sm">
                     {third.total_points} punten
+                  </p>
+                  <p className={`font-bold ${movementClass(third.movement)}`}>
+                    {movementLabel(third.movement)}
                   </p>
                   <div className="mt-3 h-12 rounded-lg bg-orange-800 flex items-center justify-center font-bold">
                     3
@@ -138,13 +207,16 @@ export default function KlassementPage() {
                   {index === 2 && "🥉 "}
                   {index + 1}. {player.name}
                 </p>
+                <p className={`text-sm font-bold ${movementClass(player.movement)}`}>
+                  {movementLabel(player.movement)}
+                </p>
               </div>
 
               <p className="font-bold">{player.total_points} punten</p>
             </div>
           ))}
 
-          {rest.length === 0 && ranking.length === 0 && (
+          {ranking.length === 0 && (
             <p className="text-slate-300">Nog geen spelers beschikbaar.</p>
           )}
         </div>
