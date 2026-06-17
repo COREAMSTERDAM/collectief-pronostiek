@@ -24,7 +24,12 @@ export default function Home() {
           <a href="/wedstrijden" className="block rounded-xl bg-white text-slate-950 p-4 font-semibold text-center">
             ⚽ Wedstrijden
           </a>
-
+          <a
+  href="/mijn-pronostieken"
+  className="block rounded-xl border border-slate-700 p-4 font-semibold text-center"
+>
+  📝 Mijn pronostieken
+</a>
           <a href="/klassement" className="block rounded-xl border border-slate-700 p-4 font-semibold text-center">
             🏆 Klassement
           </a>
