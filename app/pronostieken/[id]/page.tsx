@@ -128,23 +128,41 @@ export default function PronostiekenPage() {
 
         {isClosed && (
           <div className="space-y-3">
-            {predictions.map((prediction) => (
-              <div
-                key={prediction.id}
-                className="rounded-xl bg-slate-800 p-4 flex justify-between items-center"
-              >
-                <div>
-                  <p className="font-bold">{prediction.name}</p>
-                  <p className="text-slate-300">
-                    {prediction.pred_home} - {prediction.pred_away}
+            {predictions.map((prediction) => {
+              const colorClass =
+                prediction.points === 3
+                  ? "bg-green-900 border-green-500"
+                  : prediction.points === 1
+                  ? "bg-yellow-900 border-yellow-500"
+                  : "bg-red-900 border-red-500";
+
+              const icon =
+                prediction.points === 3
+                  ? "🟢"
+                  : prediction.points === 1
+                  ? "🟡"
+                  : "🔴";
+
+              return (
+                <div
+                  key={prediction.id}
+                  className={`rounded-xl border p-4 flex justify-between items-center ${colorClass}`}
+                >
+                  <div>
+                    <p className="font-bold">
+                      {icon} {prediction.name}
+                    </p>
+                    <p className="text-slate-200">
+                      {prediction.pred_home} - {prediction.pred_away}
+                    </p>
+                  </div>
+
+                  <p className="font-bold">
+                    {prediction.points} punten
                   </p>
                 </div>
-
-                <p className="font-bold">
-                  {prediction.points} punten
-                </p>
-              </div>
-            ))}
+              );
+            })}
 
             {predictions.length === 0 && (
               <p className="text-slate-300">
