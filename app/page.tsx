@@ -4,7 +4,7 @@ export default function Home() {
       <div className="max-w-md mx-auto pt-10">
         <img src="/logo.png" alt="Logo" />
         <h1 className="text-3xl font-bold mb-2">
-          Collectief Pronostiek
+          PRONOSTIEK
         </h1>
 
         <p className="text-slate-300 mb-8">
