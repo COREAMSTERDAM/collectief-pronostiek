@@ -37,6 +37,12 @@ export default function Home() {
           <a href="/admin" className="block rounded-xl border border-slate-700 p-4 font-semibold text-center">
             ⚙️ Admin
           </a>
+          <a
+  href="/registreren"
+  className="block rounded-xl border border-slate-700 p-4 font-semibold text-center"
+>
+  📝 Registreren
+</a>
 
           <button
             onClick={logout}
