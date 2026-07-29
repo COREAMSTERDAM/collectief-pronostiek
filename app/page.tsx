@@ -9,51 +9,72 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-6">
-      <div className="max-w-md mx-auto pt-10">
-        <img src="/logo.png" alt="Logo" />
-        <h1 className="text-3xl font-bold mb-2">
-          Collectief Pronostiek
-        </h1>
+    <main className="ucl-page">
+      <div className="ucl-container">
+        <section className="ucl-card">
+          <img
+            src="/logo.png"
+            alt="Logo Collectief Pronostiek"
+            className="ucl-logo"
+          />
 
-        <p className="text-slate-300 mb-8">
-          Welkom in je pronostiek-dashboard.
-        </p>
+          <div className="text-center">
+            <h1 className="ucl-title">
+              Collectief Pronostiek
+            </h1>
 
-        <div className="space-y-4">
-          <a href="/wedstrijden" className="block rounded-xl bg-white text-slate-950 p-4 font-semibold text-center">
+            <p className="ucl-subtitle">
+              Voorspel de wedstrijden, verzamel punten en strijd om de eerste
+              plaats.
+            </p>
+          </div>
+        </section>
+
+        <div className="mt-6 space-y-4">
+          <a
+            href="/wedstrijden"
+            className="ucl-button-primary"
+          >
             ⚽ Wedstrijden
           </a>
+
           <a
-  href="/mijn-pronostieken"
-  className="block rounded-xl border border-slate-700 p-4 font-semibold text-center"
->
-  📝 Mijn pronostieken
-</a>
-          <a href="/klassement" className="block rounded-xl border border-slate-700 p-4 font-semibold text-center">
+            href="/mijn-pronostieken"
+            className="ucl-button-secondary"
+          >
+            📝 Mijn pronostieken
+          </a>
+
+          <a
+            href="/klassement"
+            className="ucl-button-secondary"
+          >
             🏆 Klassement
           </a>
 
-          <a href="/admin" className="block rounded-xl border border-slate-700 p-4 font-semibold text-center">
+          <a
+            href="/admin"
+            className="ucl-button-secondary"
+          >
             ⚙️ Admin
           </a>
+
           <a
-  href="/registreren"
-  className="block rounded-xl border border-slate-700 p-4 font-semibold text-center"
->
-  📝 Registreren
-</a>
+            href="/registreren"
+            className="ucl-button-secondary"
+          >
+            📝 Registreren
+          </a>
 
           <button
+            type="button"
             onClick={logout}
-            className="w-full rounded-xl bg-red-900 p-4 font-semibold text-center"
+            className="ucl-button-danger"
           >
-            Uitloggen
+            🚪 Uitloggen
           </button>
         </div>
       </div>
     </main>
   );
 }
-
-
