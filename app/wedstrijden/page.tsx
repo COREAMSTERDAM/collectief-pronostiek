@@ -270,12 +270,12 @@ function MostChosenScore({
         🔥 Meest gekozen uitslag
       </p>
 
-      <p className="mt-1 text-sm text-slate-400">
+      {/* <p className="mt-1 text-sm text-slate-400">
         {total}{" "}
         {total === 1
           ? "pronostiek ontvangen"
           : "pronostieken ontvangen"}
-      </p>
+      </p> */}
 
       <div className="mt-4 space-y-3">
         {stats.slice(0, 4).map((item) => {
