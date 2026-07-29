@@ -7,59 +7,77 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [wachtwoord, setWachtwoord] = useState("");
 
+  async function login(e: React.FormEvent) {
+    e.preventDefault();
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: wachtwoord,
+    });
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    window.location.href = "/";
+  }
+
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-6">
-      <div className="max-w-md mx-auto pt-10">
-        <h1 className="text-3xl font-bold mb-6">Inloggen</h1>
-
-        <form
-          className="space-y-4"
-          onSubmit={async (e) => {
-            e.preventDefault();
-
-            const { error } = await supabase.auth.signInWithPassword({
-              email,
-              password: wachtwoord,
-            });
-
-            if (error) {
-              alert(error.message);
-              return;
-            }
-
-            window.location.href = "/";
-          }}
-        >
-          <input
-            type="email"
-            placeholder="E-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 rounded-lg bg-slate-800"
+    <main className="ucl-page">
+      <div className="ucl-container">
+        <div className="ucl-card">
+          <img
+            src="/logo.png"
+            alt="Collectief Pronostiek"
+            className="ucl-logo"
           />
 
-          <input
-            type="password"
-            placeholder="Wachtwoord"
-            value={wachtwoord}
-            onChange={(e) => setWachtwoord(e.target.value)}
-            className="w-full p-3 rounded-lg bg-slate-800"
-          />
+          <div className="text-center mb-6">
+            <h1 className="ucl-title">
+              Collectief Pronostiek
+            </h1>
 
-          <button
-            type="submit"
-            className="w-full bg-white text-black font-bold p-3 rounded-lg"
+            <p className="ucl-subtitle">
+              Log in en voorspel de wedstrijden.
+            </p>
+          </div>
+
+          <form
+            onSubmit={login}
+            className="space-y-4"
           >
-            Inloggen
-          </button>
+            <input
+              type="email"
+              placeholder="E-mailadres"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="ucl-input"
+            />
+
+            <input
+              type="password"
+              placeholder="Wachtwoord"
+              value={wachtwoord}
+              onChange={(e) => setWachtwoord(e.target.value)}
+              className="ucl-input"
+            />
+
+            <button
+              type="submit"
+              className="ucl-button-primary"
+            >
+              Inloggen
+            </button>
+          </form>
 
           <a
             href="/wachtwoord-vergeten"
-            className="block text-center text-slate-300 underline mt-4"
+            className="block mt-5 text-center text-sky-300 hover:text-sky-200"
           >
             Wachtwoord vergeten?
           </a>
-        </form>
+        </div>
       </div>
     </main>
   );
