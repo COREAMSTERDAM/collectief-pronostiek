@@ -146,55 +146,66 @@ export default function WedstrijdenPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 p-6 text-white">
-        <div className="mx-auto max-w-md pt-10">
-          <p>Laden...</p>
+      <main className="ucl-page">
+        <div className="ucl-container">
+          <div className="ucl-card">
+            <p className="ucl-muted">Wedstrijden laden...</p>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 p-6 text-white">
-      <div className="mx-auto max-w-md pt-10">
-        <h1 className="mb-6 text-3xl font-bold">
-          Wedstrijden
-        </h1>
+    <main className="ucl-page">
+      <div className="ucl-container">
+        <div className="mb-7">
+          <h1 className="ucl-title">Wedstrijden</h1>
+
+          <p className="ucl-subtitle">
+            Voorspel de uitslagen en strijd mee voor de eerste plaats.
+          </p>
+        </div>
 
         {matches.length === 0 ? (
-          <div className="rounded-xl bg-slate-800 p-4">
-            <p className="text-slate-300">
+          <div className="ucl-card">
+            <p className="ucl-muted">
               Er zijn momenteel geen wedstrijden.
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {matches.map((match) => {
               const isClosed =
                 new Date(match.kickoff).getTime() <= Date.now();
 
               return (
-                <div
+                <article
                   key={match.id}
-                  className="rounded-xl bg-slate-800 p-4"
+                  className="ucl-card"
                 >
-                  <p className="font-bold">
+                  <p className="ucl-match-title">
                     {match.home_team} - {match.away_team}
                   </p>
 
-                  <p className="text-sm text-slate-300">
+                  <p className="ucl-muted">
                     {new Date(match.kickoff).toLocaleString(
                       "nl-BE"
                     )}
                   </p>
 
-                  <p className="mt-1 text-sm text-slate-400">
-                    Status:{" "}
-                    {isClosed ? "gesloten" : match.status}
-                  </p>
+                  <div className="ucl-status">
+                    <span>{isClosed ? "🔒" : "●"}</span>
+
+                    <span>
+                      {isClosed
+                        ? "Gesloten"
+                        : "Open voor pronostieken"}
+                    </span>
+                  </div>
 
                   {match.myPrediction && (
-                    <p className="mt-2 text-sm text-green-400">
+                    <p className="ucl-prediction">
                       Jouw pronostiek:{" "}
                       {match.myPrediction.pred_home} -{" "}
                       {match.myPrediction.pred_away}
@@ -212,7 +223,7 @@ export default function WedstrijdenPage() {
                   {!isClosed ? (
                     <a
                       href={`/pronostiek/${match.id}`}
-                      className="mt-4 block w-full rounded-lg bg-white p-3 text-center font-bold text-black"
+                      className="ucl-button-primary"
                     >
                       {match.myPrediction
                         ? "Pronostiek aanpassen"
@@ -221,12 +232,12 @@ export default function WedstrijdenPage() {
                   ) : (
                     <a
                       href={`/pronostieken/${match.id}`}
-                      className="mt-4 block w-full rounded-lg bg-white p-3 text-center font-bold text-black"
+                      className="ucl-button-primary"
                     >
                       Bekijk pronostieken
                     </a>
                   )}
-                </div>
+                </article>
               );
             })}
           </div>
@@ -248,12 +259,12 @@ function MostChosenScore({
 
   if (total === 0) {
     return (
-      <div className="mt-4 rounded-xl bg-slate-900 p-4">
-        <p className="font-bold">
-          🔥 Meest gekozen uitslag
-        </p>
+      <div className="ucl-card-dark">
+        <div className="ucl-stat-header">
+          <span>🔥 Meest gekozen uitslag</span>
+        </div>
 
-        <p className="mt-2 text-sm text-slate-400">
+        <p className="ucl-muted">
           Er zijn nog geen pronostieken ingediend.
         </p>
       </div>
@@ -265,59 +276,56 @@ function MostChosenScore({
   );
 
   return (
-    <div className="mt-4 rounded-xl bg-slate-900 p-4">
-      <p className="font-bold">
-        🔥 Meest gekozen uitslag
-      </p>
+    <div className="ucl-card-dark">
+      <div className="ucl-stat-header">
+        <span>🔥 Meest gekozen uitslag</span>
 
-      {/* <p className="mt-1 text-sm text-slate-400">
-        {total}{" "}
-        {total === 1
-          ? "pronostiek ontvangen"
-          : "pronostieken ontvangen"}
-      </p> */}
-
-      <div className="mt-4 space-y-3">
-        {stats.slice(0, 4).map((item) => {
-          const percentage = Math.round(
-            (item.aantal / total) * 100
-          );
-
-          const isMostChosen =
-            item.aantal === highestAmount;
-
-          return (
-            <div
-              key={`${item.pred_home}-${item.pred_away}`}
-              className="space-y-1"
-            >
-              <div className="flex items-center justify-between text-sm">
-                <span
-                  className={
-                    isMostChosen ? "font-bold" : ""
-                  }
-                >
-                  {item.pred_home} - {item.pred_away}
-                  {isMostChosen && " 👑"}
-                </span>
-
-                <span className="text-slate-300">
-                  {percentage}% ({item.aantal})
-                </span>
-              </div>
-
-              <div className="h-2 overflow-hidden rounded-full bg-slate-700">
-                <div
-                  className="h-full rounded-full bg-white"
-                  style={{
-                    width: `${percentage}%`,
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })}
+        <span className="ucl-stat-total">
+          {total} ontvangen
+        </span>
       </div>
+
+      {stats.slice(0, 4).map((item) => {
+        const percentage = Math.round(
+          (item.aantal / total) * 100
+        );
+
+        const isMostChosen =
+          item.aantal === highestAmount;
+
+        return (
+          <div
+            key={`${item.pred_home}-${item.pred_away}`}
+            className="ucl-stat-row"
+          >
+            <div className="ucl-stat-label">
+              <span
+                className={
+                  isMostChosen
+                    ? "ucl-stat-winner"
+                    : ""
+                }
+              >
+                {item.pred_home} - {item.pred_away}
+                {isMostChosen && " 👑"}
+              </span>
+
+              <span>
+                {percentage}% ({item.aantal})
+              </span>
+            </div>
+
+            <div className="ucl-progress">
+              <div
+                className="ucl-progress-bar"
+                style={{
+                  width: `${percentage}%`,
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
