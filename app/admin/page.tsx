@@ -90,7 +90,11 @@ export default function AdminPage() {
     await loadMatches();
   }
 
-  async function saveResult(matchId: number, homeScore: number, awayScore: number) {
+  async function saveResult(
+    matchId: number,
+    homeScore: number,
+    awayScore: number
+  ) {
     const { error: matchError } = await supabase
       .from("matches")
       .update({
@@ -105,10 +109,11 @@ export default function AdminPage() {
       return;
     }
 
-    const { data: predictions, error: predictionsError } = await supabase
-      .from("predictions")
-      .select("*")
-      .eq("match_id", matchId);
+    const { data: predictions, error: predictionsError } =
+      await supabase
+        .from("predictions")
+        .select("*")
+        .eq("match_id", matchId);
 
     if (predictionsError) {
       alert(predictionsError.message);
@@ -123,7 +128,11 @@ export default function AdminPage() {
         prediction.pred_away === awayScore;
 
       const realResult =
-        homeScore > awayScore ? "home" : homeScore < awayScore ? "away" : "draw";
+        homeScore > awayScore
+          ? "home"
+          : homeScore < awayScore
+          ? "away"
+          : "draw";
 
       const predictedResult =
         prediction.pred_home > prediction.pred_away
@@ -155,75 +164,151 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-950 text-white p-6">
-        Laden...
+      <main className="ucl-page">
+        <div className="ucl-container">
+          <div className="ucl-card">
+            <p className="ucl-muted">Adminpagina laden...</p>
+          </div>
+        </div>
       </main>
     );
   }
 
   if (!isAdmin) {
     return (
-      <main className="min-h-screen bg-slate-950 text-white p-6">
-        <div className="max-w-md mx-auto pt-10">
-          <h1 className="text-3xl font-bold mb-4">Geen toegang</h1>
-          <p className="text-slate-300">
-            Je hebt geen adminrechten voor deze pagina.
-          </p>
+      <main className="ucl-page">
+        <div className="ucl-container">
+          <div className="ucl-card">
+            <h1 className="ucl-title">Geen toegang</h1>
+
+            <p className="ucl-subtitle">
+              Je hebt geen adminrechten voor deze pagina.
+            </p>
+
+            <a href="/" className="ucl-button-secondary mt-6">
+              Terug naar dashboard
+            </a>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-6">
-      <div className="max-w-md mx-auto pt-10">
-        <h1 className="text-3xl font-bold mb-6">Admin</h1>
+    <main className="ucl-page">
+      <div className="ucl-container">
+        <div className="mb-7">
+          <h1 className="ucl-title">Admin</h1>
 
-        <div className="rounded-xl bg-slate-800 p-4 mb-8 space-y-4">
-          <h2 className="text-xl font-bold">Wedstrijd toevoegen</h2>
-
-          <input
-            type="text"
-            placeholder="Thuisploeg"
-            value={homeTeam}
-            onChange={(e) => setHomeTeam(e.target.value)}
-            className="w-full p-3 rounded-lg bg-slate-700"
-          />
-
-          <input
-            type="text"
-            placeholder="Uitploeg"
-            value={awayTeam}
-            onChange={(e) => setAwayTeam(e.target.value)}
-            className="w-full p-3 rounded-lg bg-slate-700"
-          />
-
-          <input
-            type="datetime-local"
-            value={kickoff}
-            onChange={(e) => setKickoff(e.target.value)}
-            className="w-full p-3 rounded-lg bg-slate-700"
-          />
-
-          <button
-            onClick={saveMatch}
-            className="w-full bg-white text-black font-bold p-3 rounded-lg"
-          >
-            Wedstrijd toevoegen
-          </button>
+          <p className="ucl-subtitle">
+            Voeg wedstrijden toe en verwerk de officiële uitslagen.
+          </p>
         </div>
 
-        <h2 className="text-xl font-bold mb-4">Bestaande wedstrijden</h2>
+        <section className="ucl-card mb-8">
+          <div className="mb-5">
+            <h2 className="text-xl font-black text-white">
+              Wedstrijd toevoegen
+            </h2>
 
-        <div className="space-y-4">
-          {matches.map((match) => (
-            <MatchResultCard
-              key={match.id}
-              match={match}
-              onSave={saveResult}
-            />
-          ))}
-        </div>
+            <p className="ucl-muted">
+              Vul de ploegen en het aanvangsuur in.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="home-team"
+                className="mb-2 block text-sm font-bold text-slate-200"
+              >
+                Thuisploeg
+              </label>
+
+              <input
+                id="home-team"
+                type="text"
+                placeholder="Bijvoorbeeld Club Brugge"
+                value={homeTeam}
+                onChange={(e) => setHomeTeam(e.target.value)}
+                className="ucl-input"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="away-team"
+                className="mb-2 block text-sm font-bold text-slate-200"
+              >
+                Uitploeg
+              </label>
+
+              <input
+                id="away-team"
+                type="text"
+                placeholder="Bijvoorbeeld Real Madrid"
+                value={awayTeam}
+                onChange={(e) => setAwayTeam(e.target.value)}
+                className="ucl-input"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="kickoff"
+                className="mb-2 block text-sm font-bold text-slate-200"
+              >
+                Aftrap
+              </label>
+
+              <input
+                id="kickoff"
+                type="datetime-local"
+                value={kickoff}
+                onChange={(e) => setKickoff(e.target.value)}
+                className="ucl-input"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={saveMatch}
+              className="ucl-button-primary"
+            >
+              Wedstrijd toevoegen
+            </button>
+          </div>
+        </section>
+
+        <section>
+          <div className="mb-4">
+            <h2 className="text-xl font-black text-white">
+              Bestaande wedstrijden
+            </h2>
+
+            <p className="ucl-muted">
+              Vul na de wedstrijd de officiële uitslag in.
+            </p>
+          </div>
+
+          {matches.length === 0 ? (
+            <div className="ucl-card">
+              <p className="ucl-muted">
+                Er zijn nog geen wedstrijden toegevoegd.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {matches.map((match) => (
+                <MatchResultCard
+                  key={match.id}
+                  match={match}
+                  onSave={saveResult}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </main>
   );
@@ -234,60 +319,128 @@ function MatchResultCard({
   onSave,
 }: {
   match: Match;
-  onSave: (matchId: number, homeScore: number, awayScore: number) => void;
+  onSave: (
+    matchId: number,
+    homeScore: number,
+    awayScore: number
+  ) => void;
 }) {
   const [homeScore, setHomeScore] = useState(
     match.home_score?.toString() || ""
   );
+
   const [awayScore, setAwayScore] = useState(
     match.away_score?.toString() || ""
   );
 
+  const isFinished = match.status === "afgewerkt";
+
+  function handleSave() {
+    if (homeScore === "" || awayScore === "") {
+      alert("Vul beide scores in.");
+      return;
+    }
+
+    const parsedHomeScore = Number(homeScore);
+    const parsedAwayScore = Number(awayScore);
+
+    if (
+      !Number.isInteger(parsedHomeScore) ||
+      !Number.isInteger(parsedAwayScore) ||
+      parsedHomeScore < 0 ||
+      parsedAwayScore < 0
+    ) {
+      alert("Vul geldige, positieve gehele scores in.");
+      return;
+    }
+
+    onSave(match.id, parsedHomeScore, parsedAwayScore);
+  }
+
   return (
-    <div className="rounded-xl bg-slate-800 p-4">
-      <p className="font-bold">
-        {match.home_team} - {match.away_team}
-      </p>
+    <article className="ucl-card">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="ucl-match-title">
+            {match.home_team} - {match.away_team}
+          </p>
 
-      <p className="text-slate-300 text-sm">
-        {new Date(match.kickoff).toLocaleString("nl-BE")}
-      </p>
+          <p className="ucl-muted">
+            {new Date(match.kickoff).toLocaleString("nl-BE")}
+          </p>
+        </div>
 
-      <p className="text-slate-400 text-sm mt-1">
-        Status: {match.status}
-      </p>
+        <span className="ucl-status">
+          <span>{isFinished ? "✓" : "●"}</span>
+          <span>{isFinished ? "Afgewerkt" : match.status}</span>
+        </span>
+      </div>
 
-      <div className="flex gap-4 mt-4">
-        <input
-          type="number"
-          placeholder="Thuis"
-          value={homeScore}
-          onChange={(e) => setHomeScore(e.target.value)}
-          className="w-full p-3 rounded-lg bg-slate-700"
-        />
+      {isFinished &&
+        match.home_score !== null &&
+        match.away_score !== null && (
+          <div className="ucl-card-dark text-center">
+            <p className="ucl-muted">Huidige uitslag</p>
 
-        <input
-          type="number"
-          placeholder="Uit"
-          value={awayScore}
-          onChange={(e) => setAwayScore(e.target.value)}
-          className="w-full p-3 rounded-lg bg-slate-700"
-        />
+            <p className="mt-1 text-3xl font-black text-white">
+              {match.home_score} - {match.away_score}
+            </p>
+          </div>
+        )}
+
+      <div className="mt-5 grid grid-cols-2 gap-4">
+        <div>
+          <label
+            htmlFor={`home-score-${match.id}`}
+            className="mb-2 block text-center text-sm font-bold text-slate-200"
+          >
+            {match.home_team}
+          </label>
+
+          <input
+            id={`home-score-${match.id}`}
+            type="number"
+            min="0"
+            step="1"
+            inputMode="numeric"
+            placeholder="0"
+            value={homeScore}
+            onChange={(e) => setHomeScore(e.target.value)}
+            className="ucl-input text-center text-xl font-black"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor={`away-score-${match.id}`}
+            className="mb-2 block text-center text-sm font-bold text-slate-200"
+          >
+            {match.away_team}
+          </label>
+
+          <input
+            id={`away-score-${match.id}`}
+            type="number"
+            min="0"
+            step="1"
+            inputMode="numeric"
+            placeholder="0"
+            value={awayScore}
+            onChange={(e) => setAwayScore(e.target.value)}
+            className="ucl-input text-center text-xl font-black"
+          />
+        </div>
       </div>
 
       <button
-        onClick={() => {
-          if (homeScore === "" || awayScore === "") {
-            alert("Vul beide scores in.");
-            return;
-          }
-
-          onSave(match.id, Number(homeScore), Number(awayScore));
-        }}
-        className="w-full bg-white text-black font-bold p-3 rounded-lg mt-4"
+        type="button"
+        onClick={handleSave}
+        className="ucl-button-primary"
       >
-        Uitslag opslaan + punten berekenen
+        {isFinished
+          ? "Uitslag opnieuw opslaan"
+          : "Uitslag opslaan + punten berekenen"}
       </button>
-    </div>
+    </article>
   );
 }
