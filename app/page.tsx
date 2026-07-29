@@ -63,7 +63,7 @@ export default function Home() {
             href="/registreren"
             className="ucl-button-secondary"
           >
-            📝 Registreren
+            📝 Registreren of Inloggen
           </a>
 
           <button
