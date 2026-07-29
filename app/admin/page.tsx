@@ -141,10 +141,16 @@ export default function AdminPage() {
           ? "away"
           : "draw";
 
+      const goalDifferenceCorrect =
+        homeScore - awayScore ===
+        prediction.pred_home - prediction.pred_away;
+
       if (exactScore) {
+        points = 5;
+      } else if (goalDifferenceCorrect) {
         points = 3;
       } else if (realResult === predictedResult) {
-        points = 1;
+        points = 2;
       }
 
       const { error: updateError } = await supabase
