@@ -25,6 +25,7 @@ export default function KlassementPage() {
   const [ranking, setRanking] = useState<Ranking[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showScoringGuide, setShowScoringGuide] = useState(false);
 
   useEffect(() => {
     async function loadRanking() {
@@ -188,6 +189,139 @@ export default function KlassementPage() {
             Bekijk wie momenteel aan kop staat.
           </p>
         </div>
+
+        <section className="ucl-card mb-8">
+          <button
+            type="button"
+            onClick={() => setShowScoringGuide((current) => !current)}
+            aria-expanded={showScoringGuide}
+            aria-controls="puntensysteem-uitleg"
+            className="flex w-full items-center justify-between gap-4 text-left"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-2xl">
+                🏆
+              </div>
+
+              <div className="min-w-0">
+                <h2 className="text-xl font-black text-white">
+                  Puntensysteem
+                </h2>
+
+                <p className="ucl-muted">
+                  Bekijk wanneer je 5, 3, 2 of 0 punten krijgt.
+                </p>
+              </div>
+            </div>
+
+            <span
+              className={`shrink-0 text-2xl font-black text-sky-300 transition-transform duration-200 ${
+                showScoringGuide ? "rotate-180" : ""
+              }`}
+              aria-hidden="true"
+            >
+             ⌄
+            </span>
+          </button>
+
+          {showScoringGuide && (
+            <div
+              id="puntensysteem-uitleg"
+              className="mt-6 border-t border-white/10 pt-6"
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4">
+                  <p className="text-lg font-black text-white">
+                    ✅ Exacte uitslag
+                  </p>
+                  <p className="mt-2 text-4xl font-black text-emerald-300">
+                    5
+                  </p>
+                  <p className="text-sm text-slate-300">punten</p>
+                </div>
+
+                <div className="rounded-2xl border border-sky-400/20 bg-sky-500/10 p-4">
+                  <p className="text-lg font-black text-white">
+                    ⚽ Juist doelpuntensaldo
+                  </p>
+                  <p className="mt-2 text-4xl font-black text-sky-300">
+                    3
+                  </p>
+                  <p className="text-sm text-slate-300">punten</p>
+                </div>
+
+                <div className="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4">
+                  <p className="text-lg font-black text-white">
+                    👍 Juiste winnaar of gelijkspel
+                  </p>
+                  <p className="mt-2 text-4xl font-black text-amber-300">
+                    2
+                  </p>
+                  <p className="text-sm text-slate-300">punten</p>
+                </div>
+
+                <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 p-4">
+                  <p className="text-lg font-black text-white">
+                    ❌ Verkeerde voorspelling
+                  </p>
+                  <p className="mt-2 text-4xl font-black text-rose-300">
+                    0
+                  </p>
+                  <p className="text-sm text-slate-300">punten</p>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
+                <h3 className="mb-3 text-lg font-black text-white">
+                  Voorbeelden
+                </h3>
+
+                <div className="space-y-2 text-sm text-slate-300">
+                  <p>
+                    <strong>Voorspeld 2-1, uitslag 2-1:</strong>{" "}
+                    <span className="font-bold text-emerald-300">
+                      5 punten
+                    </span>
+                  </p>
+
+                  <p>
+                    <strong>Voorspeld 2-1, uitslag 3-2:</strong>{" "}
+                    <span className="font-bold text-sky-300">
+                      3 punten
+                    </span>
+                  </p>
+
+                  <p>
+                    <strong>Voorspeld 2-1, uitslag 4-2:</strong>{" "}
+                    <span className="font-bold text-amber-300">
+                      2 punten
+                    </span>
+                  </p>
+
+                  <p>
+                    <strong>Voorspeld 2-1, uitslag 1-2:</strong>{" "}
+                    <span className="font-bold text-rose-300">
+                      0 punten
+                    </span>
+                  </p>
+                </div>
+
+                <div className="mt-5 rounded-xl border border-sky-400/20 bg-sky-500/10 p-4">
+                  <p className="text-sm font-black text-white">
+                    Wat is doelpuntensaldo?
+                  </p>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    Het doelpuntensaldo is het verschil tussen de doelpunten.
+                    De uitslagen <strong>2-1</strong>, <strong>3-2</strong> en{" "}
+                    <strong>1-0</strong> hebben allemaal een verschil van één
+                    doelpunt.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
 
         {ranking.length > 0 && (
           <section className="mb-8">
