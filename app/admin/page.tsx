@@ -228,7 +228,7 @@ export default function AdminPage() {
               <input
                 id="home-team"
                 type="text"
-                placeholder="Bijvoorbeeld Club Brugge"
+                placeholder="Bijvoorbeeld Eendracht Aalst Lede"
                 value={homeTeam}
                 onChange={(e) => setHomeTeam(e.target.value)}
                 className="ucl-input"
@@ -246,7 +246,7 @@ export default function AdminPage() {
               <input
                 id="away-team"
                 type="text"
-                placeholder="Bijvoorbeeld Real Madrid"
+                placeholder="Bijvoorbeeld SK Berlare"
                 value={awayTeam}
                 onChange={(e) => setAwayTeam(e.target.value)}
                 className="ucl-input"
