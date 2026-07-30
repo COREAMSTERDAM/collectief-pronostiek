@@ -20,7 +20,7 @@ export default function Home() {
 
           <div className="text-center">
             <h1 className="ucl-title">
-              Collectief Pronostiek
+              Collectief Wit en Zwet App
             </h1>
 
             <p className="ucl-subtitle">
