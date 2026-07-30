@@ -57,11 +57,15 @@ const [successMessage, setSuccessMessage] = useState("");
       ]);
 
       if (matchError) {
-        console.error("Wedstrijd ophalen mislukt:", matchError);
-        setErrorMessage("De wedstrijd kon niet worden geladen.");
-        setLoading(false);
-        return;
-      }
+  console.error(matchError);
+
+  setErrorMessage(
+    `Wedstrijd fout: ${matchError.message}`
+  );
+
+  setLoading(false);
+  return;
+}
 
       if (playerError) {
         console.error("Spelers ophalen mislukt:", playerError);
