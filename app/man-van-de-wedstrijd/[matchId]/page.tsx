@@ -53,7 +53,7 @@ export default function ManVanDeWedstrijdPage() {
           Kies jouw Top 3
         </p>
 
-        <div className="mt-10 grid gap-8 lg:grid-cols-[2fr_1fr]">
+        <div className="mt-10 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
 
           <PlayerVoteGrid
             players={players}
