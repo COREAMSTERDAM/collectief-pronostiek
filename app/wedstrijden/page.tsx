@@ -84,16 +84,11 @@ export default function WedstrijdenPage() {
       setLoading(true);
 
       const { data: userData } =
-  await supabase.auth.getUser();
-
-if (!userData.user) {
-  window.location.href = "/login?reason=login-required";
-  return;
-}
+        await supabase.auth.getUser();
 
       if (!userData.user) {
-        alert("Je moet eerst inloggen.");
-        window.location.href = "/login";
+        window.location.href =
+          "/login?reason=login-required";
         return;
       }
 
@@ -148,7 +143,9 @@ if (!userData.user) {
       <main className="ucl-page">
         <div className="ucl-container">
           <div className="ucl-card">
-            <p className="ucl-muted">Wedstrijden laden...</p>
+            <p className="ucl-muted">
+              Wedstrijden laden...
+            </p>
           </div>
         </div>
       </main>
@@ -159,11 +156,22 @@ if (!userData.user) {
     <main className="ucl-page">
       <div className="ucl-container">
         <div className="mb-7">
-          <h1 className="ucl-title">Wedstrijden</h1>
+          <h1 className="ucl-title">
+            Wedstrijden
+          </h1>
 
           <p className="ucl-subtitle">
             Voorspel de uitslagen en strijd mee voor de eerste plaats.
           </p>
+
+          <div className="mt-5">
+            <a
+              href="/"
+              className="ucl-button-secondary"
+            >
+              ← Terug naar dashboard
+            </a>
+          </div>
         </div>
 
         {matches.length === 0 ? (
