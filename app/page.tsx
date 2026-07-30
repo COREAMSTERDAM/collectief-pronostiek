@@ -30,50 +30,43 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="mt-6 space-y-4">
-          <a
-            href="/wedstrijden"
-            className="ucl-button-primary"
-          >
-            ⚽ Wedstrijden
-          </a>
+<div className="mt-6 space-y-4">
+  <a
+    href="/pronostiek"
+    className="ucl-button-primary"
+  >
+    ⚽ Pronostiek
+  </a>
 
-          <a
-            href="/mijn-pronostieken"
-            className="ucl-button-secondary"
-          >
-            📝 Mijn pronostieken
-          </a>
+  <a
+    href="/man-van-de-wedstrijd"
+    className="ucl-button-secondary"
+  >
+    ⭐ Man van de wedstrijd
+  </a>
 
-          <a
-            href="/klassement"
-            className="ucl-button-secondary"
-          >
-            🏆 Klassement
-          </a>
+  <a
+    href="/registreren"
+    className="ucl-button-secondary"
+  >
+    📝 Registreren of Inloggen
+  </a>
 
-          <a
-            href="/admin"
-            className="ucl-button-secondary"
-          >
-            ⚙️ Admin
-          </a>
+  <a
+    href="/admin"
+    className="ucl-button-secondary"
+  >
+    ⚙️ Admin
+  </a>
 
-          <a
-            href="/registreren"
-            className="ucl-button-secondary"
-          >
-            📝 Registreren of Inloggen
-          </a>
-
-          <button
-            type="button"
-            onClick={logout}
-            className="ucl-button-danger"
-          >
-            🚪 Uitloggen
-          </button>
-        </div>
+  <button
+    type="button"
+    onClick={logout}
+    className="ucl-button-danger"
+  >
+    🚪 Uitloggen
+  </button>
+</div>
       </div>
     </main>
   );
