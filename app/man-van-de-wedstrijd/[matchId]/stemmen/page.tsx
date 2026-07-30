@@ -35,10 +35,12 @@ export default function StemmenPage() {
       const now = new Date().toISOString();
 
       const { data, error } = await supabase
-        .from("matches")
-        .select("id, home_team, away_team, kickoff, status")
-        .gt("kickoff", now)
-        .order("kickoff", { ascending: true });
+  .from("matches")
+  .select("id, home_team, away_team, kickoff, status")
+  .order("kickoff", { ascending: true });
+
+console.log("Wedstrijden uit Supabase:", data);
+console.log("Supabase-fout:", error);
 
       if (error) {
         throw error;
