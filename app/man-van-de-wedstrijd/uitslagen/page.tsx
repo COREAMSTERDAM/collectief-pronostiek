@@ -18,7 +18,7 @@ function getVotingDeadline(kickoff: string) {
   return new Date(kickoff).getTime() + VOTING_DURATION_MS;
 }
 
-function formatKickoff(kickoff: string) {
+function formatDate(value: string | number) {
   return new Intl.DateTimeFormat("nl-BE", {
     weekday: "long",
     day: "2-digit",
@@ -26,18 +26,7 @@ function formatKickoff(kickoff: string) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(kickoff));
-}
-
-function formatDeadline(kickoff: string) {
-  return new Intl.DateTimeFormat("nl-BE", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(getVotingDeadline(kickoff)));
+  }).format(new Date(value));
 }
 
 export default function UitslagenPage() {
@@ -60,13 +49,12 @@ export default function UitslagenPage() {
 
       const now = Date.now();
 
-      const finishedMatches = ((data ?? []) as Match[]).filter((match) => {
-        const deadline = getVotingDeadline(match.kickoff);
-
-        return Number.isFinite(deadline) && deadline <= now;
-      });
-
-      setMatches(finishedMatches);
+      setMatches(
+        ((data ?? []) as Match[]).filter((match) => {
+          const deadline = getVotingDeadline(match.kickoff);
+          return Number.isFinite(deadline) && deadline <= now;
+        }),
+      );
     } catch (error) {
       console.error("Fout bij laden van uitslagen:", error);
 
@@ -98,21 +86,6 @@ export default function UitslagenPage() {
       )
       .subscribe();
 
-    const rankingsChannel = supabase
-      .channel("motm-finished-rankings")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "player_rankings",
-        },
-        () => {
-          void loadMatches();
-        },
-      )
-      .subscribe();
-
     const refreshInterval = window.setInterval(() => {
       void loadMatches();
     }, 60_000);
@@ -120,28 +93,28 @@ export default function UitslagenPage() {
     return () => {
       window.clearInterval(refreshInterval);
       void supabase.removeChannel(matchesChannel);
-      void supabase.removeChannel(rankingsChannel);
     };
   }, [loadMatches]);
 
   return (
     <main className="ucl-page">
       <div className="ucl-container">
-        <section className="ucl-card">
+        <section className="ucl-card text-center">
+          <span className="inline-flex rounded-full border border-purple-400/30 bg-purple-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-purple-200">
+            🟣 Man van de wedstrijd
+          </span>
+
           <img
             src="/logo.png"
             alt="Logo Collectief Pronostiek"
-            className="ucl-logo"
+            className="ucl-logo mt-5"
           />
 
-          <div className="text-center">
-            <h1 className="ucl-title">Uitslagen</h1>
+          <h1 className="ucl-title">Uitslagen</h1>
 
-            <p className="ucl-subtitle">
-              Bekijk de definitieve stemming van wedstrijden waarvan de
-              stemperiode is afgelopen.
-            </p>
-          </div>
+          <p className="ucl-subtitle">
+            Bekijk de definitieve rangschikking van afgesloten stemmingen.
+          </p>
         </section>
 
         <section className="mt-6 space-y-4">
@@ -185,28 +158,35 @@ export default function UitslagenPage() {
             matches.map((match) => (
               <article key={match.id} className="ucl-card">
                 <div className="text-center">
-                  <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-300">
-                    ✅ Stemming afgelopen
+                  <span className="inline-flex rounded-full border border-slate-400/30 bg-slate-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-slate-200">
+                    🔒 Stemming afgesloten
                   </span>
 
-                  <h2 className="mt-4 text-xl font-black text-white">
-                    {match.home_team}
-                  </h2>
+                  <div className="mt-5 rounded-3xl border border-purple-400/15 bg-purple-500/[0.06] p-6">
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-purple-200/70">
+                      ⚽ Wedstrijd
+                    </p>
 
-                  <p className="my-1 font-bold text-white/50">
-                    tegen
-                  </p>
+                    <h2 className="mt-4 text-2xl font-black text-white">
+                      {match.home_team}
+                    </h2>
 
-                  <h2 className="text-xl font-black text-white">
-                    {match.away_team}
-                  </h2>
+                    <p className="my-2 text-sm font-black uppercase tracking-[0.25em] text-purple-300">
+                      VS
+                    </p>
 
-                  <p className="mt-4 text-sm font-semibold capitalize text-white/70">
-                    Aftrap: {formatKickoff(match.kickoff)}
+                    <h2 className="text-2xl font-black text-white">
+                      {match.away_team}
+                    </h2>
+                  </div>
+
+                  <p className="mt-5 text-sm font-semibold capitalize text-white/70">
+                    🕒 Aftrap: {formatDate(match.kickoff)}
                   </p>
 
                   <p className="mt-2 text-xs font-bold capitalize text-white/45">
-                    Stemperiode gesloten op {formatDeadline(match.kickoff)}
+                    Stemperiode gesloten op{" "}
+                    {formatDate(getVotingDeadline(match.kickoff))}
                   </p>
                 </div>
 
@@ -214,7 +194,7 @@ export default function UitslagenPage() {
                   href={`/man-van-de-wedstrijd/${match.id}`}
                   className="ucl-button-secondary mt-5"
                 >
-                  📊 Bekijk uitslag
+                  📊 Bekijk definitieve uitslag
                 </Link>
               </article>
             ))}

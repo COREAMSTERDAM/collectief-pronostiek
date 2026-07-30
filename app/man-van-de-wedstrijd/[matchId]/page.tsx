@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
@@ -23,6 +24,23 @@ import PlayerVoteGrid from "@/components/motm/PlayerVoteGrid";
 import VoteSummary from "@/components/motm/VoteSummary";
 import type { VotePlayer } from "@/components/motm/PlayerVoteCard";
 
+const VOTING_DURATION_MS = 24 * 60 * 60 * 1000;
+
+function getVotingDeadline(kickoff: string) {
+  return new Date(kickoff).getTime() + VOTING_DURATION_MS;
+}
+
+function formatDate(value: string | number) {
+  return new Intl.DateTimeFormat("nl-BE", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 export default function ManVanDeWedstrijdPage() {
   const router = useRouter();
   const params = useParams<{ matchId: string }>();
@@ -38,17 +56,27 @@ export default function ManVanDeWedstrijdPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [now, setNow] = useState(() => Date.now());
 
-  const isVotingClosed = useMemo(() => {
-    if (!match) return false;
-
-    const deadline =
-      new Date(match.kickoff).getTime() + 24 * 60 * 60 * 1000;
-
-    return Date.now() >= deadline;
+  const votingDeadline = useMemo(() => {
+    if (!match) return null;
+    return getVotingDeadline(match.kickoff);
   }, [match]);
 
+  const isVotingClosed =
+    votingDeadline !== null && now >= votingDeadline;
+
   const canSeeStandings = hasVoted || isVotingClosed;
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNow(Date.now());
+    }, 30_000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, []);
 
   const loadStandings = useCallback(
     async (playersToUse: MotmPlayer[]) => {
@@ -142,15 +170,14 @@ export default function ManVanDeWedstrijdPage() {
         .map((vote) => vote.player_id);
 
       const userHasVoted = existingVote.length === 3;
-      const deadline =
-        new Date(matchData.kickoff).getTime() +
-        24 * 60 * 60 * 1000;
-      const votingClosed = Date.now() >= deadline;
+      const votingClosed =
+        Date.now() >= getVotingDeadline(matchData.kickoff);
 
       setMatch(matchData as MotmMatch);
       setPlayers(loadedPlayers);
       setSelectedPlayerIds(existingVote);
       setHasVoted(userHasVoted);
+      setNow(Date.now());
       setLoading(false);
 
       if (userHasVoted || votingClosed) {
@@ -184,17 +211,29 @@ export default function ManVanDeWedstrijdPage() {
 
     const fallbackInterval = window.setInterval(() => {
       void loadStandings(players);
-    }, 30000);
+    }, 30_000);
 
     return () => {
       window.clearInterval(fallbackInterval);
       void supabase.removeChannel(channel);
     };
+  }, [canSeeStandings, loadStandings, matchId, players]);
+
+  useEffect(() => {
+    if (
+      isVotingClosed &&
+      players.length > 0 &&
+      standings.length === 0 &&
+      !standingsLoading
+    ) {
+      void loadStandings(players);
+    }
   }, [
-    canSeeStandings,
+    isVotingClosed,
     loadStandings,
-    matchId,
     players,
+    standings.length,
+    standingsLoading,
   ]);
 
   async function handleSubmitVote() {
@@ -204,6 +243,13 @@ export default function ManVanDeWedstrijdPage() {
 
     setErrorMessage("");
     setSuccessMessage("");
+
+    if (isVotingClosed) {
+      setErrorMessage(
+        "De stemperiode is afgelopen. Je stem kan niet meer worden aangepast.",
+      );
+      return;
+    }
 
     if (selectedPlayerIds.length !== 3) {
       setErrorMessage("Kies precies drie verschillende spelers.");
@@ -231,7 +277,7 @@ export default function ManVanDeWedstrijdPage() {
 
     setHasVoted(true);
     setSuccessMessage(
-      "Je Top 3 werd succesvol opgeslagen. De live tussenstand is bijgewerkt.",
+      "Je Top 3 werd succesvol opgeslagen. Je keert zo terug naar het overzicht.",
     );
 
     await loadStandings(players);
@@ -243,34 +289,71 @@ export default function ManVanDeWedstrijdPage() {
     }, 1500);
   }
 
-  const formattedKickoff = match
-    ? new Intl.DateTimeFormat("nl-BE", {
-        dateStyle: "long",
-        timeStyle: "short",
-      }).format(new Date(match.kickoff))
-    : "";
-
   return (
     <main className="ucl-page">
       <div className="ucl-container">
-        <h1 className="ucl-title">Man van de Wedstrijd</h1>
+        <section className="ucl-card text-center">
+          <span className="inline-flex rounded-full border border-purple-400/30 bg-purple-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-purple-200">
+            🟣 Man van de wedstrijd
+          </span>
 
-        {match && (
-          <div className="mt-4">
-            <p className="text-2xl font-black text-white md:text-3xl">
-              {match.home_team}
-              <span className="mx-3 text-sky-300">vs</span>
-              {match.away_team}
-            </p>
+          <h1 className="ucl-title mt-4">
+            {isVotingClosed ? "Definitieve uitslag" : "Breng je stem uit"}
+          </h1>
 
-            <p className="mt-2 font-bold text-white/55">
-              {formattedKickoff}
-            </p>
-          </div>
-        )}
+          {match && (
+            <>
+              <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-white/45">
+                  ⚽ Wedstrijd
+                </p>
+
+                <p className="mt-4 text-2xl font-black text-white md:text-3xl">
+                  {match.home_team}
+                </p>
+
+                <p className="my-2 text-sm font-black uppercase tracking-[0.25em] text-purple-300">
+                  VS
+                </p>
+
+                <p className="text-2xl font-black text-white md:text-3xl">
+                  {match.away_team}
+                </p>
+
+                <p className="mt-5 font-bold capitalize text-white/60">
+                  🕒 {formatDate(match.kickoff)}
+                </p>
+              </div>
+
+              <div className="mt-5">
+                {isVotingClosed ? (
+                  <span className="inline-flex rounded-full border border-slate-400/30 bg-slate-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-slate-200">
+                    🔒 Stemming afgesloten
+                  </span>
+                ) : hasVoted ? (
+                  <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-200">
+                    ✅ Je hebt gestemd
+                  </span>
+                ) : (
+                  <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-200">
+                    🟢 Stemming open
+                  </span>
+                )}
+              </div>
+
+              {votingDeadline !== null && (
+                <p className="mt-3 text-sm font-semibold capitalize text-white/45">
+                  {isVotingClosed
+                    ? `Gesloten op ${formatDate(votingDeadline)}`
+                    : `Stemmen mogelijk tot ${formatDate(votingDeadline)}`}
+                </p>
+              )}
+            </>
+          )}
+        </section>
 
         {loading && (
-          <div className="ucl-card-dark mt-10 p-6">
+          <div className="ucl-card-dark mt-6 p-6">
             <p className="font-bold text-white/60">
               Wedstrijd, spelers en je stem worden geladen...
             </p>
@@ -294,7 +377,7 @@ export default function ManVanDeWedstrijdPage() {
         )}
 
         {!loading && players.length === 0 && (
-          <div className="ucl-card-dark mt-10 p-6">
+          <div className="ucl-card-dark mt-6 p-6">
             <p className="font-bold text-white/60">
               Er zijn momenteel geen actieve spelers.
             </p>
@@ -302,17 +385,34 @@ export default function ManVanDeWedstrijdPage() {
         )}
 
         {!loading && match && players.length > 0 && (
-          <div className="mt-10 space-y-8">
-            <VoteSummary
-              players={players as VotePlayer[]}
-              selectedPlayerIds={selectedPlayerIds}
-              onSubmit={handleSubmitVote}
-            />
+          <div className="mt-8 space-y-8">
+            {!isVotingClosed && (
+              <>
+                <VoteSummary
+                  players={players as VotePlayer[]}
+                  selectedPlayerIds={selectedPlayerIds}
+                  onSubmit={handleSubmitVote}
+                />
 
-            {submitting && (
-              <div className="rounded-2xl border border-sky-400/30 bg-sky-500/10 p-5">
-                <p className="font-bold text-sky-200">
-                  Je stem wordt opgeslagen...
+                {submitting && (
+                  <div className="rounded-2xl border border-purple-400/30 bg-purple-500/10 p-5">
+                    <p className="font-bold text-purple-100">
+                      Je stem wordt opgeslagen...
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {isVotingClosed && (
+              <div className="rounded-2xl border border-slate-400/20 bg-slate-500/10 p-5">
+                <p className="font-black text-white">
+                  🔒 De stemperiode is afgesloten
+                </p>
+
+                <p className="mt-2 font-semibold text-white/55">
+                  De spelerskeuze kan niet meer worden gewijzigd. Hieronder zie
+                  je de definitieve rangschikking.
                 </p>
               </div>
             )}
@@ -321,7 +421,7 @@ export default function ManVanDeWedstrijdPage() {
               standingsLoading && standings.length === 0 ? (
                 <div className="ucl-card-dark p-6">
                   <p className="font-bold text-white/60">
-                    De tussenstand wordt geladen...
+                    De rangschikking wordt geladen...
                   </p>
                 </div>
               ) : (
@@ -342,23 +442,49 @@ export default function ManVanDeWedstrijdPage() {
                 </p>
 
                 <p className="mt-2 font-semibold text-white/50">
-                  Breng eerst je Top 3 uit. Daarna zie je meteen
-                  de live tussenstand.
+                  Breng eerst je Top 3 uit. Daarna zie je meteen de live
+                  tussenstand.
                 </p>
               </div>
             )}
 
-            <PlayerVoteGrid
-              players={players as VotePlayer[]}
-              selectedPlayerIds={selectedPlayerIds}
-              onChange={(playerIds) => {
-                setSelectedPlayerIds(playerIds);
-                setErrorMessage("");
-                setSuccessMessage("");
-              }}
-            />
+            {!isVotingClosed && (
+              <PlayerVoteGrid
+                players={players as VotePlayer[]}
+                selectedPlayerIds={selectedPlayerIds}
+                onChange={(playerIds) => {
+                  setSelectedPlayerIds(playerIds);
+                  setErrorMessage("");
+                  setSuccessMessage("");
+                }}
+              />
+            )}
           </div>
         )}
+
+        <div className="mt-8 space-y-4">
+          <Link
+            href={
+              isVotingClosed
+                ? "/man-van-de-wedstrijd/uitslagen"
+                : "/man-van-de-wedstrijd/stemmen"
+            }
+            className="ucl-button-secondary"
+          >
+            ⬅️ Terug naar {isVotingClosed ? "uitslagen" : "stemmen"}
+          </Link>
+
+          <Link
+            href="/man-van-de-wedstrijd"
+            className="ucl-button-secondary"
+          >
+            🟣 Man van de wedstrijd
+          </Link>
+
+          <Link href="/" className="ucl-button-secondary">
+            🏠 Terug naar dashboard
+          </Link>
+        </div>
       </div>
     </main>
   );

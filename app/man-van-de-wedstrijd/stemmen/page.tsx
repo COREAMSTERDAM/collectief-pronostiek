@@ -26,7 +26,7 @@ function getVotingDeadline(kickoff: string) {
   return new Date(kickoff).getTime() + VOTING_DURATION_MS;
 }
 
-function formatKickoff(kickoff: string) {
+function formatDate(value: string | number) {
   return new Intl.DateTimeFormat("nl-BE", {
     weekday: "long",
     day: "2-digit",
@@ -34,17 +34,7 @@ function formatKickoff(kickoff: string) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(kickoff));
-}
-
-function formatDeadline(kickoff: string) {
-  return new Intl.DateTimeFormat("nl-BE", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(getVotingDeadline(kickoff)));
+  }).format(new Date(value));
 }
 
 export default function StemmenPage() {
@@ -77,7 +67,6 @@ export default function StemmenPage() {
 
       const openMatches = ((matchData ?? []) as Match[]).filter((match) => {
         const deadline = getVotingDeadline(match.kickoff);
-
         return Number.isFinite(deadline) && deadline > now;
       });
 
@@ -107,12 +96,12 @@ export default function StemmenPage() {
         );
       }
 
-      const matchesWithVoteStatus = openMatches.map((match) => ({
-        ...match,
-        hasVoted: (voteCounts.get(match.id) ?? 0) === 3,
-      }));
-
-      setMatches(matchesWithVoteStatus);
+      setMatches(
+        openMatches.map((match) => ({
+          ...match,
+          hasVoted: (voteCounts.get(match.id) ?? 0) === 3,
+        })),
+      );
     } catch (error) {
       console.error("Fout bij laden van wedstrijden:", error);
 
@@ -173,20 +162,22 @@ export default function StemmenPage() {
   return (
     <main className="ucl-page">
       <div className="ucl-container">
-        <section className="ucl-card">
+        <section className="ucl-card text-center">
+          <span className="inline-flex rounded-full border border-purple-400/30 bg-purple-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-purple-200">
+            🟣 Man van de wedstrijd
+          </span>
+
           <img
             src="/logo.png"
             alt="Logo Collectief Pronostiek"
-            className="ucl-logo"
+            className="ucl-logo mt-5"
           />
 
-          <div className="text-center">
-            <h1 className="ucl-title">Stemmen</h1>
+          <h1 className="ucl-title">Stemmen</h1>
 
-            <p className="ucl-subtitle">
-              Kies een wedstrijd en stel jouw top 3 spelers samen.
-            </p>
-          </div>
+          <p className="ucl-subtitle">
+            Kies een wedstrijd en stel jouw persoonlijke Top 3 samen.
+          </p>
         </section>
 
         <section className="mt-6 space-y-4">
@@ -219,8 +210,8 @@ export default function StemmenPage() {
               </p>
 
               <p className="ucl-subtitle mt-2">
-                Zodra er een nieuwe wedstrijd wordt toegevoegd, verschijnt die
-                hier automatisch.
+                Zodra een wedstrijd beschikbaar is, verschijnt die hier
+                automatisch.
               </p>
             </div>
           )}
@@ -232,34 +223,41 @@ export default function StemmenPage() {
                 <div className="text-center">
                   <div className="flex justify-center">
                     {match.hasVoted ? (
-                      <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-300">
+                      <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-200">
                         ✅ Gestemd
                       </span>
                     ) : (
-                      <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-sky-300">
-                        Stemming open
+                      <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-200">
+                        🟢 Stemming open
                       </span>
                     )}
                   </div>
 
-                  <h2 className="mt-4 text-xl font-black text-white">
-                    {match.home_team}
-                  </h2>
+                  <div className="mt-5 rounded-3xl border border-purple-400/15 bg-purple-500/[0.06] p-6">
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-purple-200/70">
+                      ⚽ Wedstrijd
+                    </p>
 
-                  <p className="my-1 font-bold text-white/50">
-                    tegen
-                  </p>
+                    <h2 className="mt-4 text-2xl font-black text-white">
+                      {match.home_team}
+                    </h2>
 
-                  <h2 className="text-xl font-black text-white">
-                    {match.away_team}
-                  </h2>
+                    <p className="my-2 text-sm font-black uppercase tracking-[0.25em] text-purple-300">
+                      VS
+                    </p>
 
-                  <p className="mt-4 text-sm font-semibold capitalize text-white/70">
-                    Aftrap: {formatKickoff(match.kickoff)}
+                    <h2 className="text-2xl font-black text-white">
+                      {match.away_team}
+                    </h2>
+                  </div>
+
+                  <p className="mt-5 text-sm font-semibold capitalize text-white/70">
+                    🕒 Aftrap: {formatDate(match.kickoff)}
                   </p>
 
                   <p className="mt-2 text-xs font-bold capitalize text-white/45">
-                    Stemmen mogelijk tot {formatDeadline(match.kickoff)}
+                    Stemmen mogelijk tot{" "}
+                    {formatDate(getVotingDeadline(match.kickoff))}
                   </p>
                 </div>
 
