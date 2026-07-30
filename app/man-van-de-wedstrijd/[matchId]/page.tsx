@@ -1,36 +1,85 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 
 import { supabase } from "@/src/lib/supabase";
+import {
+  buildMotmStandings,
+  getActiveMotmPlayers,
+  getMatchRankingRows,
+  getMotmMatch,
+  getUserMotmVote,
+  submitMotmVote,
+  type MotmMatch,
+  type MotmPlayer,
+  type MotmStanding,
+  type RankingRow,
+  type UserVoteRow,
+} from "@/src/lib/motm";
 
+import LiveStandings from "@/components/motm/LiveStandings";
 import PlayerVoteGrid from "@/components/motm/PlayerVoteGrid";
 import VoteSummary from "@/components/motm/VoteSummary";
 import type { VotePlayer } from "@/components/motm/PlayerVoteCard";
-
-type MatchData = {
-  home_team: string;
-  away_team: string;
-  kickoff: string;
-};
-
-type ExistingVote = {
-  player_id: number;
-  rank: number;
-};
 
 export default function ManVanDeWedstrijdPage() {
   const params = useParams();
   const matchId = Number(params.matchId);
 
-  const [match, setMatch] = useState<MatchData | null>(null);
-  const [players, setPlayers] = useState<VotePlayer[]>([]);
+  const [match, setMatch] = useState<MotmMatch | null>(null);
+  const [players, setPlayers] = useState<MotmPlayer[]>([]);
+  const [standings, setStandings] = useState<MotmStanding[]>([]);
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<number[]>([]);
+  const [hasVoted, setHasVoted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [standingsLoading, setStandingsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  const isVotingClosed = useMemo(() => {
+    if (!match) return false;
+
+    const deadline =
+      new Date(match.kickoff).getTime() + 24 * 60 * 60 * 1000;
+
+    return Date.now() >= deadline;
+  }, [match]);
+
+  const canSeeStandings = hasVoted || isVotingClosed;
+
+  const loadStandings = useCallback(
+    async (playersToUse: MotmPlayer[]) => {
+      if (!Number.isInteger(matchId) || matchId <= 0) {
+        return;
+      }
+
+      setStandingsLoading(true);
+
+      const { data, error } = await getMatchRankingRows(matchId);
+
+      if (error) {
+        console.error("Tussenstand ophalen mislukt:", error);
+
+        setErrorMessage(
+          `De tussenstand kon niet worden geladen: ${error.message}`,
+        );
+
+        setStandingsLoading(false);
+        return;
+      }
+
+      const rankingRows = (data ?? []) as RankingRow[];
+
+      setStandings(
+        buildMotmStandings(playersToUse, rankingRows),
+      );
+
+      setStandingsLoading(false);
+    },
+    [matchId],
+  );
 
   useEffect(() => {
     async function loadPageData() {
@@ -57,52 +106,24 @@ export default function ManVanDeWedstrijdPage() {
         { data: playerData, error: playerError },
         { data: existingVoteData, error: existingVoteError },
       ] = await Promise.all([
-        supabase
-          .from("matches")
-          .select("home_team, away_team, kickoff")
-          .eq("id", matchId)
-          .maybeSingle(),
-
-        supabase
-          .from("players")
-          .select("id, name, shirt_number, position, photo_url")
-          .eq("active", true)
-          .order("shirt_number", { ascending: true }),
-
-        supabase
-          .from("player_rankings")
-          .select("player_id, rank")
-          .eq("match_id", matchId)
-          .eq("user_id", userData.user.id)
-          .order("rank", { ascending: true }),
+        getMotmMatch(matchId),
+        getActiveMotmPlayers(),
+        getUserMotmVote(matchId, userData.user.id),
       ]);
 
       if (matchError || playerError || existingVoteError) {
-        console.error("Laadfouten:", {
+        const error =
+          matchError ?? playerError ?? existingVoteError;
+
+        console.error("Pagina laden mislukt:", {
           matchError,
           playerError,
           existingVoteError,
         });
 
-        const error = matchError ?? playerError ?? existingVoteError;
-        const query = matchError
-          ? "matches"
-          : playerError
-            ? "players"
-            : "player_rankings";
-
         setErrorMessage(
-          [
-            `Query: ${query}`,
-            `Code: ${error?.code || "onbekend"}`,
-            `Melding: ${error?.message || "onbekend"}`,
-            error?.details ? `Details: ${error.details}` : null,
-            error?.hint ? `Hint: ${error.hint}` : null,
-          ]
-            .filter(Boolean)
-            .join(" — "),
+          error?.message || "De pagina kon niet worden geladen.",
         );
-
         setLoading(false);
         return;
       }
@@ -113,20 +134,32 @@ export default function ManVanDeWedstrijdPage() {
         return;
       }
 
-      const existingPlayerIds = (
-        (existingVoteData ?? []) as ExistingVote[]
+      const loadedPlayers = (playerData ?? []) as MotmPlayer[];
+      const existingVote = (
+        (existingVoteData ?? []) as UserVoteRow[]
       )
         .sort((a, b) => a.rank - b.rank)
         .map((vote) => vote.player_id);
 
-      setMatch(matchData as MatchData);
-      setPlayers((playerData ?? []) as VotePlayer[]);
-      setSelectedPlayerIds(existingPlayerIds);
+      const userHasVoted = existingVote.length === 3;
+      const deadline =
+        new Date(matchData.kickoff).getTime() +
+        24 * 60 * 60 * 1000;
+      const votingClosed = Date.now() >= deadline;
+
+      setMatch(matchData as MotmMatch);
+      setPlayers(loadedPlayers);
+      setSelectedPlayerIds(existingVote);
+      setHasVoted(userHasVoted);
       setLoading(false);
+
+      if (userHasVoted || votingClosed) {
+        await loadStandings(loadedPlayers);
+      }
     }
 
     void loadPageData();
-  }, [matchId]);
+  }, [loadStandings, matchId]);
 
   async function handleSubmitVote() {
     if (submitting) {
@@ -141,47 +174,32 @@ export default function ManVanDeWedstrijdPage() {
       return;
     }
 
-    const [firstPlayerId, secondPlayerId, thirdPlayerId] =
-      selectedPlayerIds;
-
-    if (
-      firstPlayerId === secondPlayerId ||
-      firstPlayerId === thirdPlayerId ||
-      secondPlayerId === thirdPlayerId
-    ) {
+    if (new Set(selectedPlayerIds).size !== 3) {
       setErrorMessage("Kies drie verschillende spelers.");
       return;
     }
 
     setSubmitting(true);
 
-    const { error } = await supabase.rpc("submit_player_top3", {
-      p_match_id: matchId,
-      p_first_player_id: firstPlayerId,
-      p_second_player_id: secondPlayerId,
-      p_third_player_id: thirdPlayerId,
-    });
+    const { error } = await submitMotmVote(
+      matchId,
+      selectedPlayerIds,
+    );
 
     if (error) {
       console.error("Stem opslaan mislukt:", error);
-
-      setErrorMessage(
-        [
-          error.message || "Je stem kon niet worden opgeslagen.",
-          error.details || null,
-          error.hint || null,
-        ]
-          .filter(Boolean)
-          .join(" — "),
-      );
-
+      setErrorMessage(error.message);
       setSubmitting(false);
       return;
     }
 
+    setHasVoted(true);
     setSuccessMessage(
       "Je Top 3 werd succesvol opgeslagen. Je kunt je keuze tot de deadline nog wijzigen.",
     );
+
+    await loadStandings(players);
+
     setSubmitting(false);
   }
 
@@ -221,7 +239,9 @@ export default function ManVanDeWedstrijdPage() {
 
         {!loading && errorMessage && (
           <div className="mt-6 rounded-2xl border border-red-400/30 bg-red-500/10 p-5">
-            <p className="font-bold text-red-200">{errorMessage}</p>
+            <p className="font-bold text-red-200">
+              {errorMessage}
+            </p>
           </div>
         )}
 
@@ -233,15 +253,7 @@ export default function ManVanDeWedstrijdPage() {
           </div>
         )}
 
-        {!loading && submitting && (
-          <div className="mt-6 rounded-2xl border border-sky-400/30 bg-sky-500/10 p-5">
-            <p className="font-bold text-sky-200">
-              Je stem wordt opgeslagen...
-            </p>
-          </div>
-        )}
-
-        {!loading && !errorMessage && players.length === 0 && (
+        {!loading && players.length === 0 && (
           <div className="ucl-card-dark mt-10 p-6">
             <p className="font-bold text-white/60">
               Er zijn momenteel geen actieve spelers.
@@ -252,13 +264,47 @@ export default function ManVanDeWedstrijdPage() {
         {!loading && match && players.length > 0 && (
           <div className="mt-10 space-y-8">
             <VoteSummary
-              players={players}
+              players={players as VotePlayer[]}
               selectedPlayerIds={selectedPlayerIds}
               onSubmit={handleSubmitVote}
             />
 
+            {submitting && (
+              <div className="rounded-2xl border border-sky-400/30 bg-sky-500/10 p-5">
+                <p className="font-bold text-sky-200">
+                  Je stem wordt opgeslagen...
+                </p>
+              </div>
+            )}
+
+            {canSeeStandings ? (
+              standingsLoading ? (
+                <div className="ucl-card-dark p-6">
+                  <p className="font-bold text-white/60">
+                    De tussenstand wordt geladen...
+                  </p>
+                </div>
+              ) : (
+                <LiveStandings
+                  standings={standings}
+                  isFinal={isVotingClosed}
+                />
+              )
+            ) : (
+              <div className="ucl-card-dark p-6">
+                <p className="font-black text-white">
+                  De tussenstand is nog verborgen
+                </p>
+
+                <p className="mt-2 font-semibold text-white/50">
+                  Breng eerst je Top 3 uit. Daarna zie je meteen
+                  de live tussenstand.
+                </p>
+              </div>
+            )}
+
             <PlayerVoteGrid
-              players={players}
+              players={players as VotePlayer[]}
               selectedPlayerIds={selectedPlayerIds}
               onChange={(playerIds) => {
                 setSelectedPlayerIds(playerIds);
