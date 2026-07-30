@@ -1,20 +1,31 @@
-export default function PronostiekPage() {
+"use client";
+
+import { supabase } from "../src/lib/supabase";
+
+export default function Home() {
+  async function logout() {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  }
+
   return (
     <main className="ucl-page">
       <div className="ucl-container">
         <section className="ucl-card">
-          <div className="text-center">
-            <p className="text-xs font-black uppercase tracking-[0.25em] text-sky-300">
-              Collectief Wit en Zwet
-            </p>
+          <img
+            src="/logo.png"
+            alt="Logo Collectief Pronostiek"
+            className="ucl-logo"
+          />
 
-            <h1 className="ucl-title mt-2">
-              Pronostiek
+          <div className="text-center">
+            <h1 className="ucl-title">
+              Collectief Wit en Zwet
             </h1>
 
             <p className="ucl-subtitle">
-              Voorspel wedstrijden, bekijk je pronostieken en volg het
-              klassement.
+              Voorspel de wedstrijden, verzamel punten en strijd om de eerste
+              plaats.
             </p>
           </div>
         </section>
@@ -42,11 +53,26 @@ export default function PronostiekPage() {
           </a>
 
           <a
-            href="/"
+            href="/admin"
             className="ucl-button-secondary"
           >
-            ← Terug naar dashboard
+            ⚙️ Admin
           </a>
+
+          <a
+            href="/registreren"
+            className="ucl-button-secondary"
+          >
+            📝 Registreren of Inloggen
+          </a>
+
+          <button
+            type="button"
+            onClick={logout}
+            className="ucl-button-danger"
+          >
+            🚪 Uitloggen
+          </button>
         </div>
       </div>
     </main>
