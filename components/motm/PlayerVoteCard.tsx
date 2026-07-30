@@ -70,7 +70,7 @@ export default function PlayerVoteCard({
         </div>
       )}
 
-      <div className="flex items-center gap-4 pr-16">
+      <div className="flex items-center gap-5">
         {player.photo_url ? (
           <img
             src={player.photo_url}

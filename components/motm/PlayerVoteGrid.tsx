@@ -37,7 +37,7 @@ export default function PlayerVoteGrid({
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
       {players.map((player) => {
         const selectedIndex = selectedPlayerIds.indexOf(player.id);
 
