@@ -8,16 +8,21 @@ type PlayerListProps = {
   players: PlayerCardPlayer[];
   totalPlayers: number;
   changingStatusId: number | null;
+  deletingPlayerId: number | null;
+
   onEdit: (player: PlayerCardPlayer) => void;
   onToggleStatus: (player: PlayerCardPlayer) => void;
+  onDelete: (player: PlayerCardPlayer) => void;
 };
 
 export default function PlayerList({
   players,
   totalPlayers,
   changingStatusId,
+  deletingPlayerId,
   onEdit,
   onToggleStatus,
+  onDelete,
 }: PlayerListProps) {
   if (players.length === 0) {
     return (
@@ -25,7 +30,7 @@ export default function PlayerList({
         <p className="ucl-muted">
           {totalPlayers === 0
             ? "Er zijn nog geen spelers toegevoegd."
-            : "Geen spelers gevonden voor deze zoekopdracht."}
+            : "Geen spelers gevonden."}
         </p>
       </div>
     );
@@ -37,9 +42,15 @@ export default function PlayerList({
         <PlayerCard
           key={player.id}
           player={player}
-          changingStatus={changingStatusId === player.id}
+          changingStatus={
+            changingStatusId === player.id
+          }
+          deleting={
+            deletingPlayerId === player.id
+          }
           onEdit={onEdit}
           onToggleStatus={onToggleStatus}
+          onDelete={onDelete}
         />
       ))}
     </div>

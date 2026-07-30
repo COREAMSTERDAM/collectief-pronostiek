@@ -12,16 +12,22 @@ export type PlayerCardPlayer = {
 type PlayerCardProps = {
   player: PlayerCardPlayer;
   changingStatus?: boolean;
+  deleting?: boolean;
   onEdit: (player: PlayerCardPlayer) => void;
   onToggleStatus: (player: PlayerCardPlayer) => void;
+  onDelete: (player: PlayerCardPlayer) => void;
 };
 
 export default function PlayerCard({
   player,
   changingStatus = false,
+  deleting = false,
   onEdit,
   onToggleStatus,
+  onDelete,
 }: PlayerCardProps) {
+  const actionsDisabled = changingStatus || deleting;
+
   return (
     <article
       className={`rounded-2xl border p-4 transition ${
@@ -75,7 +81,8 @@ export default function PlayerCard({
           <button
             type="button"
             onClick={() => onEdit(player)}
-            className="ucl-button-secondary"
+            disabled={actionsDisabled}
+            className="ucl-button-secondary disabled:cursor-not-allowed disabled:opacity-50"
           >
             Bewerken
           </button>
@@ -83,7 +90,7 @@ export default function PlayerCard({
           <button
             type="button"
             onClick={() => onToggleStatus(player)}
-            disabled={changingStatus}
+            disabled={actionsDisabled}
             className="ucl-button-secondary disabled:cursor-not-allowed disabled:opacity-50"
           >
             {changingStatus
@@ -91,6 +98,15 @@ export default function PlayerCard({
               : player.active
                 ? "Inactief zetten"
                 : "Actief zetten"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onDelete(player)}
+            disabled={actionsDisabled}
+            className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 font-black text-rose-200 transition hover:border-rose-300/50 hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {deleting ? "Verwijderen..." : "Verwijderen"}
           </button>
         </div>
       </div>

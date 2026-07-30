@@ -12,6 +12,7 @@ import PlayerForm, {
   PlayerFormValues,
 } from "../../../components/players/PlayerForm";
 import PlayerList from "../../../components/players/PlayerList";
+import DeletePlayerModal from "../../../components/players/DeletePlayerModal";
 import type { PlayerCardPlayer } from "../../../components/players/PlayerCard";
 
 import { supabase } from "../../../src/lib/supabase";
@@ -51,6 +52,14 @@ export default function SpelersbeheerPage() {
   const [saving, setSaving] = useState(false);
 
   const [changingStatusId, setChangingStatusId] = useState<
+    number | null
+  >(null);
+
+  const [playerToDelete, setPlayerToDelete] = useState<
+    PlayerCardPlayer | null
+  >(null);
+
+  const [deletingPlayerId, setDeletingPlayerId] = useState<
     number | null
   >(null);
 
@@ -407,6 +416,88 @@ export default function SpelersbeheerPage() {
     }
   }
 
+  async function deletePlayer() {
+    if (!playerToDelete || deletingPlayerId !== null) {
+      return;
+    }
+
+    const player = playerToDelete;
+
+    setDeletingPlayerId(player.id);
+    setMessage("");
+    setErrorMessage("");
+
+    try {
+      const { error } = await supabase.rpc(
+        "admin_delete_player",
+        {
+          p_player_id: player.id,
+        }
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      /*
+       * Verwijder de foto pas nadat de speler succesvol uit
+       * de database is verwijderd. Zo blijft de database niet
+       * achter met een kapotte foto-URL wanneer de RPC faalt.
+       */
+      let photoCleanupFailed = false;
+
+      if (player.photo_url) {
+        const photoPath = getPlayerPhotoPath(player.photo_url);
+
+        if (photoPath) {
+          try {
+            await deletePlayerPhoto(photoPath);
+          } catch (cleanupError) {
+            photoCleanupFailed = true;
+            console.error(
+              "De spelersfoto kon niet worden verwijderd:",
+              cleanupError
+            );
+          }
+        }
+      }
+
+      setPlayers((currentPlayers) =>
+        currentPlayers.filter(
+          (currentPlayer) => currentPlayer.id !== player.id
+        )
+      );
+
+      if (editingPlayerId === player.id) {
+        resetForm();
+      }
+
+      setPlayerToDelete(null);
+      setMessage(
+        photoCleanupFailed
+          ? `⚠️ ${player.name} werd verwijderd, maar de foto kon niet uit Storage worden opgeruimd.`
+          : `✅ ${player.name} werd volledig verwijderd.`
+      );
+    } catch (error: unknown) {
+      console.error("Fout bij verwijderen speler:", error);
+
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error &&
+        typeof error.message === "string"
+      ) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage(
+          "De speler kon niet worden verwijderd."
+        );
+      }
+    } finally {
+      setDeletingPlayerId(null);
+    }
+  }
+
   if (loading) {
     return (
       <main className="ucl-page">
@@ -548,11 +639,24 @@ export default function SpelersbeheerPage() {
             players={filteredPlayers}
             totalPlayers={players.length}
             changingStatusId={changingStatusId}
+            deletingPlayerId={deletingPlayerId}
             onEdit={openEditForm}
             onToggleStatus={togglePlayerStatus}
+            onDelete={setPlayerToDelete}
           />
         </section>
       </div>
+
+      <DeletePlayerModal
+        player={playerToDelete}
+        loading={deletingPlayerId !== null}
+        onCancel={() => {
+          if (deletingPlayerId === null) {
+            setPlayerToDelete(null);
+          }
+        }}
+        onConfirm={deletePlayer}
+      />
     </main>
   );
 }
