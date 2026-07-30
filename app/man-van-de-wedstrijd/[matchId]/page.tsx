@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/src/lib/supabase/client";
 
 import PlayerVoteGrid from "@/components/motm/PlayerVoteGrid";
 import VoteSummary from "@/components/motm/VoteSummary";
