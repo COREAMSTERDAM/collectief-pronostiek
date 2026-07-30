@@ -187,6 +187,15 @@ if (!userData.user) {
           <p className="ucl-subtitle">
             Bekijk wie momenteel aan kop staat.
           </p>
+
+          <div className="mt-5">
+            <a
+              href="/"
+              className="ucl-button-secondary"
+            >
+              ← Terug naar dashboard
+            </a>
+          </div>
         </div>
 
         <section className="ucl-card mb-8">
@@ -444,12 +453,6 @@ if (!userData.user) {
           )}
         </section>
 
-        <a
-          href="/"
-          className="ucl-button-secondary mt-6"
-        >
-          Terug naar dashboard
-        </a>
       </div>
     </main>
   );
