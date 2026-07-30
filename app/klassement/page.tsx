@@ -31,14 +31,13 @@ export default function KlassementPage() {
     async function loadRanking() {
       setLoading(true);
 
-      const { data: userData, error: userError } =
-        await supabase.auth.getUser();
+const { data: userData } =
+  await supabase.auth.getUser();
 
-      if (userError) {
-        alert(userError.message);
-        setLoading(false);
-        return;
-      }
+if (!userData.user) {
+  window.location.href = "/login?reason=login-required";
+  return;
+}
 
       setCurrentUserId(userData.user?.id ?? null);
 

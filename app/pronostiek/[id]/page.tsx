@@ -37,14 +37,13 @@ export default function PronostiekPage() {
         return;
       }
 
-      const { data: userData, error: userError } =
-        await supabase.auth.getUser();
+const { data: userData } =
+  await supabase.auth.getUser();
 
-      if (userError) {
-        alert(userError.message);
-        setLoading(false);
-        return;
-      }
+if (!userData.user) {
+  window.location.href = "/login?reason=login-required";
+  return;
+}
 
       if (!userData.user) {
         window.location.href = "/login";
@@ -130,14 +129,13 @@ export default function PronostiekPage() {
 
     setSaving(true);
 
-    const { data: userData, error: userError } =
-      await supabase.auth.getUser();
+const { data: userData } =
+  await supabase.auth.getUser();
 
-    if (userError) {
-      alert(userError.message);
-      setSaving(false);
-      return;
-    }
+if (!userData.user) {
+  window.location.href = "/login?reason=login-required";
+  return;
+}
 
     if (!userData.user) {
       alert("Je moet ingelogd zijn.");
