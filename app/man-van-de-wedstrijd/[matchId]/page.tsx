@@ -53,21 +53,19 @@ export default function ManVanDeWedstrijdPage() {
           Kies jouw Top 3
         </p>
 
-        <div className="mt-10 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="mt-10 space-y-8">
+  <VoteSummary
+    players={players}
+    selectedPlayerIds={selectedPlayerIds}
+    onSubmit={() => alert("Nog te bouwen")}
+  />
 
-          <PlayerVoteGrid
-            players={players}
-            selectedPlayerIds={selectedPlayerIds}
-            onChange={setSelectedPlayerIds}
-          />
-
-          <VoteSummary
-            players={players}
-            selectedPlayerIds={selectedPlayerIds}
-            onSubmit={() => alert("Nog te bouwen")}
-          />
-
-        </div>
+  <PlayerVoteGrid
+    players={players}
+    selectedPlayerIds={selectedPlayerIds}
+    onChange={setSelectedPlayerIds}
+  />
+</div>
 
       </div>
     </main>
