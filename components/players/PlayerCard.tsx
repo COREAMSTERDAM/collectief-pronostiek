@@ -120,7 +120,7 @@ export default function PlayerCard({
           disabled={disabled}
           className="w-full rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 font-black text-rose-200 transition hover:border-rose-300/60 hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {deleting ? "Verwijderen..." : "Verwijderen"}
+          {deleting ? "Verwijderen..." : "Verwijder"}
         </button>
       </div>
     </article>
