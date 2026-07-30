@@ -54,7 +54,7 @@ export default function SeasonStandings({
     <section className="ucl-card-dark overflow-hidden">
       <div className="border-b border-white/10 px-5 py-6 md:px-7">
         <p className="text-xs font-black uppercase tracking-[0.25em] text-sky-300">
-          Algemeen klassement
+          Algemeen klassement - Top 10
         </p>
 
         <h2 className="mt-2 text-2xl font-black text-white md:text-3xl">

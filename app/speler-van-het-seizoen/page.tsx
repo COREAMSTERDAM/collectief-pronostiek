@@ -195,7 +195,7 @@ export default function SpelerVanHetSeizoenPage() {
 
         {!loading && !errorMessage && (
           <div className="mt-8">
-            <SeasonStandings standings={standings} />
+            <SeasonStandings standings={standings.slice(0, 10)} />
           </div>
         )}
       </div>
