@@ -279,7 +279,7 @@ export default function StemmenPage() {
 
         <div className="mt-6 space-y-4">
           <Link
-            href="/man-van-de-wedstrijd"
+            href="/motmpagina"
             className="ucl-button-secondary"
           >
             ⬅️ Terug naar Man van de wedstrijd
