@@ -53,7 +53,7 @@ export default function Home() {
   </a>
 
   <a
-    href="/admin"
+    href="/admin-keuze"
     className="ucl-button-secondary"
   >
     ⚙️ Admin
