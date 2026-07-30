@@ -52,17 +52,15 @@ export default function PlayerVoteCard({
       type="button"
       onClick={() => onSelect(player)}
       disabled={disabled}
-      className={`relative w-full rounded-3xl border p-5 text-left transition ${
+      className={`relative w-full overflow-hidden rounded-3xl border p-6 text-left transition-all duration-200 ${
         selectedDetails
           ? selectedDetails.classes
-          : "border-white/10 bg-white/[0.04] hover:border-sky-300/40 hover:bg-white/[0.07]"
+          : "border-white/10 bg-white/[0.04] hover:-translate-y-0.5 hover:border-sky-300/40 hover:bg-white/[0.07]"
       } disabled:cursor-not-allowed disabled:opacity-50`}
     >
       {selectedDetails && (
-        <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/80 px-3 py-1.5">
-          <span className="text-xl">
-            {selectedDetails.medal}
-          </span>
+        <div className="absolute right-5 top-5 flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/80 px-3 py-1.5">
+          <span className="text-xl">{selectedDetails.medal}</span>
 
           <span className="text-xs font-black uppercase tracking-wide text-white">
             #{rank}
@@ -70,25 +68,25 @@ export default function PlayerVoteCard({
         </div>
       )}
 
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-6 pr-20">
         {player.photo_url ? (
           <img
             src={player.photo_url}
             alt={player.name}
-            className="h-20 w-20 shrink-0 rounded-full border-2 border-sky-400/70 object-cover"
+            className="h-24 w-24 shrink-0 rounded-full border-2 border-sky-400/70 object-cover"
           />
         ) : (
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-sky-400/70 bg-sky-400/10 text-2xl">
+          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-2 border-sky-400/70 bg-sky-400/10 text-3xl">
             ⚽
           </div>
         )}
 
-        <div className="min-w-0">
-          <h3 className="truncate text-xl font-black text-white">
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-2xl font-black text-white">
             {player.name}
           </h3>
 
-          <p className="mt-2 text-sm font-bold text-white/60">
+          <p className="mt-2 text-base font-semibold text-white/60">
             {player.shirt_number !== null
               ? `Nr. ${player.shirt_number}`
               : "Geen rugnummer"}
@@ -98,23 +96,35 @@ export default function PlayerVoteCard({
         </div>
       </div>
 
-      {selectedDetails ? (
-        <div className="mt-5 border-t border-white/10 pt-4">
-          <p className="font-black text-white">
-            {selectedDetails.medal} {selectedDetails.label}
-          </p>
+      <div className="mt-6 border-t border-white/10 pt-4">
+        {selectedDetails ? (
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="font-black text-white">
+                {selectedDetails.medal} {selectedDetails.label}
+              </p>
 
-          <p className="mt-1 text-sm font-bold text-white/55">
-            {selectedDetails.points}
-          </p>
-        </div>
-      ) : (
-        <div className="mt-5 border-t border-white/10 pt-4">
-          <p className="text-sm font-bold text-sky-200">
-            Klik om deze speler te selecteren
-          </p>
-        </div>
-      )}
+              <p className="mt-1 text-sm font-bold text-white/55">
+                {selectedDetails.points}
+              </p>
+            </div>
+
+            <span className="shrink-0 rounded-full bg-emerald-500/20 px-4 py-2 text-sm font-bold text-emerald-300">
+              Geselecteerd
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-4">
+            <span className="font-semibold text-sky-200">
+              Klik om te selecteren
+            </span>
+
+            <span className="shrink-0 rounded-full border border-sky-400/30 bg-sky-400/5 px-4 py-2 text-sm font-bold text-sky-300">
+              Selecteer
+            </span>
+          </div>
+        )}
+      </div>
     </button>
   );
 }
