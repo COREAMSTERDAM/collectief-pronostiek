@@ -86,7 +86,7 @@ export default function ManVanDeWedstrijdPage() {
   return (
     <main className="ucl-page">
       <div className="ucl-container">
-        <h1 className="ucl-title">Man van de Wedstrijd</h1>
+        <h1 className="ucl-title">Man van de Wedstrijd 123</h1>
 
         {match && (
           <div className="mt-4">
