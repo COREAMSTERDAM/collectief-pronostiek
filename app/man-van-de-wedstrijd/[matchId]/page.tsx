@@ -61,19 +61,18 @@ export default function ManVanDeWedstrijdPage() {
 
       if (error) {
         console.error("Tussenstand ophalen mislukt:", error);
-
         setErrorMessage(
           `De tussenstand kon niet worden geladen: ${error.message}`,
         );
-
         setStandingsLoading(false);
         return;
       }
 
-      const rankingRows = (data ?? []) as RankingRow[];
-
       setStandings(
-        buildMotmStandings(playersToUse, rankingRows),
+        buildMotmStandings(
+          playersToUse,
+          (data ?? []) as RankingRow[],
+        ),
       );
 
       setStandingsLoading(false);
@@ -161,6 +160,42 @@ export default function ManVanDeWedstrijdPage() {
     void loadPageData();
   }, [loadStandings, matchId]);
 
+  useEffect(() => {
+    if (!canSeeStandings || players.length === 0) {
+      return;
+    }
+
+    const channel = supabase
+      .channel(`motm-ranking-${matchId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "player_rankings",
+          filter: `match_id=eq.${matchId}`,
+        },
+        () => {
+          void loadStandings(players);
+        },
+      )
+      .subscribe();
+
+    const fallbackInterval = window.setInterval(() => {
+      void loadStandings(players);
+    }, 30000);
+
+    return () => {
+      window.clearInterval(fallbackInterval);
+      void supabase.removeChannel(channel);
+    };
+  }, [
+    canSeeStandings,
+    loadStandings,
+    matchId,
+    players,
+  ]);
+
   async function handleSubmitVote() {
     if (submitting) {
       return;
@@ -195,7 +230,7 @@ export default function ManVanDeWedstrijdPage() {
 
     setHasVoted(true);
     setSuccessMessage(
-      "Je Top 3 werd succesvol opgeslagen. Je kunt je keuze tot de deadline nog wijzigen.",
+      "Je Top 3 werd succesvol opgeslagen. De live tussenstand is bijgewerkt.",
     );
 
     await loadStandings(players);
@@ -278,7 +313,7 @@ export default function ManVanDeWedstrijdPage() {
             )}
 
             {canSeeStandings ? (
-              standingsLoading ? (
+              standingsLoading && standings.length === 0 ? (
                 <div className="ucl-card-dark p-6">
                   <p className="font-bold text-white/60">
                     De tussenstand wordt geladen...
@@ -287,7 +322,12 @@ export default function ManVanDeWedstrijdPage() {
               ) : (
                 <LiveStandings
                   standings={standings}
+                  selectedPlayerIds={selectedPlayerIds}
                   isFinal={isVotingClosed}
+                  isRefreshing={standingsLoading}
+                  onRefresh={() => {
+                    void loadStandings(players);
+                  }}
                 />
               )
             ) : (
