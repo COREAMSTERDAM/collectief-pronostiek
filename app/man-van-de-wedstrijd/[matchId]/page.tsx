@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
-import { createClient } from "@/src/lib/supabase/client";
+import { supabase } from "@/src/lib/supabase";
 
 import PlayerVoteGrid from "@/components/motm/PlayerVoteGrid";
 import VoteSummary from "@/components/motm/VoteSummary";
 import type { VotePlayer } from "@/components/motm/PlayerVoteCard";
 
-const supabase = createClient();
 
 type MatchData = {
   home_team: string;
