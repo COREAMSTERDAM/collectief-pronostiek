@@ -31,6 +31,13 @@ export default function ManVanDeWedstrijdPage() {
     async function loadPageData() {
       setLoading(true);
       setErrorMessage("");
+      const { data: userData, error: userError } =
+  await supabase.auth.getUser();
+
+if (userError || !userData.user) {
+  window.location.href = "/login?reason=login-required";
+  return;
+}
 
       if (!Number.isInteger(matchId) || matchId <= 0) {
         setErrorMessage("Ongeldige wedstrijd.");
@@ -46,7 +53,7 @@ export default function ManVanDeWedstrijdPage() {
           .from("matches")
           .select("home_team, away_team, kickoff")
           .eq("id", matchId)
-          .single(),
+.maybeSingle(),
         supabase
           .from("players")
           .select("id, name, shirt_number, position, photo_url")
