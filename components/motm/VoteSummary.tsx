@@ -44,43 +44,39 @@ export default function VoteSummary({
     selectedPlayers.every((player) => player !== undefined);
 
   return (
-    <section className="ucl-card-dark sticky top-6 p-6">
-      <p className="text-xs font-black uppercase tracking-[0.24em] text-sky-300">
-        Jouw selectie
-      </p>
-
-      <h2 className="mt-2 text-2xl font-black text-white">
-        Top 3 spelers
+    <aside className="ucl-card-dark h-fit p-6 lg:sticky lg:top-6">
+      <h2 className="text-2xl font-black text-white">
+        Jouw Top 3
       </h2>
 
-      <div className="mt-6 space-y-3">
+      <div className="mt-5 space-y-3">
         {rankDetails.map((rank, index) => {
           const player = selectedPlayers[index];
 
           return (
             <div
               key={rank.label}
-              className="flex min-h-20 items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4"
+              className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4"
             >
-              <span className="text-2xl">{rank.medal}</span>
+              <span className="shrink-0 text-2xl">
+                {rank.medal}
+              </span>
 
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-black uppercase tracking-wide text-white/45">
                   {rank.label}
                 </p>
 
-                {player ? (
-                  <p className="mt-1 truncate font-black text-white">
-                    {player.name}
-                  </p>
-                ) : (
-                  <p className="mt-1 font-bold text-white/35">
-                    Nog niet gekozen
-                  </p>
-                )}
+                <p
+                  className={`mt-1 truncate font-black ${
+                    player ? "text-white" : "text-white/35"
+                  }`}
+                >
+                  {player?.name ?? "Nog niet gekozen"}
+                </p>
               </div>
 
-              <span className="text-xs font-black text-white/45">
+              <span className="shrink-0 text-xs font-black text-white/40">
                 {rank.points}
               </span>
             </div>
@@ -91,21 +87,17 @@ export default function VoteSummary({
       <button
         type="button"
         onClick={onSubmit}
-        disabled={
-          disabled ||
-          submitting ||
-          !selectionComplete
-        }
-        className="ucl-button-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={disabled || submitting || !selectionComplete}
+        className="ucl-button-primary mt-5 w-full disabled:cursor-not-allowed disabled:opacity-50"
       >
         {submitting ? "Stem wordt opgeslagen..." : "Stem opslaan"}
       </button>
 
       {!selectionComplete && (
-        <p className="mt-3 text-center text-sm font-bold text-white/45">
-          Kies eerst drie verschillende spelers.
+        <p className="mt-3 text-center text-sm font-bold text-white/40">
+          Kies drie verschillende spelers.
         </p>
       )}
-    </section>
+    </aside>
   );
 }
