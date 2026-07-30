@@ -58,10 +58,6 @@ export default function LiveStandings({
           <h2 className="mt-2 text-2xl font-black text-white">
             Man van de Wedstrijd
           </h2>
-
-          <p className="mt-2 text-sm font-semibold text-white/50">
-            1e plaats = 10 punten · 2e plaats = 5 punten · 3e plaats = 3 punten
-          </p>
         </div>
 
         {onRefresh && (
@@ -71,7 +67,7 @@ export default function LiveStandings({
             disabled={isRefreshing}
             className="ucl-button-secondary shrink-0 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isRefreshing ? "Vernieuwen..." : "Stand vernieuwen"}
+            {isRefreshing ? "Vernieuwen..." : "Refreshen"}
           </button>
         )}
       </div>
