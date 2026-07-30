@@ -28,12 +28,15 @@ export default function ManVanDeWedstrijdPage() {
   const [players, setPlayers] = useState<VotePlayer[]>([]);
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     async function loadPageData() {
       setLoading(true);
       setErrorMessage("");
+      setSuccessMessage("");
 
       const { data: userData, error: userError } =
         await supabase.auth.getUser();
@@ -125,6 +128,63 @@ export default function ManVanDeWedstrijdPage() {
     void loadPageData();
   }, [matchId]);
 
+  async function handleSubmitVote() {
+    if (submitting) {
+      return;
+    }
+
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    if (selectedPlayerIds.length !== 3) {
+      setErrorMessage("Kies precies drie verschillende spelers.");
+      return;
+    }
+
+    const [firstPlayerId, secondPlayerId, thirdPlayerId] =
+      selectedPlayerIds;
+
+    if (
+      firstPlayerId === secondPlayerId ||
+      firstPlayerId === thirdPlayerId ||
+      secondPlayerId === thirdPlayerId
+    ) {
+      setErrorMessage("Kies drie verschillende spelers.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    const { error } = await supabase.rpc("submit_player_top3", {
+      p_match_id: matchId,
+      p_first_player_id: firstPlayerId,
+      p_second_player_id: secondPlayerId,
+      p_third_player_id: thirdPlayerId,
+    });
+
+    if (error) {
+      console.error("Stem opslaan mislukt:", error);
+
+      setErrorMessage(
+        [
+          error.message || "Je stem kon niet worden opgeslagen.",
+          error.details || null,
+          error.hint || null,
+        ]
+          .filter(Boolean)
+          .join(" — "),
+      );
+
+      setSubmitting(false);
+      return;
+    }
+
+    setSuccessMessage(
+      "Je Top 3 werd succesvol opgeslagen. Je kunt je keuze tot de deadline nog wijzigen.",
+    );
+    setSubmitting(false);
+  }
+
   const formattedKickoff = match
     ? new Intl.DateTimeFormat("nl-BE", {
         dateStyle: "long",
@@ -160,8 +220,24 @@ export default function ManVanDeWedstrijdPage() {
         )}
 
         {!loading && errorMessage && (
-          <div className="mt-10 rounded-2xl border border-red-400/30 bg-red-500/10 p-5">
+          <div className="mt-6 rounded-2xl border border-red-400/30 bg-red-500/10 p-5">
             <p className="font-bold text-red-200">{errorMessage}</p>
+          </div>
+        )}
+
+        {!loading && successMessage && (
+          <div className="mt-6 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-5">
+            <p className="font-bold text-emerald-200">
+              {successMessage}
+            </p>
+          </div>
+        )}
+
+        {!loading && submitting && (
+          <div className="mt-6 rounded-2xl border border-sky-400/30 bg-sky-500/10 p-5">
+            <p className="font-bold text-sky-200">
+              Je stem wordt opgeslagen...
+            </p>
           </div>
         )}
 
@@ -173,18 +249,22 @@ export default function ManVanDeWedstrijdPage() {
           </div>
         )}
 
-        {!loading && !errorMessage && match && players.length > 0 && (
+        {!loading && match && players.length > 0 && (
           <div className="mt-10 space-y-8">
             <VoteSummary
               players={players}
               selectedPlayerIds={selectedPlayerIds}
-              onSubmit={() => alert("Nog te bouwen")}
+              onSubmit={handleSubmitVote}
             />
 
             <PlayerVoteGrid
               players={players}
               selectedPlayerIds={selectedPlayerIds}
-              onChange={setSelectedPlayerIds}
+              onChange={(playerIds) => {
+                setSelectedPlayerIds(playerIds);
+                setErrorMessage("");
+                setSuccessMessage("");
+              }}
             />
           </div>
         )}
