@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
-import { supabase } from "@/src/lib/supabase";
+import { createClient } from "@/src/lib/supabase/client";
 
 import PlayerVoteGrid from "@/components/motm/PlayerVoteGrid";
 import VoteSummary from "@/components/motm/VoteSummary";
 import type { VotePlayer } from "@/components/motm/PlayerVoteCard";
 
+const supabase = createClient();
 
 type MatchData = {
   home_team: string;
@@ -30,13 +31,6 @@ export default function ManVanDeWedstrijdPage() {
     async function loadPageData() {
       setLoading(true);
       setErrorMessage("");
-      const { data: userData, error: userError } =
-  await supabase.auth.getUser();
-
-if (userError || !userData.user) {
-  window.location.href = "/login?reason=login-required";
-  return;
-}
 
       if (!Number.isInteger(matchId) || matchId <= 0) {
         setErrorMessage("Ongeldige wedstrijd.");
@@ -52,7 +46,7 @@ if (userError || !userData.user) {
           .from("matches")
           .select("home_team, away_team, kickoff")
           .eq("id", matchId)
-.maybeSingle(),
+          .single(),
         supabase
           .from("players")
           .select("id, name, shirt_number, position, photo_url")
@@ -61,22 +55,11 @@ if (userError || !userData.user) {
       ]);
 
       if (matchError) {
-  console.error("Wedstrijd ophalen mislukt:", matchError);
-
-  setErrorMessage(
-    [
-      `Code: ${matchError.code || "onbekend"}`,
-      `Melding: ${matchError.message || "onbekend"}`,
-      matchError.details ? `Details: ${matchError.details}` : null,
-      matchError.hint ? `Hint: ${matchError.hint}` : null,
-    ]
-      .filter(Boolean)
-      .join(" — "),
-  );
-
-  setLoading(false);
-  return;
-}
+        console.error("Wedstrijd ophalen mislukt:", matchError);
+        setErrorMessage("De wedstrijd kon niet worden geladen.");
+        setLoading(false);
+        return;
+      }
 
       if (playerError) {
         console.error("Spelers ophalen mislukt:", playerError);
@@ -103,7 +86,7 @@ if (userError || !userData.user) {
   return (
     <main className="ucl-page">
       <div className="ucl-container">
-        <h1 className="ucl-title">Man van de Wedstrijd 123</h1>
+        <h1 className="ucl-title">Man van de Wedstrijd</h1>
 
         {match && (
           <div className="mt-4">
