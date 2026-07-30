@@ -55,11 +55,22 @@ export default function ManVanDeWedstrijdPage() {
       ]);
 
       if (matchError) {
-        console.error("Wedstrijd ophalen mislukt:", matchError);
-        setErrorMessage("De wedstrijd kon niet worden geladen.");
-        setLoading(false);
-        return;
-      }
+  console.error("Wedstrijd ophalen mislukt:", matchError);
+
+  setErrorMessage(
+    [
+      `Code: ${matchError.code || "onbekend"}`,
+      `Melding: ${matchError.message || "onbekend"}`,
+      matchError.details ? `Details: ${matchError.details}` : null,
+      matchError.hint ? `Hint: ${matchError.hint}` : null,
+    ]
+      .filter(Boolean)
+      .join(" — "),
+  );
+
+  setLoading(false);
+  return;
+}
 
       if (playerError) {
         console.error("Spelers ophalen mislukt:", playerError);
