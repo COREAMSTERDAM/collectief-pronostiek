@@ -26,51 +26,48 @@ export default function PlayerCard({
   onToggleStatus,
   onDelete,
 }: PlayerCardProps) {
-  const actionsDisabled = changingStatus || deleting;
+  const disabled = changingStatus || deleting;
 
   return (
     <article
-      className={`overflow-hidden rounded-3xl border p-5 transition sm:p-6 ${
+      className={`rounded-3xl border p-5 transition sm:p-6 ${
         player.active
-          ? "border-sky-300/15 bg-white/[0.045] hover:border-sky-300/30 hover:bg-white/[0.065]"
+          ? "border-sky-300/15 bg-white/[0.045]"
           : "border-white/5 bg-black/20 opacity-70"
       }`}
     >
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-        <div className="shrink-0">
-          {player.photo_url ? (
-            <img
-              src={player.photo_url}
-              alt={player.name}
-              className="h-24 w-24 rounded-full border-2 border-sky-400/70 object-cover shadow-lg shadow-sky-950/40 sm:h-28 sm:w-28"
-            />
-          ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-sky-400/70 bg-sky-400/10 text-3xl font-black text-white shadow-lg shadow-sky-950/40 sm:h-28 sm:w-28">
-              {player.shirt_number ?? "⚽"}
-            </div>
-          )}
-        </div>
+      {/* Spelersinformatie: volledig boven de knoppen */}
+      <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
+        {player.photo_url ? (
+          <img
+            src={player.photo_url}
+            alt={player.name}
+            className="h-24 w-24 shrink-0 rounded-full border-2 border-sky-400/80 object-cover shadow-lg shadow-sky-950/40 sm:h-28 sm:w-28"
+          />
+        ) : (
+          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-2 border-sky-400/80 bg-sky-400/10 text-3xl sm:h-28 sm:w-28">
+            ⚽
+          </div>
+        )}
 
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate text-2xl font-black text-white">
+        <div className="min-w-0 text-center sm:text-left">
+          <h3 className="truncate text-2xl font-black text-white sm:text-3xl">
             {player.name}
           </h3>
 
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-3 text-sm sm:text-base">
-            <span className="font-bold text-white/70">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-sm font-bold text-white/70 sm:justify-start sm:text-base">
+            <span>
               👕{" "}
               {player.shirt_number !== null
                 ? `Nr. ${player.shirt_number}`
                 : "Geen rugnummer"}
             </span>
 
-            <span className="hidden h-6 w-px bg-white/10 sm:block" />
+            <span className="text-white/20">•</span>
 
-            <span className="font-bold text-white/70">
-              ⚽ {player.position ?? "Geen positie"}
-            </span>
+            <span>⚽ {player.position ?? "Geen positie"}</span>
 
-            <span className="hidden h-6 w-px bg-white/10 sm:block" />
+            <span className="text-white/20">•</span>
 
             <span
               className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-wide ${
@@ -87,42 +84,44 @@ export default function PlayerCard({
               {player.active ? "Actief" : "Inactief"}
             </span>
           </div>
-
-          <div className="my-5 h-px bg-white/10" />
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <button
-              type="button"
-              onClick={() => onEdit(player)}
-              disabled={actionsDisabled}
-              className="ucl-button-secondary w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Bewerken
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onToggleStatus(player)}
-              disabled={actionsDisabled}
-              className="ucl-button-secondary w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {changingStatus
-                ? "Bezig..."
-                : player.active
-                  ? "Inactief zetten"
-                  : "Actief zetten"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onDelete(player)}
-              disabled={actionsDisabled}
-              className="w-full rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 font-black text-rose-200 transition hover:border-rose-300/60 hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {deleting ? "Verwijderen..." : "Verwijderen"}
-            </button>
-          </div>
         </div>
+      </div>
+
+      {/* Scheidingslijn over de volledige kaart */}
+      <div className="my-5 h-px w-full bg-white/10" />
+
+      {/* Knoppen altijd onder alle spelersinformatie */}
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
+        <button
+          type="button"
+          onClick={() => onEdit(player)}
+          disabled={disabled}
+          className="ucl-button-secondary w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Bewerken
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onToggleStatus(player)}
+          disabled={disabled}
+          className="ucl-button-secondary w-full justify-center disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {changingStatus
+            ? "Bezig..."
+            : player.active
+              ? "Inactief zetten"
+              : "Actief zetten"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onDelete(player)}
+          disabled={disabled}
+          className="w-full rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 font-black text-rose-200 transition hover:border-rose-300/60 hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {deleting ? "Verwijderen..." : "Verwijderen"}
+        </button>
       </div>
     </article>
   );
