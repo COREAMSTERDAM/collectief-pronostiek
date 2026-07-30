@@ -12,6 +12,12 @@ type Match = {
   status: string | null;
 };
 
+const VOTING_DURATION_MS = 24 * 60 * 60 * 1000;
+
+function getVotingDeadline(kickoff: string) {
+  return new Date(kickoff).getTime() + VOTING_DURATION_MS;
+}
+
 function formatKickoff(kickoff: string) {
   return new Intl.DateTimeFormat("nl-BE", {
     weekday: "long",
@@ -23,6 +29,17 @@ function formatKickoff(kickoff: string) {
   }).format(new Date(kickoff));
 }
 
+function formatDeadline(kickoff: string) {
+  return new Intl.DateTimeFormat("nl-BE", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(getVotingDeadline(kickoff)));
+}
+
 export default function UitslagenPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,24 +49,31 @@ export default function UitslagenPage() {
     try {
       setErrorMessage("");
 
-      const now = new Date().toISOString();
-
       const { data, error } = await supabase
         .from("matches")
         .select("id, home_team, away_team, kickoff, status")
-        .lte("kickoff", now)
         .order("kickoff", { ascending: false });
 
       if (error) {
         throw error;
       }
 
-      setMatches(data ?? []);
+      const now = Date.now();
+
+      const finishedMatches = ((data ?? []) as Match[]).filter((match) => {
+        const deadline = getVotingDeadline(match.kickoff);
+
+        return Number.isFinite(deadline) && deadline <= now;
+      });
+
+      setMatches(finishedMatches);
     } catch (error) {
       console.error("Fout bij laden van uitslagen:", error);
 
       setErrorMessage(
-        "De wedstrijden konden niet worden geladen. Probeer het later opnieuw.",
+        error instanceof Error
+          ? error.message
+          : "De wedstrijden konden niet worden geladen. Probeer het later opnieuw.",
       );
     } finally {
       setLoading(false);
@@ -59,7 +83,7 @@ export default function UitslagenPage() {
   useEffect(() => {
     void loadMatches();
 
-    const channel = supabase
+    const matchesChannel = supabase
       .channel("motm-finished-matches")
       .on(
         "postgres_changes",
@@ -74,13 +98,29 @@ export default function UitslagenPage() {
       )
       .subscribe();
 
+    const rankingsChannel = supabase
+      .channel("motm-finished-rankings")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "player_rankings",
+        },
+        () => {
+          void loadMatches();
+        },
+      )
+      .subscribe();
+
     const refreshInterval = window.setInterval(() => {
       void loadMatches();
     }, 60_000);
 
     return () => {
       window.clearInterval(refreshInterval);
-      void supabase.removeChannel(channel);
+      void supabase.removeChannel(matchesChannel);
+      void supabase.removeChannel(rankingsChannel);
     };
   }, [loadMatches]);
 
@@ -98,7 +138,8 @@ export default function UitslagenPage() {
             <h1 className="ucl-title">Uitslagen</h1>
 
             <p className="ucl-subtitle">
-              Bekijk de stemming en rangschikking van afgelopen wedstrijden.
+              Bekijk de definitieve stemming van wedstrijden waarvan de
+              stemperiode is afgelopen.
             </p>
           </div>
         </section>
@@ -112,7 +153,9 @@ export default function UitslagenPage() {
 
           {!loading && errorMessage && (
             <div className="ucl-card text-center">
-              <p className="font-semibold text-red-300">{errorMessage}</p>
+              <p className="font-semibold text-red-300">
+                {errorMessage}
+              </p>
 
               <button
                 type="button"
@@ -131,7 +174,8 @@ export default function UitslagenPage() {
               </p>
 
               <p className="ucl-subtitle mt-2">
-                Na de aftrap verschijnt een wedstrijd hier automatisch.
+                Een wedstrijd verschijnt hier automatisch zodra de stemperiode
+                van 24 uur na de aftrap is afgelopen.
               </p>
             </div>
           )}
@@ -141,22 +185,28 @@ export default function UitslagenPage() {
             matches.map((match) => (
               <article key={match.id} className="ucl-card">
                 <div className="text-center">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">
-                    Stemming afgelopen
-                  </p>
+                  <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-300">
+                    ✅ Stemming afgelopen
+                  </span>
 
-                  <h2 className="mt-3 text-xl font-black text-white">
+                  <h2 className="mt-4 text-xl font-black text-white">
                     {match.home_team}
                   </h2>
 
-                  <p className="my-1 font-bold text-white/50">tegen</p>
+                  <p className="my-1 font-bold text-white/50">
+                    tegen
+                  </p>
 
                   <h2 className="text-xl font-black text-white">
                     {match.away_team}
                   </h2>
 
                   <p className="mt-4 text-sm font-semibold capitalize text-white/70">
-                    {formatKickoff(match.kickoff)}
+                    Aftrap: {formatKickoff(match.kickoff)}
+                  </p>
+
+                  <p className="mt-2 text-xs font-bold capitalize text-white/45">
+                    Stemperiode gesloten op {formatDeadline(match.kickoff)}
                   </p>
                 </div>
 
@@ -172,7 +222,7 @@ export default function UitslagenPage() {
 
         <div className="mt-6 space-y-4">
           <Link
-            href="/motmpagina"
+            href="/man-van-de-wedstrijd"
             className="ucl-button-secondary"
           >
             ⬅️ Terug naar Man van de wedstrijd

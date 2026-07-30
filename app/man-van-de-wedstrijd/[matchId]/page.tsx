@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 import { supabase } from "@/src/lib/supabase";
 import {
@@ -24,7 +24,8 @@ import VoteSummary from "@/components/motm/VoteSummary";
 import type { VotePlayer } from "@/components/motm/PlayerVoteCard";
 
 export default function ManVanDeWedstrijdPage() {
-  const params = useParams();
+  const router = useRouter();
+  const params = useParams<{ matchId: string }>();
   const matchId = Number(params.matchId);
 
   const [match, setMatch] = useState<MotmMatch | null>(null);
@@ -236,6 +237,10 @@ export default function ManVanDeWedstrijdPage() {
     await loadStandings(players);
 
     setSubmitting(false);
+
+    window.setTimeout(() => {
+      router.push("/man-van-de-wedstrijd/stemmen");
+    }, 1500);
   }
 
   const formattedKickoff = match
