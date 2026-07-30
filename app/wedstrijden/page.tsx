@@ -83,14 +83,13 @@ export default function WedstrijdenPage() {
     async function loadMatches() {
       setLoading(true);
 
-      const { data: userData, error: userError } =
-        await supabase.auth.getUser();
+      const { data: userData } =
+  await supabase.auth.getUser();
 
-      if (userError) {
-        alert(userError.message);
-        setLoading(false);
-        return;
-      }
+if (!userData.user) {
+  window.location.href = "/login?reason=login-required";
+  return;
+}
 
       if (!userData.user) {
         alert("Je moet eerst inloggen.");
