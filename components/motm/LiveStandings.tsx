@@ -65,7 +65,7 @@ export default function LiveStandings({
             type="button"
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="ucl-button-secondary shrink-0 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 w-auto items-center justify-center rounded-xl border border-white/15 bg-white/5 px-5 font-bold text-white transition hover:bg-white/10 disabled:opacity-60"
           >
             {isRefreshing ? "Vernieuwen..." : "Refreshen"}
           </button>
