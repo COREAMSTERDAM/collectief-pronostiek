@@ -26,8 +26,6 @@ export default function ManVanDeWedstrijdPage() {
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     async function loadPageData() {
@@ -57,15 +55,11 @@ const [successMessage, setSuccessMessage] = useState("");
       ]);
 
       if (matchError) {
-  console.error(matchError);
-
-  setErrorMessage(
-    `Wedstrijd fout: ${matchError.message}`
-  );
-
-  setLoading(false);
-  return;
-}
+        console.error("Wedstrijd ophalen mislukt:", matchError);
+        setErrorMessage("De wedstrijd kon niet worden geladen.");
+        setLoading(false);
+        return;
+      }
 
       if (playerError) {
         console.error("Spelers ophalen mislukt:", playerError);
@@ -88,42 +82,6 @@ const [successMessage, setSuccessMessage] = useState("");
         timeStyle: "short",
       }).format(new Date(match.kickoff))
     : "";
-
-    async function handleSubmitVote() {
-  if (selectedPlayerIds.length !== 3) {
-    setErrorMessage("Kies eerst drie verschillende spelers.");
-    return;
-  }
-
-  setSubmitting(true);
-  setErrorMessage("");
-  setSuccessMessage("");
-
-  const { data: userData, error: userError } =
-    await supabase.auth.getUser();
-
-  if (userError || !userData.user) {
-    window.location.href = "/login?reason=login-required";
-    return;
-  }
-
-  const { error } = await supabase.rpc("submit_player_top3", {
-    p_match_id: matchId,
-    p_first_player_id: selectedPlayerIds[0],
-    p_second_player_id: selectedPlayerIds[1],
-    p_third_player_id: selectedPlayerIds[2],
-  });
-
-  if (error) {
-    console.error("Stem opslaan mislukt:", error);
-    setErrorMessage(error.message || "Je stem kon niet worden opgeslagen.");
-    setSubmitting(false);
-    return;
-  }
-
-  setSuccessMessage("Je Top 3 is succesvol opgeslagen.");
-  setSubmitting(false);
-}
 
   return (
     <main className="ucl-page">
@@ -171,17 +129,8 @@ const [successMessage, setSuccessMessage] = useState("");
             <VoteSummary
               players={players}
               selectedPlayerIds={selectedPlayerIds}
-              submitting={submitting}
-onSubmit={handleSubmitVote}
+              onSubmit={() => alert("Nog te bouwen")}
             />
-
-            {successMessage && (
-  <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-5">
-    <p className="font-bold text-emerald-200">
-      {successMessage}
-    </p>
-  </div>
-)}
 
             <PlayerVoteGrid
               players={players}
