@@ -26,8 +26,6 @@ import type { VotePlayer } from "@/components/motm/PlayerVoteCard";
 export default function ManVanDeWedstrijdPage() {
   const params = useParams();
   const matchId = Number(params.matchId);
-  console.log("PARAMS:", params);
-console.log("MATCH ID:", matchId);
 
   const [match, setMatch] = useState<MotmMatch | null>(null);
   const [players, setPlayers] = useState<MotmPlayer[]>([]);
