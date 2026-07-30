@@ -3,18 +3,19 @@ export default function PronostiekPage() {
     <main className="ucl-page">
       <div className="ucl-container">
         <section className="ucl-card">
-          <div className="text-center">
-            <p className="text-xs font-black uppercase tracking-[0.25em] text-sky-300">
-              Collectief Wit en Zwet
-            </p>
+          <img
+            src="/logo.png"
+            alt="Logo Collectief Pronostiek"
+            className="ucl-logo"
+          />
 
-            <h1 className="ucl-title mt-2">
-              Pronostiek
+          <div className="text-center">
+            <h1 className="ucl-title">
+              Collectief Wit en Zwet
             </h1>
 
             <p className="ucl-subtitle">
-              Voorspel wedstrijden, bekijk je pronostieken en volg het
-              klassement.
+              Kies wat je wilt doen binnen de pronostiek.
             </p>
           </div>
         </section>
@@ -45,7 +46,7 @@ export default function PronostiekPage() {
             href="/"
             className="ucl-button-secondary"
           >
-            ← Terug naar dashboard
+            ⬅️ Terug naar dashboard
           </a>
         </div>
       </div>
