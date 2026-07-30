@@ -54,10 +54,6 @@ export default function LiveStandings({
           <p className="text-xs font-black uppercase tracking-[0.25em] text-sky-300">
             {isFinal ? "Definitieve uitslag" : "Live tussenstand"}
           </p>
-
-          <h2 className="mt-2 text-2xl font-black text-white">
-            Man van de Wedstrijd
-          </h2>
         </div>
 
         {onRefresh && (
