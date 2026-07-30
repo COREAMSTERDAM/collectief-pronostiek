@@ -39,7 +39,7 @@ export default function Home() {
   </a>
 
   <a
-    href="/man-van-de-wedstrijd"
+    href="/motmpagina"
     className="ucl-button-secondary"
   >
     ⭐ Man van de wedstrijd
