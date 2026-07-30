@@ -251,13 +251,20 @@ export default function SpelersbeheerPage() {
       setEditingPlayerId(null);
       setForm(EMPTY_FORM);
       setShowForm(false);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "De speler kon niet worden opgeslagen."
-      );
-    } finally {
+} catch (error: unknown) {
+  console.error("Fout bij opslaan speler:", error);
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    setErrorMessage(error.message);
+  } else {
+    setErrorMessage("De speler kon niet worden opgeslagen.");
+  }
+} finally {
       setSaving(false);
     }
   }
