@@ -44,7 +44,7 @@ export default function VoteSummary({
     selectedPlayers.every((player) => player !== undefined);
 
   return (
-    <aside className="ucl-card-dark h-fit p-6 lg:sticky lg:top-6">
+    <aside className="ucl-card-dark p-6">
       <h2 className="text-2xl font-black text-white">
         Jouw Top 3
       </h2>
