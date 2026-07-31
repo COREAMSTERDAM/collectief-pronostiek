@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "../../src/lib/supabase";
+import { supabase } from "@/src/lib/supabase";
 
 type Profile = {
   id: string;
   name: string;
+  avatar_url: string | null;
 };
 
 type Prediction = {
@@ -17,6 +18,7 @@ type Prediction = {
 type Ranking = {
   user_id: string;
   name: string;
+  avatar_url: string | null;
   total_points: number;
   movement: number;
 };
@@ -44,7 +46,7 @@ if (!userData.user) {
       const { data: profiles, error: profilesError } =
         await supabase
           .from("profiles")
-          .select("id, name");
+          .select("id, name, avatar_url");
 
       if (profilesError) {
         alert(profilesError.message);
@@ -102,6 +104,7 @@ if (!userData.user) {
             return {
               user_id: profile.id,
               name: profile.name,
+              avatar_url: profile.avatar_url,
               total_points: totalPoints,
               movement: 0,
             };
@@ -416,6 +419,13 @@ if (!userData.user) {
                           : index + 1}
                       </div>
 
+                      <PlayerAvatar
+                        name={player.name}
+                        avatarUrl={player.avatar_url}
+                        position={index + 1}
+                        size="md"
+                      />
+
                       <div className="min-w-0">
                         <p className="truncate font-black text-white">
                           {player.name}
@@ -455,6 +465,56 @@ if (!userData.user) {
 
       </div>
     </main>
+  );
+}
+
+function PlayerAvatar({
+  name,
+  avatarUrl,
+  position,
+  size = "md",
+}: {
+  name: string;
+  avatarUrl: string | null;
+  position?: number;
+  size?: "md" | "lg";
+}) {
+  const initials =
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "?";
+
+  const sizeClass =
+    size === "lg"
+      ? "h-20 w-20 text-xl"
+      : "h-12 w-12 text-sm";
+
+  const ringClass =
+    position === 1
+      ? "border-amber-300 ring-2 ring-amber-300/35"
+      : position === 2
+      ? "border-slate-200 ring-2 ring-slate-200/25"
+      : position === 3
+      ? "border-orange-400 ring-2 ring-orange-400/30"
+      : "border-white/15";
+
+  return (
+    <div
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border bg-gradient-to-br from-sky-500/25 to-indigo-500/20 font-black text-white shadow-lg shadow-slate-950/20 ${sizeClass} ${ringClass}`}
+    >
+      {avatarUrl ? (
+        <img
+          src={avatarUrl}
+          alt={`Profielfoto van ${name}`}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <span aria-label={`Initialen van ${name}`}>{initials}</span>
+      )}
+    </div>
   );
 }
 
@@ -507,6 +567,15 @@ function PodiumCard({
           : ""
       }`}
     >
+      <div className="mb-3 flex justify-center">
+        <PlayerAvatar
+          name={player.name}
+          avatarUrl={player.avatar_url}
+          position={position}
+          size={position === 1 ? "lg" : "md"}
+        />
+      </div>
+
       <div
         className={
           position === 1
