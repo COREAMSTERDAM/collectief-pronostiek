@@ -460,13 +460,13 @@ a:active {
 }
 
 .cp-player-name {
-  font-size: clamp(1.25rem, 3vw, 1.625rem);
-  line-height: 1.15;
-  font-weight: 900;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  line-height: 1.2;
+  font-weight: 700;
 }
 
 .cp-player-name-compact {
-  font-size: clamp(1.0625rem, 2.4vw, 1.25rem);
+  font-size: clamp(0.85rem, 1.8vw, 1rem);
   line-height: 1.2;
-  font-weight: 900;
+  font-weight: 700;
 }
