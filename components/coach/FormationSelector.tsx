@@ -25,7 +25,7 @@ export default function FormationSelector({
           Kies je formatie
         </h2>
         <p className="mt-1 text-sm leading-6 text-white/60">
-          De posities op het veld worden rechtstreeks uit Supabase geladen.
+          Wisselen van formatie maakt je huidige, tijdelijke spelerskeuze leeg.
         </p>
       </div>
 

@@ -18,6 +18,14 @@ export type FormationPosition = {
   sort_order: number;
 };
 
+export type CoachPlayer = {
+  id: number;
+  name: string;
+  shirt_number: number | null;
+  position: string | null;
+  photo_url: string | null;
+};
+
 type FormationRow = {
   id: number;
   name: string;
@@ -34,6 +42,14 @@ type FormationPositionRow = {
   x_percent: number | string;
   y_percent: number | string;
   sort_order: number;
+};
+
+type CoachPlayerRow = {
+  id: number;
+  name: string;
+  shirt_number: number | null;
+  position: string | null;
+  photo_url: string | null;
 };
 
 export async function getActiveFormations(): Promise<Formation[]> {
@@ -78,4 +94,19 @@ export async function getFormationPositions(
     y_percent: Number(position.y_percent),
     sort_order: Number(position.sort_order),
   }));
+}
+
+export async function getActiveCoachPlayers(): Promise<CoachPlayer[]> {
+  const { data, error } = await supabase
+    .from("players")
+    .select("id, name, shirt_number, position, photo_url")
+    .eq("active", true)
+    .order("shirt_number", { ascending: true, nullsFirst: false })
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw new Error(`Spelers ophalen mislukt: ${error.message}`);
+  }
+
+  return (data ?? []) as unknown as CoachPlayerRow[];
 }
