@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 
@@ -400,9 +401,11 @@ if (!userData.user) {
                   player.user_id === currentUserId;
 
                 return (
-                  <div
+                  <Link
                     key={player.user_id}
-                    className={`ucl-ranking-row ${
+                    href={`/profiel/${player.user_id}`}
+                    aria-label={`Bekijk het profiel van ${player.name}`}
+                    className={`ucl-ranking-row group transition hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 ${
                       isCurrentUser
                         ? "ucl-ranking-current"
                         : ""
@@ -456,7 +459,14 @@ if (!userData.user) {
                         punten
                       </p>
                     </div>
-                  </div>
+
+                    <span
+                      className="ml-2 shrink-0 text-lg font-black text-slate-600 transition group-hover:translate-x-1 group-hover:text-sky-300"
+                      aria-hidden="true"
+                    >
+                      ›
+                    </span>
+                  </Link>
                 );
               })}
             </div>
@@ -560,8 +570,10 @@ function PodiumCard({
       : "border-orange-400/20 bg-gradient-to-b from-orange-400/20 to-orange-800/20 text-orange-100";
 
   return (
-    <div
-      className={`w-1/3 rounded-2xl border p-3 text-center backdrop-blur-xl ${cardClass} ${
+    <Link
+      href={`/profiel/${player.user_id}`}
+      aria-label={`Bekijk het profiel van ${player.name}`}
+      className={`w-1/3 rounded-2xl border p-3 text-center backdrop-blur-xl transition hover:-translate-y-1 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 ${cardClass} ${
         isCurrentUser
           ? "ring-1 ring-emerald-400/60"
           : ""
@@ -613,6 +625,10 @@ function PodiumCard({
       >
         {position}
       </div>
-    </div>
+
+      <p className="mt-2 text-xs font-bold text-sky-300">
+        Bekijk profiel →
+      </p>
+    </Link>
   );
 }
