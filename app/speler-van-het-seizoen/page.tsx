@@ -143,7 +143,7 @@ export default function SpelerVanHetSeizoenPage() {
               <p className="text-xs font-black uppercase tracking-wider text-white/40">
                 Leider
               </p>
-              <p className="mt-2 truncate text-xl font-black text-white">
+              <p className="cp-player-name mt-2 truncate text-white">
                 {leader?.name}
               </p>
               <p className="mt-1 font-black text-sky-300">

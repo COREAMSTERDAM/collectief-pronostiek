@@ -371,7 +371,7 @@ function PredictionCard({
           </div>
 
           <div className="min-w-0">
-            <p className="truncate font-black text-white">
+            <p className="cp-account-name-compact truncate text-white">
               {prediction.name}
             </p>
 

@@ -521,7 +521,7 @@ export default function OpenbaarProfielPage() {
               <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-300">
                 Openbaar spelersprofiel
               </p>
-              <h1 className="mt-2 truncate text-3xl font-black text-white sm:text-4xl">
+              <h1 className="cp-account-name-hero mt-2 truncate text-white">
                 {profile.name}
               </h1>
               <p className="mt-2 text-slate-400">
@@ -1003,7 +1003,7 @@ function ComparisonPlayerCard({
       <p className="mt-3 text-xs font-black uppercase tracking-wider text-sky-300">
         {label}
       </p>
-      <h3 className="mt-1 truncate text-xl font-black text-white">
+      <h3 className="cp-account-name mt-1 truncate text-white">
         {player.name}
       </h3>
       <p className="mt-2 text-sm font-bold text-slate-400">

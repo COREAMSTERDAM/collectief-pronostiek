@@ -68,7 +68,7 @@ export default function VoteSummary({
                 </p>
 
                 <p
-                  className={`mt-1 truncate font-black ${
+                  className={`cp-player-name-compact mt-1 truncate ${
                     player ? "text-white" : "text-white/35"
                   }`}
                 >

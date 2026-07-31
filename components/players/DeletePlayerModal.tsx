@@ -34,7 +34,7 @@ export default function DeletePlayerModal({
             Je staat op het punt om
           </p>
 
-          <p className="mt-2 text-xl font-black text-white">
+          <p className="cp-player-name mt-2 text-white">
             {player.name}
           </p>
 

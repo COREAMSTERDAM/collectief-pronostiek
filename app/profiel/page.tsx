@@ -738,7 +738,7 @@ export default function ProfielPage() {
               )}
             </div>
 
-            <h1 className="mt-5 text-3xl font-black text-white">
+            <h1 className="cp-account-name-hero mt-5 text-white">
               {profile.name}
             </h1>
 

@@ -103,7 +103,7 @@ export default function SeasonStandings({
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
-                      <p className="truncate text-lg font-black text-white">
+                      <p className="cp-player-name-compact truncate text-white">
                         {standing.name}
                       </p>
 

@@ -51,7 +51,7 @@ export default function PlayerCard({
         )}
 
         <div className="min-w-0 text-center sm:text-left">
-          <h3 className="truncate text-2xl font-black text-white sm:text-3xl">
+          <h3 className="cp-player-name truncate text-white">
             {player.name}
           </h3>
 

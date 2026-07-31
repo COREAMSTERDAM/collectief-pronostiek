@@ -446,3 +446,27 @@ a:active {
     font-size: 1.8rem;
   }
 }
+/* Collectief Pronostiek — centrale typografie voor namen */
+.cp-account-name {
+  font-size: clamp(1.125rem, 2.6vw, 1.375rem);
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.cp-account-name-hero {
+  font-size: clamp(1.875rem, 5vw, 2.5rem);
+  line-height: 1.08;
+  font-weight: 900;
+}
+
+.cp-player-name {
+  font-size: clamp(1.25rem, 3vw, 1.625rem);
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.cp-player-name-compact {
+  font-size: clamp(1.0625rem, 2.4vw, 1.25rem);
+  line-height: 1.2;
+  font-weight: 900;
+}

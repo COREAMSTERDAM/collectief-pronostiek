@@ -82,7 +82,7 @@ export default function PlayerVoteCard({
         )}
 
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-2xl font-black text-white">
+          <h3 className="cp-player-name truncate text-white">
             {player.name}
           </h3>
 

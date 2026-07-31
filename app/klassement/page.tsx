@@ -445,7 +445,7 @@ if (!userData.user) {
                     Grootste stijger
                   </p>
 
-                  <h2 className="mt-1 truncate text-xl font-black text-white">
+                  <h2 className="cp-account-name mt-1 truncate text-white">
                     {biggestRiser.name}
                   </h2>
 
@@ -549,7 +549,7 @@ if (!userData.user) {
                       />
 
                       <div className="min-w-0">
-                        <p className="truncate font-black text-white">
+                        <p className="cp-account-name-compact truncate text-white">
                           {player.name}
 
                           {isCurrentUser && (
@@ -770,7 +770,7 @@ function PodiumCard({
         {podiumIcon}
       </div>
 
-      <p className="truncate text-sm font-black text-white">
+      <p className="cp-account-name-compact truncate text-white">
         {player.name}
       </p>
 
