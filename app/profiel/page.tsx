@@ -339,7 +339,7 @@ export default function ProfielPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <StatCard
               icon="⚽"
-              label="Voorspellingen ingevuld"
+              label="ingevuld"
               value={profile.pronostiek.predictionsCount}
               accentClass="border-sky-300/20 bg-sky-500/10 text-sky-200"
             />
@@ -361,7 +361,7 @@ export default function ProfielPage() {
 
             <StatCard
               icon="🥅"
-              label="Juist doelpuntensaldo"
+              label="doelpuntensaldo"
               value={profile.pronostiek.correctGoalDifference}
               detail="3 punten"
               accentClass="border-cyan-300/20 bg-cyan-500/10 text-cyan-200"
