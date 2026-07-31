@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 
@@ -748,7 +749,10 @@ export default function ProfielPage() {
           </div>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-5 text-center">
+            <Link
+              href="/klassement"
+              className="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-5 text-center transition hover:scale-[1.02] hover:border-amber-300/40 hover:bg-amber-400/15"
+            >
               <div className="text-3xl">🏆</div>
               <p className="mt-3 text-sm font-bold uppercase tracking-wide text-amber-200">
                 Huidige plaats
@@ -756,7 +760,10 @@ export default function ProfielPage() {
               <p className="mt-2 text-4xl font-black text-white">
                 {profile.position ? `#${profile.position}` : "—"}
               </p>
-            </div>
+              <p className="mt-3 text-xs font-semibold text-amber-100/80">
+                Klik om het klassement te bekijken
+              </p>
+            </Link>
 
             <div className="rounded-2xl border border-sky-300/20 bg-sky-500/10 p-5 text-center">
               <div className="text-3xl">⭐</div>
