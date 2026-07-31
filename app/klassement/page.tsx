@@ -177,6 +177,23 @@ if (!userData.user) {
   const second = ranking[1];
   const third = ranking[2];
 
+  const biggestRiser =
+    ranking
+      .filter((player) => player.movement > 0)
+      .sort((a, b) => {
+        if (b.movement !== a.movement) {
+          return b.movement - a.movement;
+        }
+
+        return b.total_points - a.total_points;
+      })[0] ?? null;
+
+  const biggestRiserPosition = biggestRiser
+    ? ranking.findIndex(
+        (player) => player.user_id === biggestRiser.user_id,
+      ) + 1
+    : null;
+
   function movementLabel(movement: number) {
     if (movement > 0) return `↑ ${movement}`;
     if (movement < 0) return `↓ ${Math.abs(movement)}`;
@@ -397,6 +414,55 @@ if (!userData.user) {
                 />
               )}
             </div>
+          </section>
+        )}
+
+        {biggestRiser && (
+          <section className="mb-8">
+            <Link
+              href={`/profiel/${biggestRiser.user_id}`}
+              className="group mx-auto block max-w-xl rounded-3xl border border-emerald-300/20 bg-gradient-to-br from-emerald-500/15 via-slate-950/90 to-sky-500/10 p-5 shadow-xl shadow-emerald-950/10 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-300/40"
+              aria-label={`Bekijk het profiel van grootste stijger ${biggestRiser.name}`}
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/25 bg-emerald-500/15 text-3xl">
+                  🚀
+                </div>
+
+                <PlayerAvatar
+                  name={biggestRiser.name}
+                  avatarUrl={biggestRiser.avatar_url}
+                />
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">
+                    Grootste stijger
+                  </p>
+
+                  <h2 className="mt-1 truncate text-xl font-black text-white">
+                    {biggestRiser.name}
+                  </h2>
+
+                  <p className="mt-1 text-sm font-bold text-slate-400">
+                    Nu op plaats #{biggestRiserPosition}
+                  </p>
+                </div>
+
+                <div className="shrink-0 text-right">
+                  <p className="text-3xl font-black text-emerald-300">
+                    +{biggestRiser.movement}
+                  </p>
+
+                  <p className="text-xs font-black uppercase tracking-wider text-slate-500">
+                    plaatsen
+                  </p>
+                </div>
+              </div>
+
+              <p className="mt-4 text-center text-xs font-bold text-emerald-200/80">
+                Bekijk profiel →
+              </p>
+            </Link>
           </section>
         )}
 
