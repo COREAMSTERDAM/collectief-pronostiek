@@ -68,33 +68,37 @@ export default function PlayerVoteCard({
         </div>
       )}
 
-      <div className="pr-20 text-center">
-  <h3 className="cp-player-name w-full break-words text-white">
-    {player.name}
-  </h3>
+      <div
+        className={`flex w-full flex-col items-center text-center ${
+          selectedDetails ? "pt-12" : ""
+        }`}
+      >
+        <h3 className="cp-player-name w-full break-words text-center text-white">
+          {player.name}
+        </h3>
 
-  <div className="mt-5 flex justify-center">
-    {player.photo_url ? (
-      <img
-        src={player.photo_url}
-        alt={player.name}
-        className="h-28 w-28 rounded-full border-2 border-sky-400/70 object-cover"
-      />
-    ) : (
-      <div className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-sky-400/70 bg-sky-400/10 text-3xl">
-        ⚽
+        <div className="mt-5 flex w-full justify-center">
+          {player.photo_url ? (
+            <img
+              src={player.photo_url}
+              alt={player.name}
+              className="h-28 w-28 rounded-full border-2 border-sky-400/70 object-cover"
+            />
+          ) : (
+            <div className="flex h-28 w-28 items-center justify-center rounded-full border-2 border-sky-400/70 bg-sky-400/10 text-3xl">
+              ⚽
+            </div>
+          )}
+        </div>
+
+        <p className="mt-4 w-full text-center text-base font-semibold text-white/60">
+          {player.shirt_number !== null
+            ? `Nr. ${player.shirt_number}`
+            : "Geen rugnummer"}
+          {" • "}
+          {player.position ?? "Geen positie"}
+        </p>
       </div>
-    )}
-  </div>
-
-  <p className="mt-4 text-base font-semibold text-white/60">
-    {player.shirt_number !== null
-      ? `Nr. ${player.shirt_number}`
-      : "Geen rugnummer"}
-    {" • "}
-    {player.position ?? "Geen positie"}
-  </p>
-</div>
 
       <div className="mt-6 border-t border-white/10 pt-4">
         {selectedDetails ? (
