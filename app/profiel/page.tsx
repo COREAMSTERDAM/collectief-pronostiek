@@ -760,9 +760,9 @@ export default function ProfielPage() {
               <p className="mt-2 text-4xl font-black text-white">
                 {profile.position ? `#${profile.position}` : "—"}
               </p>
-              <p className="mt-3 text-xs font-semibold text-amber-100/80">
+              {/* <p className="mt-3 text-xs font-semibold text-amber-100/80">
                 Klik om het klassement te bekijken
-              </p>
+              </p> */}
             </Link>
 
             <div className="rounded-2xl border border-sky-300/20 bg-sky-500/10 p-5 text-center">
