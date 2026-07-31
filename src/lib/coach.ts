@@ -1,0 +1,86 @@
+import { supabase } from "@/src/lib/supabase";
+
+export type Formation = {
+  id: number;
+  name: string;
+  description: string | null;
+  player_count: number;
+};
+
+export type FormationPosition = {
+  id: number;
+  formation_id: number;
+  position_code: string;
+  position_label: string;
+  position_group: "goalkeeper" | "defender" | "midfielder" | "forward";
+  x_percent: number;
+  y_percent: number;
+  sort_order: number;
+};
+
+type FormationRow = {
+  id: number;
+  name: string;
+  description: string | null;
+  player_count: number;
+};
+
+type FormationPositionRow = {
+  id: number;
+  formation_id: number;
+  position_code: string;
+  position_label: string;
+  position_group: FormationPosition["position_group"];
+  x_percent: number | string;
+  y_percent: number | string;
+  sort_order: number;
+};
+
+export async function getActiveFormations(): Promise<Formation[]> {
+  const { data, error } = await supabase
+    .from("formations")
+    .select("id, name, description, player_count")
+    .eq("is_active", true)
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw new Error(`Formaties ophalen mislukt: ${error.message}`);
+  }
+
+  return ((data ?? []) as FormationRow[]).map((formation) => ({
+    ...formation,
+    player_count: Number(formation.player_count),
+  }));
+}
+
+export async function getFormationPositions(
+  formationId: number,
+): Promise<FormationPosition[]> {
+  const { data, error } = await supabase
+    .from("formation_positions")
+    .select(
+      [
+        "id",
+        "formation_id",
+        "position_code",
+        "position_label",
+        "position_group",
+        "x_percent",
+        "y_percent",
+        "sort_order",
+      ].join(", "),
+    )
+    .eq("formation_id", formationId)
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    throw new Error(`Formatieposities ophalen mislukt: ${error.message}`);
+  }
+
+  return ((data ?? []) as FormationPositionRow[]).map((position) => ({
+    ...position,
+    x_percent: Number(position.x_percent),
+    y_percent: Number(position.y_percent),
+    sort_order: Number(position.sort_order),
+  }));
+}
