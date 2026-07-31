@@ -58,7 +58,7 @@ export default function RegistrerenPage() {
           },
           {
             onConflict: "id",
-          }
+          },
         );
 
       if (profileError) {
@@ -68,7 +68,6 @@ export default function RegistrerenPage() {
       }
     }
 
-    alert("Registratie gelukt! Controleer je mailbox.");
     window.location.href = "/login";
   }
 
@@ -83,19 +82,14 @@ export default function RegistrerenPage() {
           />
 
           <div className="mb-6 text-center">
-            <h1 className="ucl-title">
-              Registreren
-            </h1>
+            <h1 className="ucl-title">Registreren</h1>
 
             <p className="ucl-subtitle">
               Maak een account aan en neem deel aan de pronostiek.
             </p>
           </div>
 
-          <form
-            onSubmit={register}
-            className="space-y-4"
-          >
+          <form onSubmit={register} className="space-y-4">
             <div>
               <label
                 htmlFor="name"
@@ -170,8 +164,7 @@ export default function RegistrerenPage() {
               />
 
               <span className="text-sm leading-6 text-slate-300">
-                Ik ga akkoord met het reglement van Collectief
-                Pronostiek.
+                Ik ga akkoord met het reglement van Collectief Pronostiek.
               </span>
             </label>
 
@@ -180,9 +173,7 @@ export default function RegistrerenPage() {
               disabled={loading}
               className="ucl-button-primary disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading
-                ? "Account aanmaken..."
-                : "Registreren"}
+              {loading ? "Account aanmaken..." : "Registreren"}
             </button>
           </form>
 
