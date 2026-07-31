@@ -8,6 +8,7 @@ import type {
 type PositionMarkerProps = {
   position: FormationPosition;
   player: CoachPlayer | null;
+  disabled?: boolean;
   onClick: (position: FormationPosition) => void;
 };
 
@@ -25,16 +26,21 @@ function initials(name: string) {
 export default function PositionMarker({
   position,
   player,
+  disabled = false,
   onClick,
 }: PositionMarkerProps) {
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={() => onClick(position)}
       className={[
         "absolute z-10 -translate-x-1/2 -translate-y-1/2",
         "flex flex-col items-center justify-center",
-        "transition hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300",
+        "transition focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300",
+        disabled
+          ? "cursor-not-allowed opacity-75"
+          : "hover:scale-105",
         player ? "w-20 sm:w-24" : "h-14 w-14 sm:h-16 sm:w-16",
       ].join(" ")}
       style={{
@@ -42,14 +48,16 @@ export default function PositionMarker({
         top: `${position.y_percent}%`,
       }}
       title={
-        player
-          ? `${player.name} wijzigen op ${position.position_label}`
-          : `${position.position_label} kiezen`
+        disabled
+          ? "De opstelling is gesloten."
+          : player
+            ? `${player.name} wijzigen op ${position.position_label}`
+            : `${position.position_label} kiezen`
       }
       aria-label={
         player
-          ? `${player.name} wijzigen op ${position.position_label}`
-          : `${position.position_label} kiezen`
+          ? `${player.name} op ${position.position_label}`
+          : position.position_label
       }
     >
       {player ? (
@@ -71,7 +79,7 @@ export default function PositionMarker({
           </span>
         </>
       ) : (
-        <span className="flex h-full w-full items-center justify-center rounded-full border border-white/35 bg-black/75 text-center text-[11px] font-black leading-none text-white shadow-xl shadow-black/35 backdrop-blur hover:border-amber-300/70 hover:bg-black/90 sm:text-xs">
+        <span className="flex h-full w-full items-center justify-center rounded-full border border-white/35 bg-black/75 text-center text-[11px] font-black leading-none text-white shadow-xl shadow-black/35 backdrop-blur sm:text-xs">
           {position.position_code}
         </span>
       )}

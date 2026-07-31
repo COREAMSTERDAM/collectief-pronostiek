@@ -10,6 +10,7 @@ type FootballPitchProps = {
   formationName: string;
   positions: FormationPosition[];
   selectedPlayers: Record<number, CoachPlayer>;
+  disabled?: boolean;
   onPositionClick: (position: FormationPosition) => void;
 };
 
@@ -17,6 +18,7 @@ export default function FootballPitch({
   formationName,
   positions,
   selectedPlayers,
+  disabled = false,
   onPositionClick,
 }: FootballPitchProps) {
   const selectedCount = Object.keys(selectedPlayers).length;
@@ -26,7 +28,7 @@ export default function FootballPitch({
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.24em] text-white/45">
-            Stap 2
+            Basiself
           </p>
           <h2 className="mt-1 text-xl font-black text-white">
             Jouw veld
@@ -47,15 +49,10 @@ export default function FootballPitch({
             <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-white/35" />
             <div className="absolute left-1/2 top-1/2 aspect-square h-[18%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/35" />
             <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/45" />
-
             <div className="absolute left-1/2 top-0 h-[16%] w-[48%] -translate-x-1/2 border-x border-b border-white/35" />
             <div className="absolute left-1/2 top-0 h-[7%] w-[22%] -translate-x-1/2 border-x border-b border-white/35" />
-            <div className="absolute left-1/2 top-[10.5%] h-2 w-2 -translate-x-1/2 rounded-full bg-white/45" />
-
             <div className="absolute bottom-0 left-1/2 h-[16%] w-[48%] -translate-x-1/2 border-x border-t border-white/35" />
             <div className="absolute bottom-0 left-1/2 h-[7%] w-[22%] -translate-x-1/2 border-x border-t border-white/35" />
-            <div className="absolute bottom-[10.5%] left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-white/45" />
-
             <div className="absolute inset-[3%] rounded-[1.4rem] border border-white/35" />
           </div>
 
@@ -64,6 +61,7 @@ export default function FootballPitch({
               key={position.id}
               position={position}
               player={selectedPlayers[position.id] ?? null}
+              disabled={disabled}
               onClick={onPositionClick}
             />
           ))}
@@ -71,7 +69,9 @@ export default function FootballPitch({
       </div>
 
       <p className="mt-4 text-center text-xs leading-5 text-white/45">
-        Klik op een positie om een speler te kiezen of te vervangen.
+        {disabled
+          ? "De deadline is verstreken. Je opstelling staat vergrendeld."
+          : "Klik op een positie om een speler te kiezen of te vervangen."}
       </p>
     </section>
   );
