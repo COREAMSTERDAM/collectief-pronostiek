@@ -311,11 +311,11 @@ export default function IedereenBondscoachPage() {
         <header className="mb-8 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-amber-300/[0.07] p-6 shadow-2xl shadow-black/30 sm:p-8">
           <div className="max-w-3xl">
             <p className="text-xs font-black uppercase tracking-[0.28em] text-amber-200/70">
-              Collectief Pronostiek
+              Iendracht Manager 26
             </p>
 
             <h1 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
-              Iedereen Bondscoach
+              Iederiejn Coach
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">
