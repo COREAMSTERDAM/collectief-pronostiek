@@ -33,15 +33,13 @@ export default function CoachMatchCard({
       ? "Concept opgeslagen"
       : "Nog niet gestart";
 
-  const actionHref = deadlineHasPassed
-    ? `/iedereen-coach/${match.match_id}/collectief`
-    : `/iedereen-coach/${match.match_id}`;
+  const editorHref = `/iedereen-coach/${match.match_id}`;
+  const collectiveHref =
+    `/iedereen-coach/${match.match_id}/collectief`;
 
-  const actionLabel = deadlineHasPassed
-    ? "Bekijk collectieve basiself"
-    : match.has_lineup
-      ? "Verder bewerken"
-      : "Stel je basiself samen";
+  const editorLabel = match.has_lineup
+    ? "Verder bewerken"
+    : "Stel je basiself samen";
 
   return (
     <article className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/20">
@@ -108,16 +106,35 @@ export default function CoachMatchCard({
       </div>
 
       <div className="border-t border-white/10 p-4 sm:p-5">
-        <Link
-          href={actionHref}
+        <div
           className={
             deadlineHasPassed
-              ? "block rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center text-sm font-black text-white transition hover:bg-white/10"
-              : "block rounded-2xl bg-white px-5 py-3 text-center text-sm font-black text-black transition hover:-translate-y-0.5 hover:bg-zinc-200"
+              ? "grid gap-3"
+              : "grid gap-3 sm:grid-cols-2"
           }
         >
-          {actionLabel}
-        </Link>
+          {!deadlineHasPassed ? (
+            <Link
+              href={editorHref}
+              className="block rounded-2xl bg-white px-5 py-3 text-center text-sm font-black text-black transition hover:-translate-y-0.5 hover:bg-zinc-200"
+            >
+              {editorLabel}
+            </Link>
+          ) : null}
+
+          <Link
+            href={collectiveHref}
+            className="block rounded-2xl border border-amber-300/25 bg-amber-300/10 px-5 py-3 text-center text-sm font-black text-amber-100 transition hover:-translate-y-0.5 hover:bg-amber-300/15"
+          >
+            👥 Collectieve basiself
+          </Link>
+        </div>
+
+        {!deadlineHasPassed ? (
+          <p className="mt-3 text-center text-xs font-semibold text-white/35">
+            De collectieve basiself toont alleen inzendingen van deze wedstrijd.
+          </p>
+        ) : null}
       </div>
     </article>
   );
