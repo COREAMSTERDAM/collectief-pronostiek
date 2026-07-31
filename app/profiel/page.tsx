@@ -34,6 +34,15 @@ type ProfileSummary = {
   pronostiek: PronostiekStats;
 };
 
+type Achievement = {
+  icon: string;
+  title: string;
+  description: string;
+  unlocked: boolean;
+  progress: number;
+  target: number;
+};
+
 export default function ProfielPage() {
   const [profile, setProfile] = useState<ProfileSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -184,6 +193,85 @@ export default function ProfielPage() {
     return profile.name.trim().split(/\s+/)[0];
   }, [profile?.name]);
 
+  const achievements = useMemo<Achievement[]>(() => {
+    if (!profile) return [];
+
+    return [
+      {
+        icon: "⚽",
+        title: "De eerste stap",
+        description: "Vul je eerste pronostiek in.",
+        unlocked: profile.pronostiek.predictionsCount >= 1,
+        progress: profile.pronostiek.predictionsCount,
+        target: 1,
+      },
+      {
+        icon: "📝",
+        title: "Vaste waarde",
+        description: "Vul 10 pronostieken in.",
+        unlocked: profile.pronostiek.predictionsCount >= 10,
+        progress: profile.pronostiek.predictionsCount,
+        target: 10,
+      },
+      {
+        icon: "🎯",
+        title: "Scherpschutter",
+        description: "Voorspel 5 exacte uitslagen.",
+        unlocked: profile.pronostiek.exactScores >= 5,
+        progress: profile.pronostiek.exactScores,
+        target: 5,
+      },
+      {
+        icon: "💯",
+        title: "Eeuweling",
+        description: "Behaal in totaal 100 punten.",
+        unlocked: profile.totalPoints >= 100,
+        progress: profile.totalPoints,
+        target: 100,
+      },
+      {
+        icon: "🔥",
+        title: "Topvorm",
+        description: "Voorspel 10 exacte uitslagen.",
+        unlocked: profile.pronostiek.exactScores >= 10,
+        progress: profile.pronostiek.exactScores,
+        target: 10,
+      },
+      {
+        icon: "📚",
+        title: "Doorgewinterd",
+        description: "Vul 50 pronostieken in.",
+        unlocked: profile.pronostiek.predictionsCount >= 50,
+        progress: profile.pronostiek.predictionsCount,
+        target: 50,
+      },
+      {
+        icon: "🥉",
+        title: "Podiumplaats",
+        description: "Sta in de top 3 van het klassement.",
+        unlocked:
+          profile.position !== null &&
+          profile.position >= 1 &&
+          profile.position <= 3,
+        progress:
+          profile.position !== null && profile.position <= 3 ? 1 : 0,
+        target: 1,
+      },
+      {
+        icon: "👑",
+        title: "Koploper",
+        description: "Sta op de eerste plaats.",
+        unlocked: profile.position === 1,
+        progress: profile.position === 1 ? 1 : 0,
+        target: 1,
+      },
+    ];
+  }, [profile]);
+
+  const unlockedAchievements = achievements.filter(
+    (achievement) => achievement.unlocked,
+  ).length;
+
   function formatMemberSince(value: string | null) {
     if (!value) return "Onbekend";
 
@@ -299,7 +387,9 @@ export default function ProfielPage() {
               <p className="mt-2 leading-7 text-slate-300">
                 Je staat momenteel{" "}
                 <strong className="text-white">
-                  {profile.position ? `op plaats #${profile.position}` : "in het klassement"}
+                  {profile.position
+                    ? `op plaats #${profile.position}`
+                    : "in het klassement"}
                 </strong>{" "}
                 met{" "}
                 <strong className="text-sky-300">
@@ -326,7 +416,7 @@ export default function ProfielPage() {
         <section className="ucl-card mt-6">
           <div className="mb-6">
             <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-300">
-              Fase 2
+              Statistieken
             </p>
             <h2 className="mt-2 text-2xl font-black text-white">
               📊 Pronostiekstatistieken
@@ -339,7 +429,7 @@ export default function ProfielPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <StatCard
               icon="⚽"
-              label="ingevuld"
+              label="Ingevuld"
               value={profile.pronostiek.predictionsCount}
               accentClass="border-sky-300/20 bg-sky-500/10 text-sky-200"
             />
@@ -361,7 +451,7 @@ export default function ProfielPage() {
 
             <StatCard
               icon="🥅"
-              label="doelpuntensaldo"
+              label="Doelpunten saldo"
               value={profile.pronostiek.correctGoalDifference}
               detail="3 punten"
               accentClass="border-cyan-300/20 bg-cyan-500/10 text-cyan-200"
@@ -400,18 +490,39 @@ export default function ProfielPage() {
           </div>
         </section>
 
-        <section className="mt-6 grid gap-4">
-          <ComingSoonCard
-            icon="⭐"
-            title="MOTM-statistieken"
-            description="Binnenkort zie je hier je stemmen en favoriete spelers."
-          />
+        <section className="ucl-card mt-6">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-amber-300">
+                Persoonlijke prestaties
+              </p>
+              <h2 className="mt-2 text-2xl font-black text-white">
+                🏅 Achievements
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Speel prestaties vrij met je pronostieken en je plaats in het
+                klassement.
+              </p>
+            </div>
 
-          <ComingSoonCard
-            icon="🏅"
-            title="Achievements"
-            description="Binnenkort verschijnen hier je vrijgespeelde prestaties."
-          />
+            <div className="rounded-2xl border border-amber-300/20 bg-amber-400/10 px-5 py-3 text-center">
+              <p className="text-xs font-bold uppercase tracking-wide text-amber-200">
+                Vrijgespeeld
+              </p>
+              <p className="mt-1 text-2xl font-black text-white">
+                {unlockedAchievements} / {achievements.length}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {achievements.map((achievement) => (
+              <AchievementCard
+                key={achievement.title}
+                achievement={achievement}
+              />
+            ))}
+          </div>
         </section>
       </div>
     </main>
@@ -452,31 +563,73 @@ function StatCard({
   );
 }
 
-function ComingSoonCard({
-  icon,
-  title,
-  description,
+function AchievementCard({
+  achievement,
 }: {
-  icon: string;
-  title: string;
-  description: string;
+  achievement: Achievement;
 }) {
+  const percentage = Math.min(
+    100,
+    Math.round((achievement.progress / achievement.target) * 100),
+  );
+
   return (
-    <article className="ucl-card flex items-center gap-4">
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-2xl">
-        {icon}
-      </div>
+    <article
+      className={`rounded-2xl border p-5 transition ${
+        achievement.unlocked
+          ? "border-amber-300/30 bg-gradient-to-br from-amber-400/15 to-orange-500/10"
+          : "border-white/10 bg-white/[0.03] opacity-70"
+      }`}
+    >
+      <div className="flex items-start gap-4">
+        <div
+          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border text-2xl ${
+            achievement.unlocked
+              ? "border-amber-300/30 bg-amber-400/15"
+              : "border-white/10 bg-white/5 grayscale"
+          }`}
+        >
+          {achievement.unlocked ? achievement.icon : "🔒"}
+        </div>
 
-      <div className="min-w-0">
-        <h2 className="text-lg font-black text-white">{title}</h2>
-        <p className="mt-1 text-sm leading-6 text-slate-400">
-          {description}
-        </p>
-      </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="font-black text-white">{achievement.title}</h3>
+            <span
+              className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${
+                achievement.unlocked
+                  ? "bg-emerald-400/15 text-emerald-300"
+                  : "bg-white/5 text-slate-500"
+              }`}
+            >
+              {achievement.unlocked ? "Behaald" : "Vergrendeld"}
+            </span>
+          </div>
 
-      <span className="ml-auto hidden shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold text-slate-400 sm:inline-block">
-        Binnenkort
-      </span>
+          <p className="mt-1 text-sm leading-6 text-slate-400">
+            {achievement.description}
+          </p>
+
+          {!achievement.unlocked && (
+            <div className="mt-4">
+              <div className="mb-2 flex items-center justify-between text-xs font-bold text-slate-400">
+                <span>Voortgang</span>
+                <span>
+                  {Math.min(achievement.progress, achievement.target)} /{" "}
+                  {achievement.target}
+                </span>
+              </div>
+
+              <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-sky-400 to-indigo-400 transition-all"
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </article>
   );
 }
