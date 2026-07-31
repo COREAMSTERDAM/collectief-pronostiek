@@ -14,6 +14,21 @@ type Prediction = {
   points: number | null;
 };
 
+type RankingHistoryRow = {
+  user_id: string;
+  speeldag: number;
+  position: number;
+  total_points: number;
+  created_at: string;
+};
+
+type SeasonPoint = {
+  speeldag: number;
+  position: number;
+  totalPoints: number;
+  pointsGained: number;
+};
+
 type PronostiekStats = {
   predictionsCount: number;
   scoredPredictionsCount: number;
@@ -32,6 +47,7 @@ type ProfileSummary = {
   totalPoints: number;
   pointsToNextPosition: number | null;
   pronostiek: PronostiekStats;
+  season: SeasonPoint[];
 };
 
 type Achievement = {
@@ -63,10 +79,18 @@ export default function ProfielPage() {
 
       const userId = userData.user.id;
 
-      const [profilesResult, predictionsResult] = await Promise.all([
-        supabase.from("profiles").select("id, name, created_at"),
-        supabase.from("predictions").select("user_id, points"),
-      ]);
+      const [profilesResult, predictionsResult, historyResult] =
+        await Promise.all([
+          supabase.from("profiles").select("id, name, created_at"),
+          supabase.from("predictions").select("user_id, points"),
+          supabase
+            .from("ranking_history")
+            .select(
+              "user_id, speeldag, position, total_points, created_at",
+            )
+            .eq("user_id", userId)
+            .order("speeldag", { ascending: true }),
+        ]);
 
       if (profilesResult.error) {
         setErrorMessage(profilesResult.error.message);
@@ -80,8 +104,15 @@ export default function ProfielPage() {
         return;
       }
 
+      if (historyResult.error) {
+        setErrorMessage(historyResult.error.message);
+        setLoading(false);
+        return;
+      }
+
       const profiles = (profilesResult.data ?? []) as Profile[];
       const predictions = (predictionsResult.data ?? []) as Prediction[];
+      const rankingHistory = (historyResult.data ?? []) as RankingHistoryRow[];
       const currentProfile = profiles.find((item) => item.id === userId);
 
       if (!currentProfile) {
@@ -140,6 +171,18 @@ export default function ProfielPage() {
             )
           : null;
 
+      const season = rankingHistory.map((row, index) => {
+        const previousPoints =
+          index > 0 ? rankingHistory[index - 1].total_points : 0;
+
+        return {
+          speeldag: row.speeldag,
+          position: row.position,
+          totalPoints: row.total_points,
+          pointsGained: row.total_points - previousPoints,
+        };
+      });
+
       setProfile({
         name: currentProfile.name,
         createdAt: currentProfile.created_at,
@@ -168,6 +211,7 @@ export default function ProfielPage() {
               : 0,
           bestScore,
         },
+        season,
       });
 
       setLoading(false);
@@ -271,6 +315,44 @@ export default function ProfielPage() {
   const unlockedAchievements = achievements.filter(
     (achievement) => achievement.unlocked,
   ).length;
+
+  const seasonSummary = useMemo(() => {
+    if (!profile || profile.season.length === 0) {
+      return {
+        highestPosition: null as number | null,
+        biggestJump: 0,
+        bestMatchday: null as SeasonPoint | null,
+        latestPoints: profile?.totalPoints ?? 0,
+      };
+    }
+
+    const highestPosition = Math.min(
+      ...profile.season.map((point) => point.position),
+    );
+
+    let biggestJump = 0;
+
+    for (let index = 1; index < profile.season.length; index += 1) {
+      const previous = profile.season[index - 1];
+      const current = profile.season[index];
+      const jump = previous.position - current.position;
+
+      biggestJump = Math.max(biggestJump, jump);
+    }
+
+    const bestMatchday = profile.season.reduce((best, point) =>
+      point.pointsGained > best.pointsGained ? point : best,
+    );
+
+    return {
+      highestPosition,
+      biggestJump,
+      bestMatchday,
+      latestPoints:
+        profile.season[profile.season.length - 1]?.totalPoints ??
+        profile.totalPoints,
+    };
+  }, [profile]);
 
   function formatMemberSince(value: string | null) {
     if (!value) return "Onbekend";
@@ -491,6 +573,90 @@ export default function ProfielPage() {
         </section>
 
         <section className="ucl-card mt-6">
+          <div className="mb-6">
+            <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
+              Mijn seizoen
+            </p>
+            <h2 className="mt-2 text-2xl font-black text-white">
+              📈 Seizoensevolutie
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Bekijk hoe je punten en positie na iedere speeldag evolueren.
+            </p>
+          </div>
+
+          {profile.season.length >= 2 ? (
+            <>
+              <div className="grid gap-4 xl:grid-cols-2">
+                <SeasonChart
+                  title="Punten"
+                  subtitle="Totaal aantal punten"
+                  data={profile.season}
+                  valueKey="totalPoints"
+                />
+
+                <SeasonChart
+                  title="Ranking"
+                  subtitle="#1 staat bovenaan"
+                  data={profile.season}
+                  valueKey="position"
+                  invert
+                  valuePrefix="#"
+                />
+              </div>
+
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <SeasonSummaryCard
+                  icon="🏆"
+                  label="Hoogste positie"
+                  value={
+                    seasonSummary.highestPosition
+                      ? `#${seasonSummary.highestPosition}`
+                      : "—"
+                  }
+                />
+                <SeasonSummaryCard
+                  icon="🚀"
+                  label="Grootste sprong"
+                  value={`+${seasonSummary.biggestJump}`}
+                  detail="plaatsen"
+                />
+                <SeasonSummaryCard
+                  icon="⭐"
+                  label="Laatste puntenstand"
+                  value={seasonSummary.latestPoints}
+                />
+                <SeasonSummaryCard
+                  icon="🔥"
+                  label="Beste speeldag"
+                  value={
+                    seasonSummary.bestMatchday
+                      ? `${seasonSummary.bestMatchday.pointsGained} punten`
+                      : "—"
+                  }
+                  detail={
+                    seasonSummary.bestMatchday
+                      ? `Speeldag ${seasonSummary.bestMatchday.speeldag}`
+                      : undefined
+                  }
+                />
+              </div>
+            </>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-6 text-center">
+              <div className="text-4xl">📉</div>
+              <h3 className="mt-3 text-lg font-black text-white">
+                Nog onvoldoende historische gegevens
+              </h3>
+              <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-400">
+                Zodra er minstens twee klassementssnapshots zijn opgeslagen,
+                verschijnen hier automatisch je punten- en rankinggrafiek.
+              </p>
+            </div>
+          )}
+        </section>
+
+        <section className="ucl-card mt-6">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-black uppercase tracking-[0.2em] text-amber-300">
@@ -526,6 +692,185 @@ export default function ProfielPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+
+function SeasonChart({
+  title,
+  subtitle,
+  data,
+  valueKey,
+  invert = false,
+  valuePrefix = "",
+}: {
+  title: string;
+  subtitle: string;
+  data: SeasonPoint[];
+  valueKey: "totalPoints" | "position";
+  invert?: boolean;
+  valuePrefix?: string;
+}) {
+  const width = 720;
+  const height = 280;
+  const padding = {
+    top: 24,
+    right: 24,
+    bottom: 46,
+    left: 52,
+  };
+
+  const values = data.map((point) => point[valueKey]);
+  const rawMin = Math.min(...values);
+  const rawMax = Math.max(...values);
+  const minValue = invert ? Math.max(1, rawMin - 1) : Math.min(0, rawMin);
+  const maxValue =
+    rawMax === minValue ? rawMax + 1 : rawMax + (invert ? 1 : 0);
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+
+  const getX = (index: number) =>
+    padding.left +
+    (data.length === 1
+      ? chartWidth / 2
+      : (index / (data.length - 1)) * chartWidth);
+
+  const getY = (value: number) => {
+    const ratio = (value - minValue) / (maxValue - minValue);
+
+    return invert
+      ? padding.top + ratio * chartHeight
+      : padding.top + (1 - ratio) * chartHeight;
+  };
+
+  const points = data
+    .map((point, index) => `${getX(index)},${getY(point[valueKey])}`)
+    .join(" ");
+
+  const horizontalLines = Array.from({ length: 5 }, (_, index) => {
+    const ratio = index / 4;
+    const y = padding.top + ratio * chartHeight;
+    const numericValue = invert
+      ? minValue + ratio * (maxValue - minValue)
+      : maxValue - ratio * (maxValue - minValue);
+
+    return {
+      y,
+      label: Math.round(numericValue),
+    };
+  });
+
+  return (
+    <article className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <div className="mb-3">
+        <h3 className="font-black text-white">{title}</h3>
+        <p className="mt-1 text-xs text-slate-400">{subtitle}</p>
+      </div>
+
+      <div className="overflow-x-auto">
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="min-w-[620px]"
+          role="img"
+          aria-label={`${title} per speeldag`}
+        >
+          {horizontalLines.map((line) => (
+            <g key={`${title}-${line.y}`}>
+              <line
+                x1={padding.left}
+                y1={line.y}
+                x2={width - padding.right}
+                y2={line.y}
+                stroke="currentColor"
+                className="text-white/10"
+                strokeWidth="1"
+              />
+              <text
+                x={padding.left - 10}
+                y={line.y + 4}
+                textAnchor="end"
+                className="fill-slate-500 text-[11px]"
+              >
+                {valuePrefix}
+                {line.label}
+              </text>
+            </g>
+          ))}
+
+          <polyline
+            points={points}
+            fill="none"
+            stroke="currentColor"
+            className="text-sky-400"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {data.map((point, index) => {
+            const value = point[valueKey];
+            const x = getX(index);
+            const y = getY(value);
+
+            return (
+              <g key={`${title}-${point.speeldag}`}>
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="6"
+                  fill="currentColor"
+                  className="text-sky-300"
+                />
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="3"
+                  fill="currentColor"
+                  className="text-slate-950"
+                />
+                <text
+                  x={x}
+                  y={height - 16}
+                  textAnchor="middle"
+                  className="fill-slate-500 text-[11px]"
+                >
+                  S{point.speeldag}
+                </text>
+                <title>
+                  Speeldag {point.speeldag}: {valuePrefix}
+                  {value}
+                </title>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </article>
+  );
+}
+
+function SeasonSummaryCard({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: string;
+  label: string;
+  value: string | number;
+  detail?: string;
+}) {
+  return (
+    <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center">
+      <div className="text-2xl">{icon}</div>
+      <p className="mt-2 text-xs font-bold uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-black text-white">{value}</p>
+      {detail && (
+        <p className="mt-1 text-xs font-semibold text-slate-500">{detail}</p>
+      )}
+    </article>
   );
 }
 
