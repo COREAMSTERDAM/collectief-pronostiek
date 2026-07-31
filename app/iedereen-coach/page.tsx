@@ -32,25 +32,42 @@ function createLineupSignature(
   return `${formationId ?? "none"}::${assignments}`;
 }
 
+function buildSelectedPlayers(
+  savedLineup: SavedLineup,
+  players: CoachPlayer[],
+) {
+  const playersById = new Map(
+    players.map((player) => [player.id, player]),
+  );
+  const result: Record<number, CoachPlayer> = {};
+
+  for (const assignment of savedLineup.playerAssignments) {
+    const player = playersById.get(assignment.player_id);
+
+    if (player) {
+      result[assignment.formation_position_id] = player;
+    }
+  }
+
+  return result;
+}
+
 export default function IedereenBondscoachPage() {
   const [formations, setFormations] = useState<Formation[]>([]);
   const [teams, setTeams] = useState<CoachTeam[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<CoachTeam | null>(null);
-  const [selectedFormationId, setSelectedFormationId] = useState<number | null>(
-    null,
-  );
+  const [selectedFormationId, setSelectedFormationId] =
+    useState<number | null>(null);
   const [positions, setPositions] = useState<FormationPosition[]>([]);
   const [players, setPlayers] = useState<CoachPlayer[]>([]);
   const [selectedPlayers, setSelectedPlayers] = useState<
     Record<number, CoachPlayer>
   >({});
   const [savedLineup, setSavedLineup] = useState<SavedLineup | null>(null);
-  const [pendingSavedLineup, setPendingSavedLineup] =
-    useState<SavedLineup | null>(null);
   const [lastSavedSignature, setLastSavedSignature] = useState("");
   const [activePosition, setActivePosition] =
     useState<FormationPosition | null>(null);
-  const [isLoadingFormations, setIsLoadingFormations] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingPositions, setIsLoadingPositions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -58,8 +75,9 @@ export default function IedereenBondscoachPage() {
 
   const selectedFormation = useMemo(
     () =>
-      formations.find((formation) => formation.id === selectedFormationId) ??
-      null,
+      formations.find(
+        (formation) => formation.id === selectedFormationId,
+      ) ?? null,
     [formations, selectedFormationId],
   );
 
@@ -82,20 +100,20 @@ export default function IedereenBondscoachPage() {
   useEffect(() => {
     let isMounted = true;
 
-    async function loadInitialData() {
+    async function loadPage() {
       try {
-        setIsLoadingFormations(true);
+        setIsInitialLoading(true);
         setErrorMessage(null);
+        setSuccessMessage(null);
 
-        const [formationResult, playerResult, teamResult] = await Promise.all([
-          getActiveFormations(),
-          getActiveCoachPlayers(),
-          getActiveCoachTeams(),
-        ]);
+        const [formationResult, playerResult, teamResult] =
+          await Promise.all([
+            getActiveFormations(),
+            getActiveCoachPlayers(),
+            getActiveCoachTeams(),
+          ]);
 
-        if (!isMounted) {
-          return;
-        }
+        if (!isMounted) return;
 
         setFormations(formationResult);
         setPlayers(playerResult);
@@ -105,143 +123,97 @@ export default function IedereenBondscoachPage() {
         setSelectedTeam(firstTeam);
 
         if (!firstTeam) {
-          setErrorMessage(
+          throw new Error(
             "Er is geen actief team ingesteld voor Iedereen Bondscoach.",
           );
-          return;
         }
 
         const existingLineup = await getSavedUserLineup(firstTeam.id);
 
-        if (!isMounted) {
-          return;
-        }
-
-        setSavedLineup(existingLineup);
-        setPendingSavedLineup(existingLineup);
+        if (!isMounted) return;
 
         const initialFormationId =
           existingLineup?.formation_id ?? formationResult[0]?.id ?? null;
 
-        setSelectedFormationId(initialFormationId);
+        if (initialFormationId === null) {
+          throw new Error("Er is geen actieve formatie beschikbaar.");
+        }
 
-        if (!existingLineup && initialFormationId !== null) {
-          setLastSavedSignature(
-            createLineupSignature(initialFormationId, {}),
-          );
-        }
+        const positionResult =
+          await getFormationPositions(initialFormationId);
+
+        if (!isMounted) return;
+
+        const restoredPlayers = existingLineup
+          ? buildSelectedPlayers(existingLineup, playerResult)
+          : {};
+
+        setSavedLineup(existingLineup);
+        setSelectedFormationId(initialFormationId);
+        setPositions(positionResult);
+        setSelectedPlayers(restoredPlayers);
+        setLastSavedSignature(
+          createLineupSignature(initialFormationId, restoredPlayers),
+        );
       } catch (error) {
-        if (!isMounted) {
-          return;
-        }
+        if (!isMounted) return;
 
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "De gegevens konden niet worden geladen.",
+            : "De pagina kon niet worden geladen.",
         );
       } finally {
         if (isMounted) {
-          setIsLoadingFormations(false);
+          setIsInitialLoading(false);
         }
       }
     }
 
-    void loadInitialData();
+    void loadPage();
 
     return () => {
       isMounted = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (selectedFormationId === null) {
-      setPositions([]);
-      return;
-    }
-
-    const formationId = selectedFormationId;
-    let isMounted = true;
-
-    async function loadPositions() {
-      try {
-        setIsLoadingPositions(true);
-        setErrorMessage(null);
-
-        const result = await getFormationPositions(formationId);
-
-        if (!isMounted) {
-          return;
-        }
-
-        setPositions(result);
-        setActivePosition(null);
-
-        if (
-          pendingSavedLineup &&
-          pendingSavedLineup.formation_id === formationId
-        ) {
-          const loadedSelections: Record<number, CoachPlayer> = {};
-
-          for (const assignment of pendingSavedLineup.playerAssignments) {
-            const player = players.find(
-              (item) => item.id === assignment.player_id,
-            );
-
-            if (player) {
-              loadedSelections[assignment.formation_position_id] = player;
-            }
-          }
-
-          setSelectedPlayers(loadedSelections);
-          setLastSavedSignature(
-            createLineupSignature(formationId, loadedSelections),
-          );
-          setPendingSavedLineup(null);
-        } else {
-          setSelectedPlayers({});
-        }
-      } catch (error) {
-        if (!isMounted) {
-          return;
-        }
-
-        setPositions([]);
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "De posities konden niet worden geladen.",
-        );
-      } finally {
-        if (isMounted) {
-          setIsLoadingPositions(false);
-        }
-      }
-    }
-
-    void loadPositions();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [pendingSavedLineup, players, selectedFormationId]);
 
   const closePlayerModal = useCallback(() => {
     setActivePosition(null);
   }, []);
 
-  function handleFormationChange(formationId: number) {
-    setSuccessMessage(null);
-    setErrorMessage(null);
-    setPendingSavedLineup(null);
-    setSelectedPlayers({});
-    setSelectedFormationId(formationId);
+  async function handleFormationChange(formationId: number) {
+    if (
+      formationId === selectedFormationId ||
+      isLoadingPositions ||
+      isSaving
+    ) {
+      return;
+    }
+
+    try {
+      setIsLoadingPositions(true);
+      setErrorMessage(null);
+      setSuccessMessage(null);
+      setActivePosition(null);
+
+      const positionResult = await getFormationPositions(formationId);
+
+      setSelectedFormationId(formationId);
+      setPositions(positionResult);
+      setSelectedPlayers({});
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "De formatie kon niet worden geladen.",
+      );
+    } finally {
+      setIsLoadingPositions(false);
+    }
   }
 
   function handleSelectPlayer(player: CoachPlayer) {
-    if (!activePosition) {
-      return;
-    }
+    if (!activePosition) return;
 
     setSelectedPlayers((current) => ({
       ...current,
@@ -252,15 +224,14 @@ export default function IedereenBondscoachPage() {
   }
 
   function handleRemovePlayer() {
-    if (!activePosition) {
-      return;
-    }
+    if (!activePosition) return;
 
     setSelectedPlayers((current) => {
       const updated = { ...current };
       delete updated[activePosition.id];
       return updated;
     });
+
     setSuccessMessage(null);
     setActivePosition(null);
   }
@@ -302,17 +273,20 @@ export default function IedereenBondscoachPage() {
 
       const savedAt = new Date().toISOString();
 
-      setSavedLineup({
+      const updatedLineup: SavedLineup = {
         id: lineupId,
         team_id: selectedTeam.id,
         formation_id: selectedFormation.id,
         is_complete: isComplete,
         updated_at: savedAt,
         playerAssignments: assignments.map((assignment) => ({
-          formation_position_id: assignment.formationPositionId,
+          formation_position_id:
+            assignment.formationPositionId,
           player_id: assignment.playerId,
         })),
-      });
+      };
+
+      setSavedLineup(updatedLineup);
       setLastSavedSignature(currentSignature);
 
       setSuccessMessage(
@@ -339,13 +313,15 @@ export default function IedereenBondscoachPage() {
             <p className="text-xs font-black uppercase tracking-[0.28em] text-amber-200/70">
               Collectief Pronostiek
             </p>
+
             <h1 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
               Iedereen Bondscoach
             </h1>
+
             <p className="mt-3 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">
-              Stel jouw ideale basiself samen en bewaar je keuze. Volledige
-              opstellingen worden als historische inzending opgeslagen voor
-              de latere collectieve analyses.
+              Stel jouw ideale basiself samen en bewaar je keuze.
+              Volledige opstellingen worden als historische inzending
+              opgeslagen voor de latere collectieve analyses.
             </p>
 
             {selectedTeam ? (
@@ -374,7 +350,7 @@ export default function IedereenBondscoachPage() {
           </div>
         ) : null}
 
-        {isLoadingFormations ? (
+        {isInitialLoading ? (
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-12 text-center text-sm font-semibold text-white/55">
             Formaties, spelers en je opgeslagen opstelling laden…
           </div>
@@ -385,7 +361,9 @@ export default function IedereenBondscoachPage() {
                 formations={formations}
                 selectedFormationId={selectedFormationId}
                 disabled={isLoadingPositions || isSaving}
-                onChange={handleFormationChange}
+                onChange={(formationId) => {
+                  void handleFormationChange(formationId);
+                }}
               />
 
               {selectedFormation && !isLoadingPositions ? (
