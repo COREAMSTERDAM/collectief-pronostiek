@@ -47,7 +47,9 @@ export async function getActiveFormations(): Promise<Formation[]> {
     throw new Error(`Formaties ophalen mislukt: ${error.message}`);
   }
 
-  return ((data ?? []) as FormationRow[]).map((formation) => ({
+  const rows = (data ?? []) as unknown as FormationRow[];
+
+  return rows.map((formation) => ({
     ...formation,
     player_count: Number(formation.player_count),
   }));
@@ -59,16 +61,7 @@ export async function getFormationPositions(
   const { data, error } = await supabase
     .from("formation_positions")
     .select(
-      [
-        "id",
-        "formation_id",
-        "position_code",
-        "position_label",
-        "position_group",
-        "x_percent",
-        "y_percent",
-        "sort_order",
-      ].join(", "),
+      "id, formation_id, position_code, position_label, position_group, x_percent, y_percent, sort_order",
     )
     .eq("formation_id", formationId)
     .order("sort_order", { ascending: true });
@@ -77,7 +70,9 @@ export async function getFormationPositions(
     throw new Error(`Formatieposities ophalen mislukt: ${error.message}`);
   }
 
-  return ((data ?? []) as FormationPositionRow[]).map((position) => ({
+  const rows = (data ?? []) as unknown as FormationPositionRow[];
+
+  return rows.map((position) => ({
     ...position,
     x_percent: Number(position.x_percent),
     y_percent: Number(position.y_percent),
