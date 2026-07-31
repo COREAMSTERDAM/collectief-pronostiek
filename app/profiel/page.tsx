@@ -14,11 +14,24 @@ type Prediction = {
   points: number | null;
 };
 
+type PronostiekStats = {
+  predictionsCount: number;
+  scoredPredictionsCount: number;
+  exactScores: number;
+  correctGoalDifference: number;
+  correctResult: number;
+  zeroPoints: number;
+  averagePoints: number;
+  bestScore: number;
+};
+
 type ProfileSummary = {
   name: string;
   createdAt: string | null;
   position: number | null;
   totalPoints: number;
+  pointsToNextPosition: number | null;
+  pronostiek: PronostiekStats;
 };
 
 export default function ProfielPage() {
@@ -92,12 +105,60 @@ export default function ProfielPage() {
         (item) => item.userId === userId,
       );
 
+      const userPredictions = predictions.filter(
+        (prediction) => prediction.user_id === userId,
+      );
+
+      const scoredPredictions = userPredictions.filter(
+        (prediction) => prediction.points !== null,
+      );
+
+      const totalPoints = currentRanking?.totalPoints ?? 0;
+      const bestScore =
+        scoredPredictions.length > 0
+          ? Math.max(
+              ...scoredPredictions.map(
+                (prediction) => prediction.points ?? 0,
+              ),
+            )
+          : 0;
+
+      const pointsToNextPosition =
+        currentRankingIndex > 0
+          ? Math.max(
+              ranking[currentRankingIndex - 1].totalPoints - totalPoints,
+              0,
+            )
+          : null;
+
       setProfile({
         name: currentProfile.name,
         createdAt: currentProfile.created_at,
         position:
           currentRankingIndex >= 0 ? currentRankingIndex + 1 : null,
-        totalPoints: currentRanking?.totalPoints ?? 0,
+        totalPoints,
+        pointsToNextPosition,
+        pronostiek: {
+          predictionsCount: userPredictions.length,
+          scoredPredictionsCount: scoredPredictions.length,
+          exactScores: scoredPredictions.filter(
+            (prediction) => prediction.points === 5,
+          ).length,
+          correctGoalDifference: scoredPredictions.filter(
+            (prediction) => prediction.points === 3,
+          ).length,
+          correctResult: scoredPredictions.filter(
+            (prediction) => prediction.points === 2,
+          ).length,
+          zeroPoints: scoredPredictions.filter(
+            (prediction) => prediction.points === 0,
+          ).length,
+          averagePoints:
+            scoredPredictions.length > 0
+              ? totalPoints / scoredPredictions.length
+              : 0,
+          bestScore,
+        },
       });
 
       setLoading(false);
@@ -117,6 +178,12 @@ export default function ProfielPage() {
       .join("");
   }, [profile?.name]);
 
+  const firstName = useMemo(() => {
+    if (!profile?.name) return "";
+
+    return profile.name.trim().split(/\s+/)[0];
+  }, [profile?.name]);
+
   function formatMemberSince(value: string | null) {
     if (!value) return "Onbekend";
 
@@ -125,6 +192,13 @@ export default function ProfielPage() {
       month: "long",
       year: "numeric",
     }).format(new Date(value));
+  }
+
+  function formatAverage(value: number) {
+    return new Intl.NumberFormat("nl-BE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
   }
 
   if (loading) {
@@ -211,13 +285,122 @@ export default function ProfielPage() {
           </div>
         </section>
 
-        <section className="mt-6 grid gap-4">
-          <ComingSoonCard
-            icon="📊"
-            title="Pronostiekstatistieken"
-            description="Binnenkort zie je hier al je persoonlijke pronostiekcijfers."
-          />
+        <section className="ucl-card mt-6">
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-500/10 text-2xl">
+              👋
+            </div>
 
+            <div>
+              <h2 className="text-xl font-black text-white">
+                Welkom terug, {firstName}!
+              </h2>
+
+              <p className="mt-2 leading-7 text-slate-300">
+                Je staat momenteel{" "}
+                <strong className="text-white">
+                  {profile.position ? `op plaats #${profile.position}` : "in het klassement"}
+                </strong>{" "}
+                met{" "}
+                <strong className="text-sky-300">
+                  {profile.totalPoints} punten
+                </strong>
+                .
+              </p>
+
+              {profile.position === 1 ? (
+                <p className="mt-2 font-bold text-amber-300">
+                  👑 Jij staat momenteel aan de leiding!
+                </p>
+              ) : profile.pointsToNextPosition !== null ? (
+                <p className="mt-2 text-sm font-semibold text-emerald-300">
+                  Nog {profile.pointsToNextPosition}{" "}
+                  {profile.pointsToNextPosition === 1 ? "punt" : "punten"} tot
+                  de volgende plaats.
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
+        <section className="ucl-card mt-6">
+          <div className="mb-6">
+            <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-300">
+              Fase 2
+            </p>
+            <h2 className="mt-2 text-2xl font-black text-white">
+              📊 Pronostiekstatistieken
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Een overzicht van al je voorspellingen en behaalde punten.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <StatCard
+              icon="⚽"
+              label="Voorspellingen ingevuld"
+              value={profile.pronostiek.predictionsCount}
+              accentClass="border-sky-300/20 bg-sky-500/10 text-sky-200"
+            />
+
+            <StatCard
+              icon="⭐"
+              label="Totaal punten"
+              value={profile.totalPoints}
+              accentClass="border-amber-300/20 bg-amber-500/10 text-amber-200"
+            />
+
+            <StatCard
+              icon="🎯"
+              label="Exacte uitslagen"
+              value={profile.pronostiek.exactScores}
+              detail="5 punten"
+              accentClass="border-emerald-300/20 bg-emerald-500/10 text-emerald-200"
+            />
+
+            <StatCard
+              icon="🥅"
+              label="Juist doelpuntensaldo"
+              value={profile.pronostiek.correctGoalDifference}
+              detail="3 punten"
+              accentClass="border-cyan-300/20 bg-cyan-500/10 text-cyan-200"
+            />
+
+            <StatCard
+              icon="👍"
+              label="Juiste winnaar of gelijkspel"
+              value={profile.pronostiek.correctResult}
+              detail="2 punten"
+              accentClass="border-indigo-300/20 bg-indigo-500/10 text-indigo-200"
+            />
+
+            <StatCard
+              icon="📈"
+              label="Gemiddelde punten"
+              value={formatAverage(profile.pronostiek.averagePoints)}
+              detail={`over ${profile.pronostiek.scoredPredictionsCount} beoordeelde voorspellingen`}
+              accentClass="border-violet-300/20 bg-violet-500/10 text-violet-200"
+            />
+
+            <StatCard
+              icon="🔥"
+              label="Beste voorspelling"
+              value={`${profile.pronostiek.bestScore} punten`}
+              accentClass="border-orange-300/20 bg-orange-500/10 text-orange-200"
+            />
+
+            <StatCard
+              icon="❌"
+              label="Geen punten"
+              value={profile.pronostiek.zeroPoints}
+              detail="0 punten"
+              accentClass="border-rose-300/20 bg-rose-500/10 text-rose-200"
+            />
+          </div>
+        </section>
+
+        <section className="mt-6 grid gap-4">
           <ComingSoonCard
             icon="⭐"
             title="MOTM-statistieken"
@@ -232,6 +415,40 @@ export default function ProfielPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+function StatCard({
+  icon,
+  label,
+  value,
+  detail,
+  accentClass,
+}: {
+  icon: string;
+  label: string;
+  value: string | number;
+  detail?: string;
+  accentClass: string;
+}) {
+  return (
+    <article className={`rounded-2xl border p-5 ${accentClass}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-wide">
+            {label}
+          </p>
+          <p className="mt-3 text-3xl font-black text-white">{value}</p>
+          {detail && (
+            <p className="mt-2 text-xs font-semibold text-slate-400">
+              {detail}
+            </p>
+          )}
+        </div>
+
+        <div className="text-3xl">{icon}</div>
+      </div>
+    </article>
   );
 }
 
