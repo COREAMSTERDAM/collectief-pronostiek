@@ -168,7 +168,7 @@ export default function IedereenBondscoachPage() {
               )
             ) : (
               <div className="flex min-h-72 items-center justify-center rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm font-semibold text-white/55">
-                Veld laden…
+                Veld laden….
               </div>
             )}
           </div>
