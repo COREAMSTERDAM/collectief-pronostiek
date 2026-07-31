@@ -15,6 +15,12 @@ type ProfileRow = {
 type PredictionRow = {
   user_id: string;
   points: number | null;
+  match_id: number;
+};
+
+type MatchRow = {
+  id: number;
+  kickoff: string;
 };
 
 type RankingHistoryRow = {
@@ -46,6 +52,7 @@ type PublicProfile = {
   zeroPoints: number;
   averagePoints: number;
   bestScore: number;
+  recentForm: number[];
   season: SeasonPoint[];
 };
 
@@ -61,6 +68,7 @@ type ComparisonProfile = {
   correctResult: number;
   averagePoints: number;
   bestScore: number;
+  recentForm: number[];
 };
 
 type Achievement = {
@@ -100,25 +108,36 @@ export default function OpenbaarProfielPage() {
 
       setCurrentUserId(authData.user.id);
 
-      const [profilesResult, predictionsResult, historyResult] =
-        await Promise.all([
+      const [
+        profilesResult,
+        predictionsResult,
+        historyResult,
+        matchesResult,
+      ] = await Promise.all([
           supabase
             .from("profiles")
             .select("id, name, created_at, avatar_url"),
           supabase
             .from("predictions")
-            .select("user_id, points"),
+            .select("user_id, points, match_id"),
           supabase
             .from("ranking_history")
             .select("user_id, speeldag, position, total_points")
             .eq("user_id", profileId)
             .order("speeldag", { ascending: true }),
+          supabase
+            .from("matches")
+            .select("id, kickoff")
+            .eq("status", "afgewerkt")
+            .order("kickoff", { ascending: false })
+            .limit(5),
         ]);
 
       const firstError =
         profilesResult.error ??
         predictionsResult.error ??
-        historyResult.error;
+        historyResult.error ??
+        matchesResult.error;
 
       if (firstError) {
         setErrorMessage(firstError.message);
@@ -130,6 +149,27 @@ export default function OpenbaarProfielPage() {
       const predictions = (predictionsResult.data ?? []) as PredictionRow[];
       const rankingHistory =
         (historyResult.data ?? []) as RankingHistoryRow[];
+      const recentMatches = (matchesResult.data ?? []) as MatchRow[];
+      const recentMatchIds = recentMatches.map((match) => Number(match.id));
+
+      function buildRecentForm(userId: string) {
+        return recentMatchIds
+          .slice()
+          .reverse()
+          .map((matchId) =>
+            predictions.find(
+              (prediction) =>
+                prediction.user_id === userId &&
+                Number(prediction.match_id) === matchId &&
+                prediction.points !== null,
+            ),
+          )
+          .filter(
+            (prediction): prediction is PredictionRow =>
+              Boolean(prediction),
+          )
+          .map((prediction) => prediction.points ?? 0);
+      }
 
       const selectedProfile = profiles.find((item) => item.id === profileId);
 
@@ -196,6 +236,7 @@ export default function OpenbaarProfielPage() {
                   ),
                 )
               : 0,
+          recentForm: buildRecentForm(selectedPlayer.id),
         };
       }
 
@@ -256,6 +297,7 @@ export default function OpenbaarProfielPage() {
                 ),
               )
             : 0,
+        recentForm: buildRecentForm(selectedProfile.id),
         season,
       });
 
@@ -518,6 +560,24 @@ export default function OpenbaarProfielPage() {
           </div>
         </section>
 
+        <section className="ucl-card mb-8">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-300">
+                Laatste vijf afgewerkte wedstrijden
+              </p>
+              <h2 className="mt-2 text-2xl font-black text-white">
+                🔥 Recente vorm
+              </h2>
+              <p className="mt-2 text-sm text-slate-400">
+                Van oud naar nieuw. Elke tegel toont de behaalde punten.
+              </p>
+            </div>
+
+            <RecentForm points={profile.recentForm} />
+          </div>
+        </section>
+
         {!isOwnProfile &&
           comparisonProfile &&
           showComparison && (
@@ -563,6 +623,7 @@ export default function OpenbaarProfielPage() {
                     correctResult: profile.correctResult,
                     averagePoints: profile.averagePoints,
                     bestScore: profile.bestScore,
+                    recentForm: profile.recentForm,
                   }}
                   label="Tegenstander"
                 />
@@ -862,6 +923,54 @@ export default function OpenbaarProfielPage() {
   );
 }
 
+function RecentForm({
+  points,
+  compact = false,
+}: {
+  points: number[];
+  compact?: boolean;
+}) {
+  if (points.length === 0) {
+    return (
+      <p className="text-sm font-semibold text-slate-500">
+        Nog geen recente resultaten
+      </p>
+    );
+  }
+
+  return (
+    <div
+      className="flex flex-wrap items-center gap-2"
+      aria-label={`Recente vorm: ${points.join(", ")} punten`}
+    >
+      {points.map((point, index) => {
+        const style =
+          point === 5
+            ? "border-emerald-300/30 bg-emerald-500/20 text-emerald-200"
+            : point === 3
+            ? "border-sky-300/30 bg-sky-500/20 text-sky-200"
+            : point === 2
+            ? "border-amber-300/30 bg-amber-500/20 text-amber-200"
+            : "border-rose-300/25 bg-rose-500/15 text-rose-200";
+
+        return (
+          <div
+            key={`${point}-${index}`}
+            className={`flex items-center justify-center rounded-xl border font-black shadow-lg shadow-slate-950/10 ${style} ${
+              compact
+                ? "h-8 min-w-8 px-2 text-xs"
+                : "h-12 min-w-12 px-3 text-lg"
+            }`}
+            title={`${point} punten`}
+          >
+            {point}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function ComparisonPlayerCard({
   player,
   label,
@@ -901,6 +1010,10 @@ function ComparisonPlayerCard({
         {player.position ? `#${player.position}` : "—"} ·{" "}
         {player.totalPoints} punten
       </p>
+
+      <div className="mt-4 flex justify-center">
+        <RecentForm points={player.recentForm} compact />
+      </div>
     </article>
   );
 }

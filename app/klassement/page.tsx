@@ -12,7 +12,7 @@ type Profile = {
 
 type Prediction = {
   user_id: string;
-  points: number;
+  points: number | null;
   match_id: number;
 };
 
@@ -22,6 +22,7 @@ type Ranking = {
   avatar_url: string | null;
   total_points: number;
   movement: number;
+  recent_form: number[];
 };
 
 export default function KlassementPage() {
@@ -80,6 +81,27 @@ if (!userData.user) {
       }
 
       const latestFinishedMatchId = matches?.[0]?.id;
+      const latestFinishedMatchIds =
+        matches?.slice(0, 5).map((match) => Number(match.id)) ?? [];
+
+      function buildRecentForm(userId: string) {
+        return latestFinishedMatchIds
+          .slice()
+          .reverse()
+          .map((matchId) =>
+            predictions?.find(
+              (prediction: Prediction) =>
+                prediction.user_id === userId &&
+                Number(prediction.match_id) === matchId &&
+                prediction.points !== null,
+            ),
+          )
+          .filter(
+            (prediction): prediction is Prediction =>
+              Boolean(prediction),
+          )
+          .map((prediction) => prediction.points ?? 0);
+      }
 
       function buildRanking(excludeMatchId?: number) {
         const totals =
@@ -108,6 +130,7 @@ if (!userData.user) {
               avatar_url: profile.avatar_url,
               total_points: totalPoints,
               movement: 0,
+              recent_form: buildRecentForm(profile.id),
             };
           }) ?? [];
 
@@ -447,6 +470,11 @@ if (!userData.user) {
                         >
                           {movementLabel(player.movement)}
                         </p>
+
+                        <RecentForm
+                          points={player.recent_form}
+                          compact
+                        />
                       </div>
                     </div>
 
@@ -475,6 +503,54 @@ if (!userData.user) {
 
       </div>
     </main>
+  );
+}
+
+function RecentForm({
+  points,
+  compact = false,
+}: {
+  points: number[];
+  compact?: boolean;
+}) {
+  if (points.length === 0) {
+    return (
+      <p className="mt-1 text-xs font-semibold text-slate-500">
+        Nog geen vorm
+      </p>
+    );
+  }
+
+  return (
+    <div
+      className={`flex items-center gap-1 ${compact ? "mt-1" : ""}`}
+      aria-label={`Recente vorm: ${points.join(", ")} punten`}
+      title="Recente vorm · oud naar nieuw"
+    >
+      {points.map((point, index) => {
+        const style =
+          point === 5
+            ? "border-emerald-300/30 bg-emerald-500/20 text-emerald-200"
+            : point === 3
+            ? "border-sky-300/30 bg-sky-500/20 text-sky-200"
+            : point === 2
+            ? "border-amber-300/30 bg-amber-500/20 text-amber-200"
+            : "border-rose-300/25 bg-rose-500/15 text-rose-200";
+
+        return (
+          <span
+            key={`${point}-${index}`}
+            className={`flex items-center justify-center rounded-md border font-black ${style} ${
+              compact
+                ? "h-6 min-w-6 px-1 text-[10px]"
+                : "h-9 min-w-9 px-2 text-sm"
+            }`}
+          >
+            {point}
+          </span>
+        );
+      })}
+    </div>
   );
 }
 
@@ -619,6 +695,10 @@ function PodiumCard({
       >
         {movementLabel(player.movement)}
       </p>
+
+      <div className="mt-3 flex justify-center">
+        <RecentForm points={player.recent_form} compact />
+      </div>
 
       <div
         className={`mt-3 flex items-center justify-center rounded-xl border font-black ${podiumHeight} ${podiumClass}`}
