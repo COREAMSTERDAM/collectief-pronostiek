@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Collectief Pronostiek",
-  description: "De pronostiek-app voor supporters",
+  title: "Collectief Wit en Zwet App",
+  description: "De app voor Iendracht supporters",
 };
 
 export default function RootLayout({

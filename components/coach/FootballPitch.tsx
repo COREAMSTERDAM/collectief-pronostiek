@@ -46,7 +46,7 @@ export default function FootballPitch({
       <div className="mx-auto w-full max-w-3xl">
         <div className="relative aspect-[68/105] overflow-hidden rounded-[2rem] border-2 border-white/40 bg-gradient-to-b from-zinc-700 via-zinc-800 to-zinc-900 shadow-inner shadow-black/50">
           <div className="absolute inset-0 opacity-90">
-            <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-white/35" />
+            <div className="absolute left-[3%] right-[3%] top-1/2 h-px -translate-y-1/2 bg-white/35" />
             <div className="absolute left-1/2 top-1/2 aspect-square h-[18%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/35" />
             <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/45" />
             <div className="absolute left-1/2 top-0 h-[16%] w-[48%] -translate-x-1/2 border-x border-b border-white/35" />
