@@ -13,7 +13,7 @@ const navigation = [
   },
   {
     href: "/iedereen-coach",
-    label: "Iedereen Coach",
+    label: "Iedereen Coach BETA",
     description: "Stel per wedstrijd jouw ideale basiself samen.",
     icon: "🧠",
   },
@@ -48,7 +48,7 @@ export default function Home() {
       <div className="ucl-container">
         <section className="ucl-card text-center">
           <p className="mb-4 text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
-            Supportersclub
+            Supporterscollectief
           </p>
 
           <img
