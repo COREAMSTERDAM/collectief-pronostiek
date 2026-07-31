@@ -76,6 +76,7 @@ export default function IedereenBondscoachPage() {
       return;
     }
 
+    const formationId = selectedFormationId;
     let isMounted = true;
 
     async function loadPositions() {
@@ -83,7 +84,7 @@ export default function IedereenBondscoachPage() {
         setIsLoadingPositions(true);
         setErrorMessage(null);
 
-        const result = await getFormationPositions(selectedFormationId);
+        const result = await getFormationPositions(formationId);
 
         if (isMounted) {
           setPositions(result);
