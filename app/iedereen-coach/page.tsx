@@ -1,417 +1,229 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import FootballPitch from "@/components/coach/FootballPitch";
-import FormationSelector from "@/components/coach/FormationSelector";
-import PlayerSelectionModal from "@/components/coach/PlayerSelectionModal";
-import SaveLineupPanel from "@/components/coach/SaveLineupPanel";
+import CoachMatchCard from "@/components/coach/CoachMatchCard";
+import { getActiveCoachTeams } from "@/src/lib/coach";
 import {
-  getActiveCoachPlayers,
-  getActiveCoachTeams,
-  getActiveFormations,
-  getFormationPositions,
-  getSavedUserLineup,
-  saveUserLineup,
-  submitSavedUserLineup,
-  type CoachPlayer,
-  type CoachTeam,
-  type Formation,
-  type FormationPosition,
-  type SavedLineup,
-} from "@/src/lib/coach";
+  getCoachMatchOverview,
+  type CoachMatchOverview,
+} from "@/src/lib/coach-match";
 
-function createLineupSignature(
-  formationId: number | null,
-  selectedPlayers: Record<number, CoachPlayer>,
-) {
-  const assignments = Object.entries(selectedPlayers)
-    .map(([positionId, player]) => `${positionId}:${player.id}`)
-    .sort()
-    .join("|");
+export default function IedereenCoachPage() {
+  const [matches, setMatches] = useState<CoachMatchOverview[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [now, setNow] = useState(() => Date.now());
 
-  return `${formationId ?? "none"}::${assignments}`;
-}
+  const loadMatches = useCallback(async (refresh = false) => {
+    try {
+      if (refresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
 
-function buildSelectedPlayers(
-  savedLineup: SavedLineup,
-  players: CoachPlayer[],
-) {
-  const playersById = new Map(
-    players.map((player) => [player.id, player]),
-  );
-  const result: Record<number, CoachPlayer> = {};
+      setErrorMessage("");
 
-  for (const assignment of savedLineup.playerAssignments) {
-    const player = playersById.get(assignment.player_id);
+      const teams = await getActiveCoachTeams();
+      const team = teams[0];
 
-    if (player) {
-      result[assignment.formation_position_id] = player;
+      if (!team) {
+        throw new Error(
+          "Er is geen actief team ingesteld voor Iedereen Coach.",
+        );
+      }
+
+      const result = await getCoachMatchOverview(team.id);
+      setMatches(result);
+      setNow(Date.now());
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "De wedstrijden konden niet worden geladen.",
+      );
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-  }
-
-  return result;
-}
-
-export default function IedereenBondscoachPage() {
-  const [formations, setFormations] = useState<Formation[]>([]);
-  const [teams, setTeams] = useState<CoachTeam[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState<CoachTeam | null>(null);
-  const [selectedFormationId, setSelectedFormationId] =
-    useState<number | null>(null);
-  const [positions, setPositions] = useState<FormationPosition[]>([]);
-  const [players, setPlayers] = useState<CoachPlayer[]>([]);
-  const [selectedPlayers, setSelectedPlayers] = useState<
-    Record<number, CoachPlayer>
-  >({});
-  const [savedLineup, setSavedLineup] = useState<SavedLineup | null>(null);
-  const [lastSavedSignature, setLastSavedSignature] = useState("");
-  const [activePosition, setActivePosition] =
-    useState<FormationPosition | null>(null);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isLoadingPositions, setIsLoadingPositions] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const selectedFormation = useMemo(
-    () =>
-      formations.find(
-        (formation) => formation.id === selectedFormationId,
-      ) ?? null,
-    [formations, selectedFormationId],
-  );
-
-  const selectedPlayerIds = useMemo(
-    () => Object.values(selectedPlayers).map((player) => player.id),
-    [selectedPlayers],
-  );
-
-  const currentPlayerId = activePosition
-    ? selectedPlayers[activePosition.id]?.id ?? null
-    : null;
-
-  const currentSignature = useMemo(
-    () => createLineupSignature(selectedFormationId, selectedPlayers),
-    [selectedFormationId, selectedPlayers],
-  );
-
-  const hasChanges = currentSignature !== lastSavedSignature;
+  }, []);
 
   useEffect(() => {
-    let isMounted = true;
+    void loadMatches();
 
-    async function loadPage() {
-      try {
-        setIsInitialLoading(true);
-        setErrorMessage(null);
-        setSuccessMessage(null);
-
-        const [formationResult, playerResult, teamResult] =
-          await Promise.all([
-            getActiveFormations(),
-            getActiveCoachPlayers(),
-            getActiveCoachTeams(),
-          ]);
-
-        if (!isMounted) return;
-
-        setFormations(formationResult);
-        setPlayers(playerResult);
-        setTeams(teamResult);
-
-        const firstTeam = teamResult[0] ?? null;
-        setSelectedTeam(firstTeam);
-
-        if (!firstTeam) {
-          throw new Error(
-            "Er is geen actief team ingesteld voor Iedereen Bondscoach.",
-          );
-        }
-
-        const existingLineup = await getSavedUserLineup(firstTeam.id);
-
-        if (!isMounted) return;
-
-        const initialFormationId =
-          existingLineup?.formation_id ?? formationResult[0]?.id ?? null;
-
-        if (initialFormationId === null) {
-          throw new Error("Er is geen actieve formatie beschikbaar.");
-        }
-
-        const positionResult =
-          await getFormationPositions(initialFormationId);
-
-        if (!isMounted) return;
-
-        const restoredPlayers = existingLineup
-          ? buildSelectedPlayers(existingLineup, playerResult)
-          : {};
-
-        setSavedLineup(existingLineup);
-        setSelectedFormationId(initialFormationId);
-        setPositions(positionResult);
-        setSelectedPlayers(restoredPlayers);
-        setLastSavedSignature(
-          createLineupSignature(initialFormationId, restoredPlayers),
-        );
-      } catch (error) {
-        if (!isMounted) return;
-
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "De pagina kon niet worden geladen.",
-        );
-      } finally {
-        if (isMounted) {
-          setIsInitialLoading(false);
-        }
-      }
-    }
-
-    void loadPage();
+    const interval = window.setInterval(() => {
+      setNow(Date.now());
+    }, 30_000);
 
     return () => {
-      isMounted = false;
+      window.clearInterval(interval);
     };
-  }, []);
+  }, [loadMatches]);
 
-  const closePlayerModal = useCallback(() => {
-    setActivePosition(null);
-  }, []);
+  const summary = useMemo(() => {
+    return matches.reduce(
+      (result, match) => {
+        const deadlineHasPassed =
+          new Date(match.deadline).getTime() <= now || !match.is_open;
 
-  async function handleFormationChange(formationId: number) {
-    if (
-      formationId === selectedFormationId ||
-      isLoadingPositions ||
-      isSaving
-    ) {
-      return;
-    }
+        if (deadlineHasPassed) {
+          result.closed += 1;
+        } else {
+          result.open += 1;
+        }
 
-    try {
-      setIsLoadingPositions(true);
-      setErrorMessage(null);
-      setSuccessMessage(null);
-      setActivePosition(null);
+        if (match.has_lineup) {
+          result.started += 1;
+        }
 
-      const positionResult = await getFormationPositions(formationId);
+        if (match.is_complete) {
+          result.complete += 1;
+        }
 
-      setSelectedFormationId(formationId);
-      setPositions(positionResult);
-      setSelectedPlayers({});
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "De formatie kon niet worden geladen.",
-      );
-    } finally {
-      setIsLoadingPositions(false);
-    }
-  }
-
-  function handleSelectPlayer(player: CoachPlayer) {
-    if (!activePosition) return;
-
-    setSelectedPlayers((current) => ({
-      ...current,
-      [activePosition.id]: player,
-    }));
-    setSuccessMessage(null);
-    setActivePosition(null);
-  }
-
-  function handleRemovePlayer() {
-    if (!activePosition) return;
-
-    setSelectedPlayers((current) => {
-      const updated = { ...current };
-      delete updated[activePosition.id];
-      return updated;
-    });
-
-    setSuccessMessage(null);
-    setActivePosition(null);
-  }
-
-  async function handleSaveLineup() {
-    if (
-      !selectedTeam ||
-      !selectedFormation ||
-      isSaving ||
-      Object.keys(selectedPlayers).length === 0
-    ) {
-      return;
-    }
-
-    try {
-      setIsSaving(true);
-      setErrorMessage(null);
-      setSuccessMessage(null);
-
-      const assignments = Object.entries(selectedPlayers).map(
-        ([formationPositionId, player]) => ({
-          formationPositionId: Number(formationPositionId),
-          playerId: player.id,
-        }),
-      );
-
-      const lineupId = await saveUserLineup({
-        teamId: selectedTeam.id,
-        formationId: selectedFormation.id,
-        assignments,
-      });
-
-      const isComplete =
-        assignments.length === selectedFormation.player_count;
-
-      if (isComplete) {
-        await submitSavedUserLineup(lineupId);
-      }
-
-      const savedAt = new Date().toISOString();
-
-      const updatedLineup: SavedLineup = {
-        id: lineupId,
-        team_id: selectedTeam.id,
-        formation_id: selectedFormation.id,
-        is_complete: isComplete,
-        updated_at: savedAt,
-        playerAssignments: assignments.map((assignment) => ({
-          formation_position_id:
-            assignment.formationPositionId,
-          player_id: assignment.playerId,
-        })),
-      };
-
-      setSavedLineup(updatedLineup);
-      setLastSavedSignature(currentSignature);
-
-      setSuccessMessage(
-        isComplete
-          ? "✅ Je volledige basiself werd opgeslagen en als nieuwe inzending geregistreerd."
-          : "✅ Je voorlopige opstelling werd opgeslagen. Je kunt later verder werken.",
-      );
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "De opstelling kon niet worden opgeslagen.",
-      );
-    } finally {
-      setIsSaving(false);
-    }
-  }
+        return result;
+      },
+      {
+        open: 0,
+        closed: 0,
+        started: 0,
+        complete: 0,
+      },
+    );
+  }, [matches, now]);
 
   return (
     <main className="min-h-screen bg-black px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-8 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-amber-300/[0.07] p-6 shadow-2xl shadow-black/30 sm:p-8">
-          <div className="max-w-3xl">
-            <p className="text-xs font-black uppercase tracking-[0.28em] text-amber-200/70">
-              Iendracht Manager 26
-            </p>
-
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
-              Iederiejn Coach
-            </h1>
-
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">
-              Stel jouw ideale basiself samen en bewaar je keuze.
-              Volledige opstellingen worden als historische inzending
-              opgeslagen voor de latere collectieve analyses.
-            </p>
-
-            {selectedTeam ? (
-              <p className="mt-3 text-xs font-black uppercase tracking-[0.18em] text-white/35">
-                Team: {selectedTeam.name}
+        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-amber-300/[0.07] p-6 shadow-2xl shadow-black/30 sm:p-8">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-3xl">
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-amber-200/70">
+                Collectief Pronostiek
               </p>
-            ) : null}
+
+              <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">
+                Iedereen Coach
+              </h1>
+
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-white/55 sm:text-base">
+                Stel per wedstrijd jouw ideale basiself samen. Aanpassen en
+                indienen kan tot twee uur voor de aftrap.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              disabled={loading || refreshing}
+              onClick={() => {
+                void loadMatches(true);
+              }}
+              className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-black text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {refreshing ? "Vernieuwen…" : "↻ Vernieuwen"}
+            </button>
           </div>
         </header>
 
         {errorMessage ? (
-          <div
-            role="alert"
-            className="mb-6 rounded-2xl border border-red-400/25 bg-red-400/10 px-4 py-3 text-sm font-semibold text-red-100"
-          >
+          <div className="mt-6 rounded-2xl border border-red-400/25 bg-red-400/10 p-4 text-sm font-semibold text-red-100">
             {errorMessage}
           </div>
         ) : null}
 
-        {successMessage ? (
-          <div
-            role="status"
-            className="mb-6 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100"
-          >
-            {successMessage}
-          </div>
-        ) : null}
-
-        {isInitialLoading ? (
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-12 text-center text-sm font-semibold text-white/55">
-            Formaties, spelers en je opgeslagen opstelling laden…
+        {loading ? (
+          <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-10 text-center text-white/50">
+            Wedstrijden laden…
           </div>
         ) : (
           <>
-            <div className="grid gap-6 lg:grid-cols-[0.82fr_1.18fr]">
-              <FormationSelector
-                formations={formations}
-                selectedFormationId={selectedFormationId}
-                disabled={isLoadingPositions || isSaving}
-                onChange={(formationId) => {
-                  void handleFormationChange(formationId);
-                }}
-              />
+            <section className="mt-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
+              <article className="rounded-3xl border border-emerald-300/20 bg-emerald-400/10 p-5">
+                <p className="text-xs font-black uppercase tracking-wide text-emerald-100/60">
+                  Open
+                </p>
+                <p className="mt-2 text-3xl font-black">
+                  {summary.open}
+                </p>
+              </article>
 
-              {selectedFormation && !isLoadingPositions ? (
-                positions.length > 0 ? (
-                  <FootballPitch
-                    formationName={selectedFormation.name}
-                    positions={positions}
-                    selectedPlayers={selectedPlayers}
-                    onPositionClick={setActivePosition}
+              <article className="rounded-3xl border border-sky-300/20 bg-sky-400/10 p-5">
+                <p className="text-xs font-black uppercase tracking-wide text-sky-100/60">
+                  Gestart
+                </p>
+                <p className="mt-2 text-3xl font-black">
+                  {summary.started}
+                </p>
+              </article>
+
+              <article className="rounded-3xl border border-amber-300/20 bg-amber-400/10 p-5">
+                <p className="text-xs font-black uppercase tracking-wide text-amber-100/60">
+                  Volledig
+                </p>
+                <p className="mt-2 text-3xl font-black">
+                  {summary.complete}
+                </p>
+              </article>
+
+              <article className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+                <p className="text-xs font-black uppercase tracking-wide text-white/40">
+                  Gesloten
+                </p>
+                <p className="mt-2 text-3xl font-black">
+                  {summary.closed}
+                </p>
+              </article>
+            </section>
+
+            {matches.length === 0 ? (
+              <section className="mt-6 rounded-3xl border border-dashed border-white/15 bg-white/[0.025] p-8 text-center">
+                <div className="text-5xl">📅</div>
+                <h2 className="mt-4 text-2xl font-black">
+                  Geen wedstrijden beschikbaar
+                </h2>
+                <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/45">
+                  Zodra er wedstrijden in de database staan, verschijnen ze
+                  hier automatisch.
+                </p>
+              </section>
+            ) : (
+              <section className="mt-6 grid gap-6 lg:grid-cols-2">
+                {matches.map((match) => (
+                  <CoachMatchCard
+                    key={match.match_id}
+                    match={match}
+                    now={now}
                   />
-                ) : (
-                  <div className="flex min-h-72 items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/[0.025] p-6 text-center text-sm text-white/50">
-                    Voor deze formatie zijn nog geen posities ingesteld.
-                  </div>
-                )
-              ) : (
-                <div className="flex min-h-72 items-center justify-center rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-sm font-semibold text-white/55">
-                  Veld laden…
-                </div>
-              )}
-            </div>
-
-            {selectedFormation ? (
-              <SaveLineupPanel
-                selectedCount={Object.keys(selectedPlayers).length}
-                requiredCount={selectedFormation.player_count}
-                isSaving={isSaving}
-                hasChanges={hasChanges}
-                lastSavedAt={savedLineup?.updated_at ?? null}
-                onSave={() => {
-                  void handleSaveLineup();
-                }}
-              />
-            ) : null}
+                ))}
+              </section>
+            )}
           </>
         )}
-      </div>
 
-      <PlayerSelectionModal
-        isOpen={activePosition !== null}
-        position={activePosition}
-        players={players}
-        selectedPlayerIds={selectedPlayerIds}
-        currentPlayerId={currentPlayerId}
-        onSelect={handleSelectPlayer}
-        onRemove={handleRemovePlayer}
-        onClose={closePlayerModal}
-      />
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <Link
+            href="/iedereen-coach/collectief"
+            className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center text-sm font-black transition hover:bg-white/10"
+          >
+            Collectieve basiself
+          </Link>
+
+          <Link
+            href="/iedereen-coach/analytics"
+            className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center text-sm font-black transition hover:bg-white/10"
+          >
+            Community Analytics
+          </Link>
+
+          <Link
+            href="/"
+            className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center text-sm font-black transition hover:bg-white/10"
+          >
+            Terug naar dashboard
+          </Link>
+        </div>
+      </div>
     </main>
   );
 }
