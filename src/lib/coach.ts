@@ -46,6 +46,52 @@ export type SavedLineup = {
   }>;
 };
 
+export type CollectiveFormationStat = {
+  formation_id: number;
+  formation_name: string;
+  description: string | null;
+  coach_count: number;
+  percentage: number;
+};
+
+export type CollectiveLineupPlayer = {
+  position_code: string;
+  position_label: string;
+  position_group: FormationPosition["position_group"];
+  x_percent: number;
+  y_percent: number;
+  sort_order: number;
+  player_id: number;
+  player_name: string;
+  shirt_number: number | null;
+  registered_position: string | null;
+  photo_url: string | null;
+  votes: number;
+  position_percentage: number;
+};
+
+export type CollectiveTopPlayer = {
+  player_id: number;
+  player_name: string;
+  shirt_number: number | null;
+  registered_position: string | null;
+  photo_url: string | null;
+  coach_count: number;
+  selection_percentage: number;
+};
+
+export type CollectiveDashboard = {
+  team_id: number;
+  campaign_key: string | null;
+  total_coaches: number;
+  total_submissions: number;
+  latest_submission_at: string | null;
+  most_popular_formation: CollectiveFormationStat | null;
+  formations: CollectiveFormationStat[];
+  collective_lineup: CollectiveLineupPlayer[];
+  top_players: CollectiveTopPlayer[];
+};
+
 type FormationRow = {
   id: number;
   name: string;
@@ -269,4 +315,70 @@ export async function submitSavedUserLineup(
   }
 
   return data;
+}
+
+export async function getCollectiveLineupDashboard(
+  teamId: number,
+  campaignKey = "iedereen-bondscoach",
+): Promise<CollectiveDashboard> {
+  const { data, error } = await supabase.rpc(
+    "get_collective_lineup_dashboard",
+    {
+      target_team_id: teamId,
+      target_campaign_key: campaignKey,
+    },
+  );
+
+  if (error) {
+    throw new Error(
+      `Collectieve statistieken ophalen mislukt: ${error.message}`,
+    );
+  }
+
+  const dashboard = data as unknown as CollectiveDashboard;
+
+  return {
+    team_id: Number(dashboard.team_id),
+    campaign_key: dashboard.campaign_key ?? null,
+    total_coaches: Number(dashboard.total_coaches ?? 0),
+    total_submissions: Number(dashboard.total_submissions ?? 0),
+    latest_submission_at: dashboard.latest_submission_at ?? null,
+    most_popular_formation: dashboard.most_popular_formation
+      ? {
+          ...dashboard.most_popular_formation,
+          formation_id: Number(
+            dashboard.most_popular_formation.formation_id,
+          ),
+          coach_count: Number(
+            dashboard.most_popular_formation.coach_count,
+          ),
+          percentage: Number(
+            dashboard.most_popular_formation.percentage,
+          ),
+        }
+      : null,
+    formations: (dashboard.formations ?? []).map((formation) => ({
+      ...formation,
+      formation_id: Number(formation.formation_id),
+      coach_count: Number(formation.coach_count),
+      percentage: Number(formation.percentage),
+    })),
+    collective_lineup: (dashboard.collective_lineup ?? []).map(
+      (player) => ({
+        ...player,
+        x_percent: Number(player.x_percent),
+        y_percent: Number(player.y_percent),
+        sort_order: Number(player.sort_order),
+        player_id: Number(player.player_id),
+        votes: Number(player.votes),
+        position_percentage: Number(player.position_percentage),
+      }),
+    ),
+    top_players: (dashboard.top_players ?? []).map((player) => ({
+      ...player,
+      player_id: Number(player.player_id),
+      coach_count: Number(player.coach_count),
+      selection_percentage: Number(player.selection_percentage),
+    })),
+  };
 }
