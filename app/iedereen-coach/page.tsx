@@ -100,11 +100,11 @@ export default function IedereenCoachPage() {
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-3xl">
               <p className="text-xs font-black uppercase tracking-[0.28em] text-amber-200/70">
-                Collectief Pronostiek
+                Iendracht Manager 26
               </p>
 
               <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-5xl">
-                Iedereen Coach
+                Iederiejn Coach
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-white/55 sm:text-base">
@@ -213,7 +213,7 @@ export default function IedereenCoachPage() {
             href="/iedereen-coach/analytics"
             className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center text-sm font-black transition hover:bg-white/10"
           >
-            Community Analytics
+            Statistieken
           </Link>
 
           <Link

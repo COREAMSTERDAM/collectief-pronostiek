@@ -455,7 +455,7 @@ export default function MatchCoachEditorPage() {
           <>
             <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-amber-300/[0.07] p-6 sm:p-8">
               <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
-                Iedereen Coach
+                Iederiejn Coach
               </p>
 
               <h1 className="mt-3 text-center text-2xl font-black sm:text-4xl">

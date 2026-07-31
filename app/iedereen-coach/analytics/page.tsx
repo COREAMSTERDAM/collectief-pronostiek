@@ -50,7 +50,7 @@ export default function CommunityAnalyticsPage() {
       <div className="mx-auto max-w-6xl">
         <header className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-amber-300/[0.07] p-6 sm:p-8">
           <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
-            Iedereen Bondscoach
+            Iederiejn Coach
           </p>
           <h1 className="mt-3 text-3xl font-black sm:text-5xl">
             Community Analytics
@@ -162,14 +162,14 @@ export default function CommunityAnalyticsPage() {
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <Link
-            href="/iedereen-bondscoach"
+            href="/iedereen-coach"
             className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center text-sm font-black hover:bg-white/10"
           >
             Mijn opstelling
           </Link>
 
           <Link
-            href="/iedereen-bondscoach/collectief"
+            href="/iedereen-coach/collectief"
             className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center text-sm font-black hover:bg-white/10"
           >
             Collectieve basiself
