@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "../src/lib/supabase";
+import { supabase } from "@/src/lib/supabase";
 
 export default function Home() {
   async function logout() {
@@ -19,9 +19,7 @@ export default function Home() {
           />
 
           <div className="text-center">
-            <h1 className="ucl-title">
-              Collectief Wit en Zwet
-            </h1>
+            <h1 className="ucl-title">Collectief Wit en Zwet</h1>
 
             <p className="ucl-subtitle">
               Voorspel de wedstrijden, verzamel punten en strijd om de eerste
@@ -30,43 +28,35 @@ export default function Home() {
           </div>
         </section>
 
-<div className="mt-6 space-y-4">
-  <a
-    href="/pronostiekpagina"
-    className="ucl-button-primary"
-  >
-    ⚽ Pronostiek
-  </a>
+        <div className="mt-6 space-y-4">
+          <a href="/pronostiekpagina" className="ucl-button-primary">
+            ⚽ Pronostiek
+          </a>
 
-  <a
-    href="/motmpagina"
-    className="ucl-button-secondary"
-  >
-    ⭐ Man van de wedstrijd
-  </a>
+          <a href="/motmpagina" className="ucl-button-secondary">
+            ⭐ Man van de wedstrijd
+          </a>
 
-  <a
-    href="/registreren"
-    className="ucl-button-secondary"
-  >
-    📝 Registreren of Inloggen
-  </a>
+          <a href="/profiel" className="ucl-button-secondary">
+            👤 Mijn profiel
+          </a>
 
-  <a
-    href="/admin-keuze"
-    className="ucl-button-secondary"
-  >
-    ⚙️ Admin
-  </a>
+          <a href="/registreren" className="ucl-button-secondary">
+            📝 Registreren of Inloggen
+          </a>
 
-  <button
-    type="button"
-    onClick={logout}
-    className="ucl-button-danger"
-  >
-    🚪 Uitloggen
-  </button>
-</div>
+          <a href="/admin-keuze" className="ucl-button-secondary">
+            ⚙️ Admin
+          </a>
+
+          <button
+            type="button"
+            onClick={logout}
+            className="ucl-button-danger"
+          >
+            🚪 Uitloggen
+          </button>
+        </div>
       </div>
     </main>
   );
