@@ -49,6 +49,20 @@ type PublicProfile = {
   season: SeasonPoint[];
 };
 
+type ComparisonProfile = {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  position: number | null;
+  totalPoints: number;
+  predictionsCount: number;
+  exactScores: number;
+  correctGoalDifference: number;
+  correctResult: number;
+  averagePoints: number;
+  bestScore: number;
+};
+
 type Achievement = {
   icon: string;
   title: string;
@@ -63,6 +77,9 @@ export default function OpenbaarProfielPage() {
   const profileId = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const [profile, setProfile] = useState<PublicProfile | null>(null);
+  const [comparisonProfile, setComparisonProfile] =
+    useState<ComparisonProfile | null>(null);
+  const [showComparison, setShowComparison] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -134,6 +151,54 @@ export default function OpenbaarProfielPage() {
         }))
         .sort((a, b) => b.totalPoints - a.totalPoints);
 
+      function buildComparisonProfile(
+        selectedPlayer: ProfileRow,
+      ): ComparisonProfile {
+        const playerPredictions = predictions.filter(
+          (prediction) => prediction.user_id === selectedPlayer.id,
+        );
+        const scoredPlayerPredictions = playerPredictions.filter(
+          (prediction) => prediction.points !== null,
+        );
+        const playerTotalPoints =
+          ranking.find((item) => item.userId === selectedPlayer.id)
+            ?.totalPoints ?? 0;
+        const playerRankingIndex = ranking.findIndex(
+          (item) => item.userId === selectedPlayer.id,
+        );
+
+        return {
+          id: selectedPlayer.id,
+          name: selectedPlayer.name,
+          avatarUrl: selectedPlayer.avatar_url,
+          position:
+            playerRankingIndex >= 0 ? playerRankingIndex + 1 : null,
+          totalPoints: playerTotalPoints,
+          predictionsCount: playerPredictions.length,
+          exactScores: scoredPlayerPredictions.filter(
+            (prediction) => prediction.points === 5,
+          ).length,
+          correctGoalDifference: scoredPlayerPredictions.filter(
+            (prediction) => prediction.points === 3,
+          ).length,
+          correctResult: scoredPlayerPredictions.filter(
+            (prediction) => prediction.points === 2,
+          ).length,
+          averagePoints:
+            scoredPlayerPredictions.length > 0
+              ? playerTotalPoints / scoredPlayerPredictions.length
+              : 0,
+          bestScore:
+            scoredPlayerPredictions.length > 0
+              ? Math.max(
+                  ...scoredPlayerPredictions.map(
+                    (prediction) => prediction.points ?? 0,
+                  ),
+                )
+              : 0,
+        };
+      }
+
       const rankingIndex = ranking.findIndex(
         (item) => item.userId === profileId,
       );
@@ -194,6 +259,13 @@ export default function OpenbaarProfielPage() {
         season,
       });
 
+      const ownProfile = profiles.find(
+        (item) => item.id === authData.user.id,
+      );
+
+      setComparisonProfile(
+        ownProfile ? buildComparisonProfile(ownProfile) : null,
+      );
       setLoading(false);
     }
 
@@ -363,11 +435,30 @@ export default function OpenbaarProfielPage() {
             ← Terug naar klassement
           </Link>
 
-          {isOwnProfile && (
-            <Link href="/profiel" className="ucl-button-primary">
-              ✏️ Mijn profiel bewerken
-            </Link>
-          )}
+          <div className="flex flex-wrap gap-3">
+            {!isOwnProfile && comparisonProfile && (
+              <button
+                type="button"
+                onClick={() =>
+                  setShowComparison((current) => !current)
+                }
+                className="ucl-button-primary"
+                aria-expanded={showComparison}
+                aria-controls="spelers-vergelijking"
+              >
+                ⚔️{" "}
+                {showComparison
+                  ? "Vergelijking sluiten"
+                  : "Vergelijk met mij"}
+              </button>
+            )}
+
+            {isOwnProfile && (
+              <Link href="/profiel" className="ucl-button-primary">
+                ✏️ Mijn profiel bewerken
+              </Link>
+            )}
+          </div>
         </div>
 
         <section className="ucl-card mb-8 overflow-hidden">
@@ -426,6 +517,167 @@ export default function OpenbaarProfielPage() {
             </div>
           </div>
         </section>
+
+        {!isOwnProfile &&
+          comparisonProfile &&
+          showComparison && (
+            <section
+              id="spelers-vergelijking"
+              className="ucl-card mb-8 border-sky-400/25"
+            >
+              <div className="mb-6">
+                <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-300">
+                  Rechtstreeks duel
+                </p>
+                <h2 className="mt-2 text-2xl font-black text-white">
+                  ⚔️ Spelers vergelijken
+                </h2>
+                <p className="mt-2 text-slate-400">
+                  Vergelijk jouw prestaties met die van {profile.name}.
+                </p>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
+                <ComparisonPlayerCard
+                  player={comparisonProfile}
+                  label="Jij"
+                />
+
+                <div className="flex items-center justify-center">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-xl font-black text-slate-300">
+                    VS
+                  </span>
+                </div>
+
+                <ComparisonPlayerCard
+                  player={{
+                    id: profile.id,
+                    name: profile.name,
+                    avatarUrl: profile.avatarUrl,
+                    position: profile.position,
+                    totalPoints: profile.totalPoints,
+                    predictionsCount: profile.predictionsCount,
+                    exactScores: profile.exactScores,
+                    correctGoalDifference:
+                      profile.correctGoalDifference,
+                    correctResult: profile.correctResult,
+                    averagePoints: profile.averagePoints,
+                    bestScore: profile.bestScore,
+                  }}
+                  label="Tegenstander"
+                />
+              </div>
+
+              <div className="mt-6 overflow-hidden rounded-2xl border border-white/10">
+                <ComparisonRow
+                  label="Klassementspositie"
+                  ownValue={
+                    comparisonProfile.position
+                      ? `#${comparisonProfile.position}`
+                      : "—"
+                  }
+                  opponentValue={
+                    profile.position ? `#${profile.position}` : "—"
+                  }
+                  ownWins={
+                    comparisonProfile.position !== null &&
+                    profile.position !== null &&
+                    comparisonProfile.position < profile.position
+                  }
+                  opponentWins={
+                    comparisonProfile.position !== null &&
+                    profile.position !== null &&
+                    profile.position < comparisonProfile.position
+                  }
+                />
+                <ComparisonRow
+                  label="Totale punten"
+                  ownValue={comparisonProfile.totalPoints}
+                  opponentValue={profile.totalPoints}
+                  ownWins={
+                    comparisonProfile.totalPoints > profile.totalPoints
+                  }
+                  opponentWins={
+                    profile.totalPoints > comparisonProfile.totalPoints
+                  }
+                />
+                <ComparisonRow
+                  label="Exacte scores"
+                  ownValue={comparisonProfile.exactScores}
+                  opponentValue={profile.exactScores}
+                  ownWins={
+                    comparisonProfile.exactScores > profile.exactScores
+                  }
+                  opponentWins={
+                    profile.exactScores > comparisonProfile.exactScores
+                  }
+                />
+                <ComparisonRow
+                  label="Juist doelpuntensaldo"
+                  ownValue={comparisonProfile.correctGoalDifference}
+                  opponentValue={profile.correctGoalDifference}
+                  ownWins={
+                    comparisonProfile.correctGoalDifference >
+                    profile.correctGoalDifference
+                  }
+                  opponentWins={
+                    profile.correctGoalDifference >
+                    comparisonProfile.correctGoalDifference
+                  }
+                />
+                <ComparisonRow
+                  label="Juiste winnaar/gelijkspel"
+                  ownValue={comparisonProfile.correctResult}
+                  opponentValue={profile.correctResult}
+                  ownWins={
+                    comparisonProfile.correctResult >
+                    profile.correctResult
+                  }
+                  opponentWins={
+                    profile.correctResult >
+                    comparisonProfile.correctResult
+                  }
+                />
+                <ComparisonRow
+                  label="Gemiddelde punten"
+                  ownValue={comparisonProfile.averagePoints.toFixed(2)}
+                  opponentValue={profile.averagePoints.toFixed(2)}
+                  ownWins={
+                    comparisonProfile.averagePoints >
+                    profile.averagePoints
+                  }
+                  opponentWins={
+                    profile.averagePoints >
+                    comparisonProfile.averagePoints
+                  }
+                />
+                <ComparisonRow
+                  label="Beste voorspelling"
+                  ownValue={comparisonProfile.bestScore}
+                  opponentValue={profile.bestScore}
+                  ownWins={
+                    comparisonProfile.bestScore > profile.bestScore
+                  }
+                  opponentWins={
+                    profile.bestScore > comparisonProfile.bestScore
+                  }
+                />
+                <ComparisonRow
+                  label="Ingevulde voorspellingen"
+                  ownValue={comparisonProfile.predictionsCount}
+                  opponentValue={profile.predictionsCount}
+                  ownWins={
+                    comparisonProfile.predictionsCount >
+                    profile.predictionsCount
+                  }
+                  opponentWins={
+                    profile.predictionsCount >
+                    comparisonProfile.predictionsCount
+                  }
+                />
+              </div>
+            </section>
+          )}
 
         <section className="mb-8">
           <div className="mb-4">
@@ -607,6 +859,87 @@ export default function OpenbaarProfielPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+function ComparisonPlayerCard({
+  player,
+  label,
+}: {
+  player: ComparisonProfile;
+  label: string;
+}) {
+  const initials =
+    player.name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("") || "?";
+
+  return (
+    <article className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-sky-300/30 bg-gradient-to-br from-sky-500/25 to-indigo-500/20 text-xl font-black text-white">
+        {player.avatarUrl ? (
+          <img
+            src={player.avatarUrl}
+            alt={`Profielfoto van ${player.name}`}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          initials
+        )}
+      </div>
+
+      <p className="mt-3 text-xs font-black uppercase tracking-wider text-sky-300">
+        {label}
+      </p>
+      <h3 className="mt-1 truncate text-xl font-black text-white">
+        {player.name}
+      </h3>
+      <p className="mt-2 text-sm font-bold text-slate-400">
+        {player.position ? `#${player.position}` : "—"} ·{" "}
+        {player.totalPoints} punten
+      </p>
+    </article>
+  );
+}
+
+function ComparisonRow({
+  label,
+  ownValue,
+  opponentValue,
+  ownWins,
+  opponentWins,
+}: {
+  label: string;
+  ownValue: string | number;
+  opponentValue: string | number;
+  ownWins: boolean;
+  opponentWins: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-[1fr_1.5fr_1fr] items-center gap-2 border-b border-white/10 px-3 py-4 last:border-b-0 sm:px-5">
+      <p
+        className={`text-left text-lg font-black ${
+          ownWins ? "text-emerald-300" : "text-white"
+        }`}
+      >
+        {ownValue}
+      </p>
+
+      <p className="text-center text-xs font-black uppercase tracking-wider text-slate-400 sm:text-sm">
+        {label}
+      </p>
+
+      <p
+        className={`text-right text-lg font-black ${
+          opponentWins ? "text-emerald-300" : "text-white"
+        }`}
+      >
+        {opponentValue}
+      </p>
+    </div>
   );
 }
 
