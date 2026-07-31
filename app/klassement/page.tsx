@@ -113,7 +113,8 @@ if (!userData.user) {
 
                 const notExcluded =
                   !excludeMatchId ||
-                  prediction.match_id !== excludeMatchId;
+                  Number(prediction.match_id) !==
+                    Number(excludeMatchId);
 
                 return sameUser && notExcluded;
               }) ?? [];
@@ -193,6 +194,11 @@ if (!userData.user) {
         (player) => player.user_id === biggestRiser.user_id,
       ) + 1
     : null;
+
+  const biggestRiserPreviousPosition =
+    biggestRiser && biggestRiserPosition
+      ? biggestRiserPosition + biggestRiser.movement
+      : null;
 
   function movementLabel(movement: number) {
     if (movement > 0) return `↑ ${movement}`;
@@ -417,8 +423,8 @@ if (!userData.user) {
           </section>
         )}
 
-        {biggestRiser && (
-          <section className="mb-8">
+        <section className="mb-8">
+          {biggestRiser ? (
             <Link
               href={`/profiel/${biggestRiser.user_id}`}
               className="group mx-auto block max-w-xl rounded-3xl border border-emerald-300/20 bg-gradient-to-br from-emerald-500/15 via-slate-950/90 to-sky-500/10 p-5 shadow-xl shadow-emerald-950/10 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-300/40"
@@ -444,7 +450,8 @@ if (!userData.user) {
                   </h2>
 
                   <p className="mt-1 text-sm font-bold text-slate-400">
-                    Nu op plaats #{biggestRiserPosition}
+                    Van #{biggestRiserPreviousPosition} naar #
+                    {biggestRiserPosition}
                   </p>
                 </div>
 
@@ -463,8 +470,31 @@ if (!userData.user) {
                 Bekijk profiel →
               </p>
             </Link>
-          </section>
-        )}
+          ) : (
+            <div className="mx-auto max-w-xl rounded-3xl border border-white/10 bg-white/5 p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-3xl">
+                  🚀
+                </div>
+
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
+                    Grootste stijger
+                  </p>
+
+                  <h2 className="mt-1 text-xl font-black text-white">
+                    Nog geen stijger
+                  </h2>
+
+                  <p className="mt-1 text-sm font-semibold text-slate-400">
+                    Na de volgende positiewijziging verschijnt hier automatisch
+                    de grootste stijger.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
 
         <section>
           <div className="mb-4">
