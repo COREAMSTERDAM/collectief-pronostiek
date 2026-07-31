@@ -123,12 +123,11 @@ export default function IedereenBondscoachPage() {
               Collectief Pronostiek
             </p>
             <h1 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
-              Iedereen Bondscoach
+              Iederiejn is Coach
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-white/60 sm:text-base">
               Kies een formatie en bouw stap voor stap jouw ideale basiself.
-              Deze eerste versie tekent het veld volledig op basis van de
-              formatiegegevens in Supabase.
+              
             </p>
           </div>
         </header>
