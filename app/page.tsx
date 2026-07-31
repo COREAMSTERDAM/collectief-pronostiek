@@ -37,9 +37,9 @@ export default function Home() {
             ⭐ Man van de wedstrijd
           </a>
 
-          <a href="/profiel" className="ucl-button-secondary">
+          {/* <a href="/profiel" className="ucl-button-secondary">
             👤 Mijn profiel
-          </a>
+          </a> */}
 
           <a href="/registreren" className="ucl-button-secondary">
             📝 Registreren of Inloggen

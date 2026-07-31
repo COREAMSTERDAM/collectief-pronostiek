@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
 
 type Profile = {
   id: string;
   name: string;
   created_at: string | null;
+  avatar_url: string | null;
+  avatar_path: string | null;
 };
 
 type Prediction = {
@@ -41,7 +43,10 @@ type PronostiekStats = {
 };
 
 type ProfileSummary = {
+  id: string;
   name: string;
+  avatarUrl: string | null;
+  avatarPath: string | null;
   createdAt: string | null;
   position: number | null;
   totalPoints: number;
@@ -63,6 +68,12 @@ export default function ProfielPage() {
   const [profile, setProfile] = useState<ProfileSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -81,7 +92,9 @@ export default function ProfielPage() {
 
       const [profilesResult, predictionsResult, historyResult] =
         await Promise.all([
-          supabase.from("profiles").select("id, name, created_at"),
+          supabase
+            .from("profiles")
+            .select("id, name, created_at, avatar_url, avatar_path"),
           supabase.from("predictions").select("user_id, points"),
           supabase
             .from("ranking_history")
@@ -184,7 +197,10 @@ export default function ProfielPage() {
       });
 
       setProfile({
+        id: currentProfile.id,
         name: currentProfile.name,
+        avatarUrl: currentProfile.avatar_url,
+        avatarPath: currentProfile.avatar_path,
         createdAt: currentProfile.created_at,
         position:
           currentRankingIndex >= 0 ? currentRankingIndex + 1 : null,
@@ -354,6 +370,182 @@ export default function ProfielPage() {
     };
   }, [profile]);
 
+  function openEditProfile() {
+    if (!profile) return;
+
+    setEditName(profile.name);
+    setAvatarFile(null);
+    setAvatarPreview(profile.avatarUrl);
+    setProfileMessage("");
+    setErrorMessage("");
+    setShowEditProfile(true);
+  }
+
+  function closeEditProfile() {
+    if (savingProfile) return;
+
+    if (avatarPreview?.startsWith("blob:")) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+
+    setShowEditProfile(false);
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setProfileMessage("");
+  }
+
+  function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+
+    if (!file) {
+      setAvatarFile(null);
+      setAvatarPreview(profile?.avatarUrl ?? null);
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setErrorMessage("Kies een geldig afbeeldingsbestand.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage("De profielfoto mag maximaal 5 MB groot zijn.");
+      event.target.value = "";
+      return;
+    }
+
+    setErrorMessage("");
+    setAvatarFile(file);
+
+    const previewUrl = URL.createObjectURL(file);
+
+    setAvatarPreview((current) => {
+      if (current?.startsWith("blob:")) {
+        URL.revokeObjectURL(current);
+      }
+
+      return previewUrl;
+    });
+  }
+
+  async function saveProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!profile) return;
+
+    const trimmedName = editName.trim();
+
+    if (!trimmedName) {
+      setErrorMessage("Vul je naam in.");
+      return;
+    }
+
+    setSavingProfile(true);
+    setErrorMessage("");
+    setProfileMessage("");
+
+    let uploadedPath: string | null = null;
+
+    try {
+      let avatarUrl = profile.avatarUrl;
+      let avatarPath = profile.avatarPath;
+
+      if (avatarFile) {
+        const extension =
+          avatarFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        uploadedPath = `${profile.id}/avatar-${Date.now()}.${extension}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("profile-avatars")
+          .upload(uploadedPath, avatarFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from("profile-avatars")
+          .getPublicUrl(uploadedPath);
+
+        avatarUrl = publicUrlData.publicUrl;
+        avatarPath = uploadedPath;
+      }
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          name: trimmedName,
+          avatar_url: avatarUrl,
+          avatar_path: avatarPath,
+        })
+        .eq("id", profile.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      if (
+        avatarFile &&
+        profile.avatarPath &&
+        profile.avatarPath !== uploadedPath
+      ) {
+        const { error: deleteError } = await supabase.storage
+          .from("profile-avatars")
+          .remove([profile.avatarPath]);
+
+        if (deleteError) {
+          console.error(
+            "Oude profielfoto kon niet worden verwijderd:",
+            deleteError,
+          );
+        }
+      }
+
+      setProfile((current) =>
+        current
+          ? {
+              ...current,
+              name: trimmedName,
+              avatarUrl,
+              avatarPath,
+            }
+          : current,
+      );
+
+      if (avatarPreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+
+      setProfileMessage("✅ Je profiel werd bijgewerkt.");
+      setAvatarFile(null);
+      setAvatarPreview(avatarUrl);
+      setShowEditProfile(false);
+    } catch (error: unknown) {
+      if (uploadedPath) {
+        await supabase.storage
+          .from("profile-avatars")
+          .remove([uploadedPath]);
+      }
+
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error &&
+        typeof error.message === "string"
+      ) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Je profiel kon niet worden bijgewerkt.");
+      }
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
   function formatMemberSince(value: string | null) {
     if (!value) return "Onbekend";
 
@@ -407,11 +599,126 @@ export default function ProfielPage() {
   return (
     <main className="ucl-page">
       <div className="ucl-container">
-        <div className="mb-6">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <a href="/" className="ucl-button-secondary">
             ← Terug naar dashboard
           </a>
+
+          <button
+            type="button"
+            onClick={openEditProfile}
+            className="ucl-button-primary"
+          >
+            ✏️ Profiel bewerken
+          </button>
         </div>
+
+        {profileMessage && (
+          <div className="mb-6 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
+            <p className="font-bold text-emerald-200">{profileMessage}</p>
+          </div>
+        )}
+
+        {showEditProfile && (
+          <section className="ucl-card mb-6">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-300">
+                  Profielinstellingen
+                </p>
+                <h2 className="mt-2 text-2xl font-black text-white">
+                  ✏️ Profiel bewerken
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                  Pas je naam aan en upload een persoonlijke profielfoto.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeEditProfile}
+                disabled={savingProfile}
+                className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 font-black text-slate-300 transition hover:bg-white/10 disabled:opacity-50"
+                aria-label="Profielbewerking sluiten"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={saveProfile} className="space-y-6">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+                <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-sky-300/30 bg-gradient-to-br from-sky-500/25 to-indigo-500/20 text-4xl font-black text-white">
+                  {avatarPreview ? (
+                    <img
+                      src={avatarPreview}
+                      alt="Voorbeeld van je profielfoto"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    initials
+                  )}
+                </div>
+
+                <div className="flex-1">
+                  <label
+                    htmlFor="profile-avatar"
+                    className="block text-sm font-black text-white"
+                  >
+                    Profielfoto
+                  </label>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">
+                    JPG, PNG of WebP. Maximaal 5 MB.
+                  </p>
+
+                  <input
+                    id="profile-avatar"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleAvatarChange}
+                    className="mt-3 block w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-sky-500/15 file:px-4 file:py-2 file:font-black file:text-sky-200"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="profile-name"
+                  className="block text-sm font-black text-white"
+                >
+                  Naam
+                </label>
+                <input
+                  id="profile-name"
+                  type="text"
+                  value={editName}
+                  onChange={(event) => setEditName(event.target.value)}
+                  maxLength={80}
+                  required
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-sky-400/50 focus:ring-2 focus:ring-sky-400/10"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  disabled={savingProfile}
+                  className="ucl-button-primary disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {savingProfile ? "Opslaan..." : "Wijzigingen opslaan"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={closeEditProfile}
+                  disabled={savingProfile}
+                  className="ucl-button-secondary disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Annuleren
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
 
         <section className="ucl-card overflow-hidden">
           <div className="text-center">
@@ -419,8 +726,16 @@ export default function ProfielPage() {
               Mijn profiel
             </p>
 
-            <div className="mx-auto mt-5 flex h-28 w-28 items-center justify-center rounded-3xl border border-sky-300/30 bg-gradient-to-br from-sky-500/25 to-indigo-500/20 text-4xl font-black text-white shadow-xl shadow-sky-950/30">
-              {initials}
+            <div className="mx-auto mt-5 flex h-28 w-28 items-center justify-center overflow-hidden rounded-3xl border border-sky-300/30 bg-gradient-to-br from-sky-500/25 to-indigo-500/20 text-4xl font-black text-white shadow-xl shadow-sky-950/30">
+              {profile.avatarUrl ? (
+                <img
+                  src={profile.avatarUrl}
+                  alt={`Profielfoto van ${profile.name}`}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                initials
+              )}
             </div>
 
             <h1 className="mt-5 text-3xl font-black text-white">
