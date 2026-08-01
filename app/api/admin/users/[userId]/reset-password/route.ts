@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAppAdmin } from "@/src/lib/require-app-admin";
-import { supabaseAdmin } from "@/src/lib/supabase-admin";
+import { getSupabaseAdmin } from "@/src/lib/supabase-admin";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 type RouteContext = {
   params: Promise<{
@@ -8,7 +11,21 @@ type RouteContext = {
   }>;
 };
 
+function getStatus(message: string) {
+  if (message.includes("administrator")) return 403;
+  if (message.includes("beheerdersrechten")) return 403;
+  if (
+    message.includes("aangemeld") ||
+    message.includes("sessie")
+  ) {
+    return 401;
+  }
+  return 500;
+}
+
 async function ensureTargetIsNotAdmin(userId: string) {
+  const supabaseAdmin = getSupabaseAdmin();
+
   const { data: profile, error } = await supabaseAdmin
     .from("profiles")
     .select("is_admin")
@@ -36,9 +53,9 @@ export async function POST(
     await requireAppAdmin(request);
 
     const { userId } = await context.params;
-
-    // Server-side bescherming tegen rechtstreekse API-aanroepen.
     await ensureTargetIsNotAdmin(userId);
+
+    const supabaseAdmin = getSupabaseAdmin();
 
     const {
       data: { user },
@@ -84,13 +101,9 @@ export async function POST(
     const message =
       error instanceof Error ? error.message : "Onbekende fout";
 
-    const status =
-      message.includes("administrators kan geen") ? 403 :
-      message.includes("beheerdersrechten") ? 403 :
-      message.includes("aangemeld") ||
-      message.includes("sessie") ? 401 :
-      500;
-
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json(
+      { error: message },
+      { status: getStatus(message) },
+    );
   }
 }

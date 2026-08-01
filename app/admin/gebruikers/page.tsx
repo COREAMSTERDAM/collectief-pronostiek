@@ -255,7 +255,7 @@ export default function AdminUsersPage() {
 
           <p className="ucl-subtitle max-w-2xl">
             Beheer gewone gebruikers. Administratoraccounts zijn volledig
-            vergrendeld en kunnen hier niet worden aangepast.
+            vergrendeld.
           </p>
         </header>
 
@@ -272,21 +272,38 @@ export default function AdminUsersPage() {
         ) : null}
 
         <section className="ucl-card mt-6">
-          <label
-            htmlFor="user-search"
-            className="text-sm font-black text-white"
-          >
-            Gebruiker zoeken
-          </label>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <label htmlFor="user-search" className="block flex-1">
+              <span className="text-sm font-black text-white">
+                🔍 Gebruiker zoeken
+              </span>
 
-          <input
-            id="user-search"
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Zoek op naam of e-mailadres"
-            className="ucl-input mt-3"
-          />
+              <input
+                id="user-search"
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Zoek op naam of e-mailadres"
+                className="ucl-input mt-3"
+              />
+            </label>
+
+            <div className="flex items-center gap-3">
+              <span className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs font-black text-white/55">
+                {filteredUsers.length} van {users.length} gebruikers
+              </span>
+
+              {search ? (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-black text-white"
+                >
+                  Wissen
+                </button>
+              ) : null}
+            </div>
+          </div>
         </section>
 
         {loading ? (
@@ -373,7 +390,7 @@ export default function AdminUsersPage() {
                   {locked ? (
                     <div className="mt-4 rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm font-bold text-amber-100">
                       🔒 Dit is een administratoraccount. Naam,
-                      e-mailadres en wachtwoordreset zijn hier geblokkeerd.
+                      e-mailadres en wachtwoordreset zijn geblokkeerd.
                     </div>
                   ) : null}
 

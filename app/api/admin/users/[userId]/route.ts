@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAppAdmin } from "@/src/lib/require-app-admin";
-import { supabaseAdmin } from "@/src/lib/supabase-admin";
+import { getSupabaseAdmin } from "@/src/lib/supabase-admin";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 type RouteContext = {
   params: Promise<{
@@ -17,7 +20,21 @@ function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
 }
 
+function getStatus(message: string) {
+  if (message.includes("Administrators kunnen niet")) return 403;
+  if (message.includes("beheerdersrechten")) return 403;
+  if (
+    message.includes("aangemeld") ||
+    message.includes("sessie")
+  ) {
+    return 401;
+  }
+  return 500;
+}
+
 async function ensureTargetIsNotAdmin(userId: string) {
+  const supabaseAdmin = getSupabaseAdmin();
+
   const { data: profile, error } = await supabaseAdmin
     .from("profiles")
     .select("is_admin")
@@ -45,34 +62,34 @@ export async function PATCH(
     await requireAppAdmin(request);
 
     const { userId } = await context.params;
-
-    // Server-side bescherming: ook rechtstreekse API-calls worden geblokkeerd.
     await ensureTargetIsNotAdmin(userId);
 
+    const supabaseAdmin = getSupabaseAdmin();
     const body = (await request.json()) as UpdateUserBody;
 
     const name =
       typeof body.name === "string" ? body.name.trim() : undefined;
+
     const email =
       typeof body.email === "string"
         ? normalizeEmail(body.email)
         : undefined;
 
-    if (!name && !email) {
+    if (name === undefined && email === undefined) {
       return NextResponse.json(
         { error: "Er zijn geen wijzigingen opgegeven." },
         { status: 400 },
       );
     }
 
-    if (email && !email.includes("@")) {
+    if (email !== undefined && !email.includes("@")) {
       return NextResponse.json(
         { error: "Het e-mailadres is niet geldig." },
         { status: 400 },
       );
     }
 
-    if (email) {
+    if (email !== undefined) {
       const { error: authError } =
         await supabaseAdmin.auth.admin.updateUserById(userId, {
           email,
@@ -86,7 +103,7 @@ export async function PATCH(
       }
     }
 
-    if (name) {
+    if (name !== undefined) {
       const { error: profileError } = await supabaseAdmin
         .from("profiles")
         .upsert(
@@ -114,13 +131,9 @@ export async function PATCH(
     const message =
       error instanceof Error ? error.message : "Onbekende fout";
 
-    const status =
-      message.includes("Administrators kunnen niet") ? 403 :
-      message.includes("beheerdersrechten") ? 403 :
-      message.includes("aangemeld") ||
-      message.includes("sessie") ? 401 :
-      500;
-
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json(
+      { error: message },
+      { status: getStatus(message) },
+    );
   }
 }

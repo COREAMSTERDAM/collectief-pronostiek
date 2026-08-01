@@ -1,6 +1,7 @@
 import "server-only";
+
 import { NextRequest } from "next/server";
-import { supabaseAdmin } from "@/src/lib/supabase-admin";
+import { getSupabaseAdmin } from "@/src/lib/supabase-admin";
 
 export async function requireAppAdmin(request: NextRequest) {
   const authorization = request.headers.get("authorization");
@@ -14,6 +15,8 @@ export async function requireAppAdmin(request: NextRequest) {
   if (!accessToken) {
     throw new Error("Ongeldige sessie.");
   }
+
+  const supabaseAdmin = getSupabaseAdmin();
 
   const {
     data: { user },
