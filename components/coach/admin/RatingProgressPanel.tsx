@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   getMatchRatingAdminProgress,
   type MatchRatingAdminProgress,
-  type RatingUserStatus,
 } from "@/src/lib/coach-rating-progress";
 
 type RatingProgressPanelProps = {
@@ -12,22 +11,10 @@ type RatingProgressPanelProps = {
   refreshKey?: number;
 };
 
-function statusLabel(status: RatingUserStatus["status"]) {
-  if (status === "completed") return "Volledig";
-  if (status === "partial") return "Gedeeltelijk";
-  return "Niet gestart";
-}
-
-function statusClass(status: RatingUserStatus["status"]) {
-  if (status === "completed") {
-    return "border-emerald-300/25 bg-emerald-400/10 text-emerald-200";
-  }
-
-  if (status === "partial") {
-    return "border-amber-300/25 bg-amber-400/10 text-amber-200";
-  }
-
-  return "border-white/10 bg-white/5 text-white/40";
+function formatAverage(value: number | null) {
+  return value === null
+    ? "—"
+    : value.toFixed(1).replace(".", ",");
 }
 
 export default function RatingProgressPanel({
@@ -38,9 +25,6 @@ export default function RatingProgressPanel({
     useState<MatchRatingAdminProgress | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
-  const [userFilter, setUserFilter] = useState<
-    "all" | "completed" | "partial" | "not_started"
-  >("all");
 
   const loadProgress = useCallback(async () => {
     try {
@@ -63,16 +47,6 @@ export default function RatingProgressPanel({
   useEffect(() => {
     void loadProgress();
   }, [loadProgress, refreshKey]);
-
-  const filteredUsers = useMemo(() => {
-    if (!progress) return [];
-
-    if (userFilter === "all") return progress.users;
-
-    return progress.users.filter(
-      (user) => user.status === userFilter,
-    );
-  }, [progress, userFilter]);
 
   if (loading) {
     return (
@@ -101,22 +75,26 @@ export default function RatingProgressPanel({
             100,
         );
 
+  const missingCount = Math.max(
+    progress.total_supporters - progress.supporters_completed,
+    0,
+  );
+
   return (
     <section className="ucl-card mt-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.2em] text-white/35">
-            Beoordelingen
+            Beoordelingsvoortgang
           </p>
 
           <h2 className="mt-1 text-2xl font-black text-white">
             {progress.supporters_completed} van{" "}
-            {progress.total_supporters} volledig opgeslagen
+            {progress.total_supporters} beoordelingen ontvangen
           </h2>
 
           <p className="mt-2 text-sm font-semibold text-white/45">
-            {progress.total_saved_ratings} individuele cijfers ontvangen
-            voor {progress.active_player_count} actieve spelers.
+            Alleen volledig opgeslagen beoordelingen tellen mee in deze teller.
           </p>
         </div>
 
@@ -132,116 +110,89 @@ export default function RatingProgressPanel({
         />
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Volledig" value={progress.supporters_completed} />
-        <Stat label="Gedeeltelijk" value={progress.supporters_partial} />
-        <Stat label="Niet gestart" value={progress.supporters_not_started} />
-        <Stat label="Gestart" value={progress.supporters_started} />
+      <div
+        className={`mt-5 rounded-2xl border p-4 text-sm font-bold ${
+          missingCount === 0 && progress.total_supporters !== 0
+            ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-100"
+            : "border-amber-300/25 bg-amber-400/10 text-amber-100"
+        }`}
+      >
+        {progress.total_supporters === 0 ? (
+          <p>Er zijn nog geen gebruikers beschikbaar.</p>
+        ) : missingCount === 0 ? (
+          <p>
+            ✅ Alle supporters hebben hun volledige beoordeling opgeslagen.
+          </p>
+        ) : (
+          <p>
+            ⚠ Er ontbreken nog {missingCount} volledige{" "}
+            {missingCount === 1 ? "beoordeling" : "beoordelingen"}.
+          </p>
+        )}
       </div>
 
       <div className="mt-7 border-t border-white/10 pt-6">
-        <div className="flex flex-wrap gap-2">
-          {(
-            [
-              ["all", "Iedereen"],
-              ["completed", "Volledig"],
-              ["partial", "Gedeeltelijk"],
-              ["not_started", "Niet gestart"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setUserFilter(value)}
-              className={`rounded-full border px-4 py-2 text-xs font-black ${
-                userFilter === value
-                  ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
-                  : "border-white/10 bg-white/5 text-white/50"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-white/35">
+              Live tussenstand
+            </p>
+
+            <h3 className="mt-1 text-xl font-black text-white">
+              Voorlopige gemiddelden
+            </h3>
+          </div>
+
+          <p className="text-xs font-semibold text-white/35">
+            Alleen zichtbaar voor admins · nog niet definitief
+          </p>
         </div>
 
-        <div className="mt-4 max-h-80 space-y-2 overflow-y-auto pr-1">
-          {filteredUsers.map((user) => (
-            <article
-              key={user.user_id}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 p-3"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-black text-white">
-                  {user.name}
-                </p>
-                <p className="mt-1 text-xs text-white/40">
-                  {user.rated_player_count} van{" "}
-                  {progress.active_player_count} spelers
-                </p>
-              </div>
-
-              <span
-                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-black ${statusClass(
-                  user.status,
-                )}`}
+        {progress.players.length === 0 ? (
+          <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-center">
+            <p className="text-sm font-semibold text-white/45">
+              Nog geen actieve spelers of beoordelingen beschikbaar.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 space-y-2">
+            {progress.players.map((player, index) => (
+              <article
+                key={player.player_id}
+                className="grid grid-cols-[2.5rem_minmax(0,1fr)_5rem] items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3"
               >
-                {statusLabel(user.status)}
-              </span>
-            </article>
-          ))}
-        </div>
-      </div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-black text-white/60">
+                  {index + 1}
+                </div>
 
-      <div className="mt-7 border-t border-white/10 pt-6">
-        <h3 className="text-xl font-black text-white">
-          Beoordelingen per speler
-        </h3>
+                <div className="min-w-0">
+                  <p className="truncate font-black text-white">
+                    {player.player_name}
+                  </p>
 
-        <div className="mt-4 space-y-2">
-          {progress.players.map((player) => (
-            <article
-              key={player.player_id}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/20 p-3"
-            >
-              <div>
-                <p className="font-black text-white">
-                  {player.player_name}
-                </p>
-                <p className="mt-1 text-xs text-white/40">
-                  {player.shirt_number !== null
-                    ? `Nr. ${player.shirt_number}`
-                    : "Geen rugnummer"}
-                  {" · "}
-                  {player.position ?? "Geen positie"}
-                </p>
-              </div>
+                  <p className="mt-1 text-xs text-white/40">
+                    {player.shirt_number !== null
+                      ? `Nr. ${player.shirt_number}`
+                      : "Geen rugnummer"}
+                    {" · "}
+                    {player.position ?? "Geen positie"}
+                  </p>
+                </div>
 
-              <p className="shrink-0 text-xl font-black text-amber-200">
-                {player.rating_count}
-              </p>
-            </article>
-          ))}
-        </div>
+                <div className="text-right">
+                  <p className="text-2xl font-black tabular-nums text-amber-200">
+                    {formatAverage(player.provisional_average)}
+                  </p>
+
+                  <p className="text-[10px] font-black uppercase tracking-wide text-white/30">
+                    voorlopig
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </section>
-  );
-}
-
-function Stat({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-center">
-      <p className="text-xs font-black uppercase text-white/35">
-        {label}
-      </p>
-      <p className="mt-1 text-3xl font-black text-white">
-        {value}
-      </p>
-    </div>
   );
 }

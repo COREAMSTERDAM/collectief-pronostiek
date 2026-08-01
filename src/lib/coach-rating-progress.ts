@@ -10,33 +10,21 @@ export type MatchRatingProgress = {
   current_user_completed: boolean;
 };
 
-export type RatingUserStatus = {
-  user_id: string;
-  name: string;
-  rated_player_count: number;
-  completed: boolean;
-  status: "completed" | "partial" | "not_started";
-};
-
-export type RatingPlayerCount = {
+export type RatingPlayerAverage = {
   player_id: number;
   player_name: string;
   shirt_number: number | null;
   position: string | null;
-  rating_count: number;
+  provisional_average: number | null;
 };
 
 export type MatchRatingAdminProgress = {
   match_id: number;
   active_player_count: number;
   total_supporters: number;
-  supporters_started: number;
   supporters_completed: number;
-  supporters_partial: number;
-  supporters_not_started: number;
   total_saved_ratings: number;
-  users: RatingUserStatus[];
-  players: RatingPlayerCount[];
+  players: RatingPlayerAverage[];
 };
 
 export async function getMatchRatingProgress(
@@ -74,5 +62,16 @@ export async function getMatchRatingAdminProgress(
     );
   }
 
-  return data as unknown as MatchRatingAdminProgress;
+  const result = data as unknown as MatchRatingAdminProgress;
+
+  return {
+    ...result,
+    players: (result.players ?? []).map((player) => ({
+      ...player,
+      provisional_average:
+        player.provisional_average === null
+          ? null
+          : Number(player.provisional_average),
+    })),
+  };
 }
