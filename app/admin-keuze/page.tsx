@@ -19,8 +19,9 @@ export default function AdminKeuzePage() {
         </section>
 
         <section className="mt-6 space-y-4">
+          {/* Pronostiek */}
           <Link
-            href="https://collectief-pronostiek.vercel.app/admin/"
+            href="/admin"
             className="ucl-card block transition hover:-translate-y-1"
           >
             <div className="text-center">
@@ -42,8 +43,9 @@ export default function AdminKeuzePage() {
             </div>
           </Link>
 
+          {/* Man van de wedstrijd */}
           <Link
-            href="https://collectief-pronostiek.vercel.app/admin/spelers"
+            href="/admin/spelers"
             className="ucl-card block transition hover:-translate-y-1"
           >
             <div className="text-center">
@@ -61,6 +63,31 @@ export default function AdminKeuzePage() {
 
               <div className="ucl-button-secondary mt-5">
                 Open Man van de wedstrijd data
+              </div>
+            </div>
+          </Link>
+
+          {/* Iedereen Coach */}
+          <Link
+            href="/admin/coach-wedstrijden"
+            className="ucl-card block transition hover:-translate-y-1"
+          >
+            <div className="text-center">
+              <span className="inline-flex rounded-full border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-amber-200">
+                ⚽ Iedereen Coach
+              </span>
+
+              <h2 className="mt-5 text-2xl font-black text-white">
+                Iedereen Coach data
+              </h2>
+
+              <p className="mt-2 font-semibold text-white/55">
+                Beheer actieve spelers, beoordelingsdeadlines en finaliseer
+                spelersbeoordelingen.
+              </p>
+
+              <div className="ucl-button-secondary mt-5">
+                Open Iedereen Coach admin
               </div>
             </div>
           </Link>
