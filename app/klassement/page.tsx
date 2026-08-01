@@ -524,7 +524,7 @@ if (!userData.user) {
                     key={player.user_id}
                     href={`/profiel/${player.user_id}`}
                     aria-label={`Bekijk het profiel van ${player.name}`}
-                    className={`ucl-ranking-row group transition hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 ${
+                    className={`group grid grid-cols-[minmax(0,1fr)_5.5rem_1.25rem] items-center gap-3 border-b border-white/[0.075] px-4 py-4 transition last:border-b-0 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 ${
                       isCurrentUser
                         ? "ucl-ranking-current"
                         : ""
@@ -574,18 +574,18 @@ if (!userData.user) {
                       </div>
                     </div>
 
-                    <div className="shrink-0 text-right">
-                      <p className="text-lg font-black text-white">
+                    <div className="w-[5.5rem] justify-self-end text-right">
+                      <p className="text-2xl font-black leading-none tabular-nums text-white">
                         {player.total_points}
                       </p>
 
-                      <p className="text-xs font-semibold text-slate-400">
+                      <p className="mt-1 text-xs font-semibold text-slate-400">
                         punten
                       </p>
                     </div>
 
                     <span
-                      className="ml-2 shrink-0 text-lg font-black text-slate-600 transition group-hover:translate-x-1 group-hover:text-sky-300"
+                      className="justify-self-end text-lg font-black text-slate-600 transition group-hover:translate-x-1 group-hover:text-sky-300"
                       aria-hidden="true"
                     >
                       ›
