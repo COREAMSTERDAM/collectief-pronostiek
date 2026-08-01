@@ -19,6 +19,32 @@ export default function AdminKeuzePage() {
         </section>
 
         <section className="mt-6 space-y-4">
+
+          {/* Gebruikersbeheer */}
+          <Link
+            href="/admin/gebruikers"
+            className="ucl-card block transition hover:-translate-y-1"
+          >
+            <div className="text-center">
+              <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-200">
+                👥 Gebruikers
+              </span>
+
+              <h2 className="mt-5 text-2xl font-black text-white">
+                Gebruikersbeheer
+              </h2>
+
+              <p className="mt-2 font-semibold text-white/55">
+                Beheer gebruikers, wijzig namen en e-mailadressen en verstuur
+                wachtwoord-resetmails.
+              </p>
+
+              <div className="ucl-button-primary mt-5">
+                Open gebruikersbeheer
+              </div>
+            </div>
+          </Link>
+
           {/* Pronostiek */}
           <Link
             href="/admin"
@@ -91,6 +117,7 @@ export default function AdminKeuzePage() {
               </div>
             </div>
           </Link>
+
         </section>
 
         <div className="mt-6">
