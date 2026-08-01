@@ -21,25 +21,6 @@ export type MatchRatingsOverview = {
   players: MatchRatingPlayer[];
 };
 
-type MatchRatingsOverviewRaw = {
-  match_id: number | string;
-  deadline: string;
-  is_open: boolean;
-  is_finalized: boolean;
-  players: Array<{
-    player_id: number | string;
-    player_name: string;
-    shirt_number: number | null;
-    position: string | null;
-    photo_url: string | null;
-    started_match: boolean;
-    minutes_played: number | null;
-    my_rating: number | string | null;
-    final_average: number | string | null;
-    rating_count: number | string | null;
-  }>;
-};
-
 export async function getMyMatchRatings(
   matchId: number,
 ): Promise<MatchRatingsOverview> {
@@ -48,62 +29,49 @@ export async function getMyMatchRatings(
   });
 
   if (error) {
-    throw new Error(
-      `Spelersbeoordelingen ophalen mislukt: ${error.message}`,
-    );
+    throw new Error(`Spelersbeoordelingen ophalen mislukt: ${error.message}`);
   }
 
-  const result = data as unknown as MatchRatingsOverviewRaw;
+  const result = data as any;
 
   return {
     match_id: Number(result.match_id),
     deadline: result.deadline,
     is_open: Boolean(result.is_open),
     is_finalized: Boolean(result.is_finalized),
-    players: (result.players ?? []).map((player) => ({
+    players: (result.players ?? []).map((player: any) => ({
       ...player,
       player_id: Number(player.player_id),
-      my_rating:
-        player.my_rating === null ? null : Number(player.my_rating),
+      my_rating: player.my_rating === null ? null : Number(player.my_rating),
       final_average:
-        player.final_average === null
-          ? null
-          : Number(player.final_average),
+        player.final_average === null ? null : Number(player.final_average),
       rating_count:
-        player.rating_count === null
-          ? null
-          : Number(player.rating_count),
+        player.rating_count === null ? null : Number(player.rating_count),
     })),
   };
 }
 
-export async function savePlayerMatchRating({
+export async function savePlayerMatchRatingsBulk({
   matchId,
-  playerId,
-  rating,
+  ratings,
 }: {
   matchId: number;
-  playerId: number;
-  rating: number;
-}): Promise<string> {
-  const roundedRating = Math.round(rating * 10) / 10;
-
+  ratings: Array<{ playerId: number; rating: number }>;
+}): Promise<number> {
   const { data, error } = await supabase.rpc(
-    "upsert_player_match_rating",
+    "upsert_player_match_ratings_bulk",
     {
       target_match_id: matchId,
-      target_player_id: playerId,
-      target_rating: roundedRating,
+      target_ratings: ratings.map((item) => ({
+        player_id: item.playerId,
+        rating: Math.round(item.rating * 10) / 10,
+      })),
     },
   );
 
   if (error) {
-    throw new Error(`Cijfer opslaan mislukt: ${error.message}`);
+    throw new Error(`Beoordelingen opslaan mislukt: ${error.message}`);
   }
 
-  if (typeof data !== "string") {
-    throw new Error("Het opgeslagen cijfer gaf geen geldig ID terug.");
-  }
-
-  return data;
+  return Number(data ?? 0);
 }
