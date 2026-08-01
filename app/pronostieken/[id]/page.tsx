@@ -331,43 +331,53 @@ function PredictionCard({
 }: {
   prediction: PredictionWithName;
 }) {
-  const isExact = prediction.points === 3;
-  const isCorrectResult = prediction.points === 1;
-
-  const cardClass = isExact
-    ? "border-emerald-400/35 bg-emerald-400/10"
-    : isCorrectResult
-    ? "border-amber-400/35 bg-amber-400/10"
-    : "border-rose-400/25 bg-rose-400/10";
-
-  const badgeClass = isExact
-    ? "border-emerald-400/30 bg-emerald-400/15 text-emerald-200"
-    : isCorrectResult
-    ? "border-amber-400/30 bg-amber-400/15 text-amber-200"
-    : "border-rose-400/25 bg-rose-400/15 text-rose-200";
-
-  const icon = isExact
-    ? "✓"
-    : isCorrectResult
-    ? "•"
-    : "×";
-
-  const resultLabel = isExact
-    ? "Exacte score"
-    : isCorrectResult
-    ? "Juiste winnaar"
-    : "Geen punten";
+  const scoreStyle =
+    prediction.points === 5
+      ? {
+          card: "border-emerald-400/35 bg-emerald-400/10",
+          badge:
+            "border-emerald-400/30 bg-emerald-400/15 text-emerald-200",
+          points: "text-emerald-300",
+          icon: "✓",
+          label: "Exacte uitslag",
+        }
+      : prediction.points === 3
+      ? {
+          card: "border-sky-400/35 bg-sky-400/10",
+          badge:
+            "border-sky-400/30 bg-sky-400/15 text-sky-200",
+          points: "text-sky-300",
+          icon: "±",
+          label: "Juist doelpuntensaldo",
+        }
+      : prediction.points === 2
+      ? {
+          card: "border-amber-400/35 bg-amber-400/10",
+          badge:
+            "border-amber-400/30 bg-amber-400/15 text-amber-200",
+          points: "text-amber-300",
+          icon: "✓",
+          label: "Juiste winnaar of gelijkspel",
+        }
+      : {
+          card: "border-rose-400/25 bg-rose-400/10",
+          badge:
+            "border-rose-400/25 bg-rose-400/15 text-rose-200",
+          points: "text-rose-300",
+          icon: "×",
+          label: "Geen punten",
+        };
 
   return (
     <article
-      className={`rounded-2xl border p-4 backdrop-blur-xl ${cardClass}`}
+      className={`rounded-2xl border p-4 backdrop-blur-xl ${scoreStyle.card}`}
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <div
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-lg font-black ${badgeClass}`}
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-lg font-black ${scoreStyle.badge}`}
           >
-            {icon}
+            {scoreStyle.icon}
           </div>
 
           <div className="min-w-0">
@@ -376,30 +386,19 @@ function PredictionCard({
             </p>
 
             <p className="text-sm font-semibold text-slate-300">
-              {resultLabel}
+              {scoreStyle.label}
             </p>
           </div>
         </div>
 
         <div className="shrink-0 text-right">
           <p className="text-2xl font-black text-white">
-            {prediction.pred_home} -{" "}
-            {prediction.pred_away}
+            {prediction.pred_home} - {prediction.pred_away}
           </p>
 
-          <p
-            className={`text-sm font-black ${
-              isExact
-                ? "text-emerald-300"
-                : isCorrectResult
-                ? "text-amber-300"
-                : "text-rose-300"
-            }`}
-          >
+          <p className={`text-sm font-black ${scoreStyle.points}`}>
             {prediction.points}{" "}
-            {prediction.points === 1
-              ? "punt"
-              : "punten"}
+            {prediction.points === 1 ? "punt" : "punten"}
           </p>
         </div>
       </div>
