@@ -14,6 +14,7 @@ import {
   getCoachMatch,
   type CoachMatch,
 } from "@/src/lib/coach-match-editor";
+import RatingParticipationBadge from "@/components/coach/RatingParticipationBadge";
 
 type DraftRatings = Record<number, string>;
 type RatingErrors = Record<number, string>;
@@ -231,6 +232,9 @@ export default function MatchRatingsPage() {
                 now={now}
               />
             </div>
+            <div className="mt-4">
+  <RatingParticipationBadge matchId={matchId} />
+</div>
 
             <section className="ucl-card mt-6">
               <h2 className="text-xl font-black">

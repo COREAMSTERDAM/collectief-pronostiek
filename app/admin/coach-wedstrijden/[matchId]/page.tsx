@@ -13,6 +13,7 @@ import {
   type RatingAdminMatch,
   type RatingAdminPlayer,
 } from "@/src/lib/coach-rating-admin";
+import RatingProgressPanel from "@/components/coach/admin/RatingProgressPanel";
 
 function toDateTimeLocal(value: string) {
   const date = new Date(value);
@@ -415,7 +416,7 @@ export default function CoachRatingAdminMatchPage() {
                 ))}
               </div>
             </section>
-
+<RatingProgressPanel matchId={match.id} />
             <section className="mt-6 grid gap-4 sm:grid-cols-2">
               <button
                 type="button"
