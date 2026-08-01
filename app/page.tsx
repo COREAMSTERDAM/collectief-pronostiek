@@ -12,7 +12,7 @@ const navigation = [
     primary: true,
   },
   {
-    href: "/iedereen-coach",
+    href: "/iedereencoachkeuze",
     label: "Iedereen Coach BETA",
     description: "Stel per wedstrijd jouw ideale basiself samen.",
     icon: "🧠",
