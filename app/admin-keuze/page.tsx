@@ -51,6 +51,16 @@ export default function AdminKeuzePage() {
             action="Open Iedereen Coach admin"
             accent="amber"
           />
+
+          <HubCard
+  href="/admin/feedback"
+  icon="💬"
+  eyebrow="Supporters"
+  title="Feedback van supporters"
+  description="Bekijk feedback, bugs, verbeterpunten en voorstellen voor nieuwe uitbreidingen."
+  action="Open feedback"
+  accent="rose"
+/>
         </section>
       </div>
     </main>
