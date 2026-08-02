@@ -9,7 +9,9 @@ export type CoachMatch = {
 };
 
 export type MatchLineupAssignment = {
-  formation_position_id: number;
+  selection_type: "starter" | "substitute";
+  formation_position_id: number | null;
+  bench_order: number | null;
   player_id: number;
 };
 
@@ -47,9 +49,7 @@ export async function getCoachMatch(
     throw new Error(`Wedstrijd ophalen mislukt: ${error.message}`);
   }
 
-  if (!data) {
-    return null;
-  }
+  if (!data) return null;
 
   const row = data as unknown as CoachMatchRow;
 
@@ -72,9 +72,7 @@ export async function getMyMatchLineup(
     throw new Error(`Wedstrijdopstelling ophalen mislukt: ${error.message}`);
   }
 
-  if (!data) {
-    return null;
-  }
+  if (!data) return null;
 
   const lineup = data as unknown as MatchLineup;
 
@@ -87,9 +85,18 @@ export async function getMyMatchLineup(
     is_open: Boolean(lineup.is_open),
     player_assignments: (lineup.player_assignments ?? []).map(
       (assignment) => ({
-        formation_position_id: Number(
-          assignment.formation_position_id,
-        ),
+        selection_type:
+          assignment.selection_type === "substitute"
+            ? "substitute"
+            : "starter",
+        formation_position_id:
+          assignment.formation_position_id === null
+            ? null
+            : Number(assignment.formation_position_id),
+        bench_order:
+          assignment.bench_order === null
+            ? null
+            : Number(assignment.bench_order),
         player_id: Number(assignment.player_id),
       }),
     ),
@@ -100,24 +107,41 @@ export async function saveMatchLineup({
   teamId,
   matchId,
   formationId,
-  assignments,
+  starterAssignments,
+  substituteAssignments,
 }: {
   teamId: number;
   matchId: number;
   formationId: number;
-  assignments: Array<{
+  starterAssignments: Array<{
     formationPositionId: number;
     playerId: number;
   }>;
+  substituteAssignments: Array<{
+    benchOrder: number;
+    playerId: number;
+  }>;
 }): Promise<string> {
+  const targetPlayers = [
+    ...starterAssignments.map((assignment) => ({
+      selection_type: "starter",
+      formation_position_id: assignment.formationPositionId,
+      bench_order: null,
+      player_id: assignment.playerId,
+    })),
+    ...substituteAssignments.map((assignment) => ({
+      selection_type: "substitute",
+      formation_position_id: null,
+      bench_order: assignment.benchOrder,
+      player_id: assignment.playerId,
+    })),
+  ];
+
   const { data, error } = await supabase.rpc("save_match_lineup", {
     target_team_id: teamId,
     target_match_id: matchId,
     target_formation_id: formationId,
-    target_players: assignments.map((assignment) => ({
-      formation_position_id: assignment.formationPositionId,
-      player_id: assignment.playerId,
-    })),
+    target_players: targetPlayers,
     target_title: null,
   });
 

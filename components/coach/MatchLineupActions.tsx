@@ -1,8 +1,10 @@
 "use client";
 
 type MatchLineupActionsProps = {
-  selectedCount: number;
-  requiredCount: number;
+  starterCount: number;
+  requiredStarterCount: number;
+  substituteCount: number;
+  requiredSubstituteCount: number;
   isClosed: boolean;
   isSaving: boolean;
   isSubmitting: boolean;
@@ -24,8 +26,10 @@ function formatDate(value: string) {
 }
 
 export default function MatchLineupActions({
-  selectedCount,
-  requiredCount,
+  starterCount,
+  requiredStarterCount,
+  substituteCount,
+  requiredSubstituteCount,
   isClosed,
   isSaving,
   isSubmitting,
@@ -35,7 +39,11 @@ export default function MatchLineupActions({
   onSave,
   onSubmit,
 }: MatchLineupActionsProps) {
-  const isComplete = selectedCount === requiredCount;
+  const isComplete =
+    starterCount === requiredStarterCount &&
+    substituteCount === requiredSubstituteCount;
+
+  const totalCount = starterCount + substituteCount;
   const busy = isSaving || isSubmitting;
 
   return (
@@ -43,16 +51,28 @@ export default function MatchLineupActions({
       <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.2em] text-white/40">
-            Jouw basiself
+            Jouw selectie
           </p>
+
           <h2 className="mt-1 text-xl font-black text-white">
-            {selectedCount} van {requiredCount} posities ingevuld
+            {totalCount} van 16 spelers geselecteerd
           </h2>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-white/50">
-            Bewaar tussentijds als concept. Zodra alle posities zijn ingevuld,
-            kun je de opstelling definitief indienen. Tot de deadline mag je
-            nadien nog steeds wijzigingen maken en opnieuw indienen.
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-black text-white/60">
+              Basis: {starterCount}/{requiredStarterCount}
+            </span>
+
+            <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-black text-white/60">
+              Bank: {substituteCount}/{requiredSubstituteCount}
+            </span>
+          </div>
+
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/50">
+            Bewaar tussentijds als concept. Voor definitief indienen zijn elf
+            basisspelers en vijf bankzitters vereist. Alle zestien spelers
+            tellen mee voor de latere coachscore wanneer ze een definitief
+            gemiddelde ontvangen.
           </p>
 
           {lastSavedAt ? (
@@ -69,7 +89,7 @@ export default function MatchLineupActions({
             disabled={
               isClosed ||
               busy ||
-              selectedCount === 0 ||
+              totalCount === 0 ||
               (!hasChanges && hasSavedLineup)
             }
             className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-black text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
@@ -89,20 +109,20 @@ export default function MatchLineupActions({
           >
             {isSubmitting
               ? "Definitief indienen…"
-              : "✓ Definitief indienen"}
+              : "✓ Selectie indienen"}
           </button>
         </div>
       </div>
 
       {isClosed ? (
         <div className="mt-5 rounded-2xl border border-red-300/20 bg-red-400/10 p-4 text-sm font-bold text-red-100">
-          🔒 De deadline is verstreken. Deze opstelling kan niet meer worden
+          🔒 De deadline is verstreken. Deze selectie kan niet meer worden
           gewijzigd of ingediend.
         </div>
       ) : !isComplete ? (
         <div className="mt-5 rounded-2xl border border-amber-300/20 bg-amber-400/10 p-4 text-sm font-bold text-amber-100">
-          Nog {requiredCount - selectedCount} positie(s) invullen om definitief
-          te kunnen indienen.
+          Nog {requiredStarterCount - starterCount} veldpositie(s) en{" "}
+          {requiredSubstituteCount - substituteCount} bankpositie(s) invullen.
         </div>
       ) : null}
     </section>

@@ -9,7 +9,10 @@ import MatchDeadline, {
   getMatchLineupDeadline,
 } from "@/components/coach/MatchDeadline";
 import MatchLineupActions from "@/components/coach/MatchLineupActions";
-import PlayerSelectionModal from "@/components/coach/PlayerSelectionModal";
+import PlayerSelectionModal, {
+  type PlayerSelectionTarget,
+} from "@/components/coach/PlayerSelectionModal";
+import SubstituteBench from "@/components/coach/SubstituteBench";
 import {
   getActiveCoachPlayers,
   getActiveCoachTeams,
@@ -29,36 +32,60 @@ import {
   type MatchLineup,
 } from "@/src/lib/coach-match-editor";
 
+type ActiveSelection =
+  | { kind: "starter"; position: FormationPosition }
+  | { kind: "substitute"; benchOrder: number }
+  | null;
+
 function createSignature(
   formationId: number | null,
-  selectedPlayers: Record<number, CoachPlayer>,
+  starters: Record<number, CoachPlayer>,
+  substitutes: Record<number, CoachPlayer>,
 ) {
-  const assignments = Object.entries(selectedPlayers)
-    .map(([positionId, player]) => `${positionId}:${player.id}`)
+  const starterSignature = Object.entries(starters)
+    .map(([positionId, player]) => `S${positionId}:${player.id}`)
     .sort()
     .join("|");
 
-  return `${formationId ?? "none"}::${assignments}`;
+  const substituteSignature = Object.entries(substitutes)
+    .map(([benchOrder, player]) => `B${benchOrder}:${player.id}`)
+    .sort()
+    .join("|");
+
+  return `${formationId ?? "none"}::${starterSignature}::${substituteSignature}`;
 }
 
-function buildSelectedPlayers(
+function restoreLineup(
   lineup: MatchLineup,
   players: CoachPlayer[],
 ) {
   const playersById = new Map(
     players.map((player) => [player.id, player]),
   );
-  const result: Record<number, CoachPlayer> = {};
+
+  const starters: Record<number, CoachPlayer> = {};
+  const substitutes: Record<number, CoachPlayer> = {};
 
   for (const assignment of lineup.player_assignments) {
     const player = playersById.get(assignment.player_id);
+    if (!player) continue;
 
-    if (player) {
-      result[assignment.formation_position_id] = player;
+    if (
+      assignment.selection_type === "starter" &&
+      assignment.formation_position_id !== null
+    ) {
+      starters[assignment.formation_position_id] = player;
+    }
+
+    if (
+      assignment.selection_type === "substitute" &&
+      assignment.bench_order !== null
+    ) {
+      substitutes[assignment.bench_order] = player;
     }
   }
 
-  return result;
+  return { starters, substitutes };
 }
 
 function formatKickoff(value: string) {
@@ -83,12 +110,15 @@ export default function MatchCoachEditorPage() {
   const [positions, setPositions] = useState<FormationPosition[]>([]);
   const [selectedFormationId, setSelectedFormationId] =
     useState<number | null>(null);
-  const [selectedPlayers, setSelectedPlayers] = useState<
+  const [selectedStarters, setSelectedStarters] = useState<
+    Record<number, CoachPlayer>
+  >({});
+  const [selectedSubstitutes, setSelectedSubstitutes] = useState<
     Record<number, CoachPlayer>
   >({});
   const [savedLineup, setSavedLineup] = useState<MatchLineup | null>(null);
-  const [activePosition, setActivePosition] =
-    useState<FormationPosition | null>(null);
+  const [activeSelection, setActiveSelection] =
+    useState<ActiveSelection>(null);
   const [lastSavedSignature, setLastSavedSignature] = useState("");
   const [now, setNow] = useState(() => Date.now());
   const [loading, setLoading] = useState(true);
@@ -107,20 +137,58 @@ export default function MatchCoachEditorPage() {
   );
 
   const selectedPlayerIds = useMemo(
-    () => Object.values(selectedPlayers).map((player) => player.id),
-    [selectedPlayers],
+    () => [
+      ...Object.values(selectedStarters).map((player) => player.id),
+      ...Object.values(selectedSubstitutes).map((player) => player.id),
+    ],
+    [selectedStarters, selectedSubstitutes],
   );
 
-  const currentPlayerId = activePosition
-    ? selectedPlayers[activePosition.id]?.id ?? null
-    : null;
+  const currentPlayerId = useMemo(() => {
+    if (activeSelection?.kind === "starter") {
+      return selectedStarters[activeSelection.position.id]?.id ?? null;
+    }
+
+    if (activeSelection?.kind === "substitute") {
+      return selectedSubstitutes[activeSelection.benchOrder]?.id ?? null;
+    }
+
+    return null;
+  }, [activeSelection, selectedStarters, selectedSubstitutes]);
+
+  const modalTarget: PlayerSelectionTarget | null = useMemo(() => {
+    if (activeSelection?.kind === "starter") {
+      return {
+        code: activeSelection.position.position_code,
+        label: activeSelection.position.position_label,
+        kind: "starter",
+      };
+    }
+
+    if (activeSelection?.kind === "substitute") {
+      return {
+        code: `BANK ${activeSelection.benchOrder}`,
+        label: `Bankzitter ${activeSelection.benchOrder}`,
+        kind: "substitute",
+      };
+    }
+
+    return null;
+  }, [activeSelection]);
 
   const currentSignature = useMemo(
-    () => createSignature(selectedFormationId, selectedPlayers),
-    [selectedFormationId, selectedPlayers],
+    () =>
+      createSignature(
+        selectedFormationId,
+        selectedStarters,
+        selectedSubstitutes,
+      ),
+    [selectedFormationId, selectedStarters, selectedSubstitutes],
   );
 
   const hasChanges = currentSignature !== lastSavedSignature;
+  const starterCount = Object.keys(selectedStarters).length;
+  const substituteCount = Object.keys(selectedSubstitutes).length;
 
   const deadline = match
     ? getMatchLineupDeadline(match.kickoff)
@@ -133,15 +201,11 @@ export default function MatchCoachEditorPage() {
       setNow(Date.now());
     }, 30_000);
 
-    return () => {
-      window.clearInterval(interval);
-    };
+    return () => window.clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    if (isClosed) {
-      setActivePosition(null);
-    }
+    if (isClosed) setActiveSelection(null);
   }, [isClosed]);
 
   useEffect(() => {
@@ -176,13 +240,11 @@ export default function MatchCoachEditorPage() {
           ]);
 
         if (!mounted) return;
-
         if (!matchResult) {
           throw new Error("Deze wedstrijd werd niet gevonden.");
         }
 
         const activeTeam = teamResult[0] ?? null;
-
         if (!activeTeam) {
           throw new Error("Er is geen actief coachteam ingesteld.");
         }
@@ -191,8 +253,6 @@ export default function MatchCoachEditorPage() {
           activeTeam.id,
           matchId,
         );
-
-        if (!mounted) return;
 
         const formationId =
           existingLineup?.formation_id ??
@@ -208,9 +268,9 @@ export default function MatchCoachEditorPage() {
 
         if (!mounted) return;
 
-        const restoredPlayers = existingLineup
-          ? buildSelectedPlayers(existingLineup, playerResult)
-          : {};
+        const restored = existingLineup
+          ? restoreLineup(existingLineup, playerResult)
+          : { starters: {}, substitutes: {} };
 
         setMatch(matchResult);
         setTeam(activeTeam);
@@ -219,9 +279,14 @@ export default function MatchCoachEditorPage() {
         setSavedLineup(existingLineup);
         setSelectedFormationId(formationId);
         setPositions(positionResult);
-        setSelectedPlayers(restoredPlayers);
+        setSelectedStarters(restored.starters);
+        setSelectedSubstitutes(restored.substitutes);
         setLastSavedSignature(
-          createSignature(formationId, restoredPlayers),
+          createSignature(
+            formationId,
+            restored.starters,
+            restored.substitutes,
+          ),
         );
         setNow(Date.now());
       } catch (error) {
@@ -233,9 +298,7 @@ export default function MatchCoachEditorPage() {
             : "De wedstrijdeditor kon niet worden geladen.",
         );
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     }
 
@@ -247,7 +310,7 @@ export default function MatchCoachEditorPage() {
   }, [matchId]);
 
   const closeModal = useCallback(() => {
-    setActivePosition(null);
+    setActiveSelection(null);
   }, []);
 
   async function handleFormationChange(formationId: number) {
@@ -270,8 +333,9 @@ export default function MatchCoachEditorPage() {
 
       setSelectedFormationId(formationId);
       setPositions(result);
-      setSelectedPlayers({});
-      setActivePosition(null);
+      setSelectedStarters({});
+      // De bank blijft behouden bij een formatiewissel.
+      setActiveSelection(null);
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -284,31 +348,47 @@ export default function MatchCoachEditorPage() {
   }
 
   function handleSelectPlayer(player: CoachPlayer) {
-    if (!activePosition || isClosed) return;
+    if (!activeSelection || isClosed) return;
 
-    setSelectedPlayers((current) => ({
-      ...current,
-      [activePosition.id]: player,
-    }));
+    if (activeSelection.kind === "starter") {
+      setSelectedStarters((current) => ({
+        ...current,
+        [activeSelection.position.id]: player,
+      }));
+    } else {
+      setSelectedSubstitutes((current) => ({
+        ...current,
+        [activeSelection.benchOrder]: player,
+      }));
+    }
+
     setSuccessMessage("");
-    setActivePosition(null);
+    setActiveSelection(null);
   }
 
   function handleRemovePlayer() {
-    if (!activePosition || isClosed) return;
+    if (!activeSelection || isClosed) return;
 
-    setSelectedPlayers((current) => {
-      const updated = { ...current };
-      delete updated[activePosition.id];
-      return updated;
-    });
+    if (activeSelection.kind === "starter") {
+      setSelectedStarters((current) => {
+        const updated = { ...current };
+        delete updated[activeSelection.position.id];
+        return updated;
+      });
+    } else {
+      setSelectedSubstitutes((current) => {
+        const updated = { ...current };
+        delete updated[activeSelection.benchOrder];
+        return updated;
+      });
+    }
 
     setSuccessMessage("");
-    setActivePosition(null);
+    setActiveSelection(null);
   }
 
-  function getAssignments() {
-    return Object.entries(selectedPlayers).map(
+  function getStarterAssignments() {
+    return Object.entries(selectedStarters).map(
       ([formationPositionId, player]) => ({
         formationPositionId: Number(formationPositionId),
         playerId: player.id,
@@ -316,7 +396,18 @@ export default function MatchCoachEditorPage() {
     );
   }
 
+  function getSubstituteAssignments() {
+    return Object.entries(selectedSubstitutes).map(
+      ([benchOrder, player]) => ({
+        benchOrder: Number(benchOrder),
+        playerId: player.id,
+      }),
+    );
+  }
+
   async function saveConcept() {
+    const totalCount = starterCount + substituteCount;
+
     if (
       !team ||
       !match ||
@@ -324,7 +415,7 @@ export default function MatchCoachEditorPage() {
       isClosed ||
       saving ||
       submitting ||
-      Object.keys(selectedPlayers).length === 0
+      totalCount === 0
     ) {
       return null;
     }
@@ -338,13 +429,14 @@ export default function MatchCoachEditorPage() {
         teamId: team.id,
         matchId: match.id,
         formationId: selectedFormation.id,
-        assignments: getAssignments(),
+        starterAssignments: getStarterAssignments(),
+        substituteAssignments: getSubstituteAssignments(),
       });
 
       const updatedAt = new Date().toISOString();
       const complete =
-        Object.keys(selectedPlayers).length ===
-        selectedFormation.player_count;
+        starterCount === selectedFormation.player_count &&
+        substituteCount === 5;
 
       setSavedLineup({
         id: lineupId,
@@ -358,15 +450,25 @@ export default function MatchCoachEditorPage() {
           getMatchLineupDeadline(match.kickoff),
         ).toISOString(),
         is_open: true,
-        player_assignments: getAssignments().map((assignment) => ({
-          formation_position_id:
-            assignment.formationPositionId,
-          player_id: assignment.playerId,
-        })),
+        player_assignments: [
+          ...getStarterAssignments().map((assignment) => ({
+            selection_type: "starter" as const,
+            formation_position_id:
+              assignment.formationPositionId,
+            bench_order: null,
+            player_id: assignment.playerId,
+          })),
+          ...getSubstituteAssignments().map((assignment) => ({
+            selection_type: "substitute" as const,
+            formation_position_id: null,
+            bench_order: assignment.benchOrder,
+            player_id: assignment.playerId,
+          })),
+        ],
       });
 
       setLastSavedSignature(currentSignature);
-      setSuccessMessage("✅ Je concept werd opgeslagen.");
+      setSuccessMessage("✅ Je selectie werd als concept opgeslagen.");
 
       return lineupId;
     } catch (error) {
@@ -387,8 +489,8 @@ export default function MatchCoachEditorPage() {
       isClosed ||
       submitting ||
       saving ||
-      Object.keys(selectedPlayers).length !==
-        selectedFormation.player_count
+      starterCount !== selectedFormation.player_count ||
+      substituteCount !== 5
     ) {
       return;
     }
@@ -404,20 +506,18 @@ export default function MatchCoachEditorPage() {
         lineupId = await saveConcept();
       }
 
-      if (!lineupId) {
-        return;
-      }
+      if (!lineupId) return;
 
       await submitMatchLineup(lineupId);
 
       setSuccessMessage(
-        "✅ Je basiself werd definitief ingediend. Tot de deadline kun je nog wijzigingen maken en opnieuw indienen.",
+        "✅ Je selectie van 11 basisspelers en 5 bankzitters werd definitief ingediend. Tot de deadline kun je nog wijzigen en opnieuw indienen.",
       );
     } catch (error) {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "De basiself kon niet worden ingediend.",
+          : "De selectie kon niet worden ingediend.",
       );
     } finally {
       setSubmitting(false);
@@ -455,7 +555,7 @@ export default function MatchCoachEditorPage() {
           <>
             <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-amber-300/[0.07] p-6 sm:p-8">
               <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
-                Iederiejn Coach
+                Iedereen Coach
               </p>
 
               <h1 className="mt-3 text-center text-2xl font-black sm:text-4xl">
@@ -496,33 +596,47 @@ export default function MatchCoachEditorPage() {
                 <FootballPitch
                   formationName={selectedFormation.name}
                   positions={positions}
-                  selectedPlayers={selectedPlayers}
+                  selectedPlayers={selectedStarters}
                   disabled={isClosed}
                   onPositionClick={(position) => {
                     if (!isClosed) {
-                      setActivePosition(position);
+                      setActiveSelection({
+                        kind: "starter",
+                        position,
+                      });
                     }
                   }}
                 />
               )}
             </div>
 
+            <SubstituteBench
+              selectedPlayers={selectedSubstitutes}
+              disabled={isClosed}
+              onSlotClick={(benchOrder) => {
+                if (!isClosed) {
+                  setActiveSelection({
+                    kind: "substitute",
+                    benchOrder,
+                  });
+                }
+              }}
+            />
+
             <div className="mt-6">
               <MatchLineupActions
-                selectedCount={Object.keys(selectedPlayers).length}
-                requiredCount={selectedFormation.player_count}
+                starterCount={starterCount}
+                requiredStarterCount={selectedFormation.player_count}
+                substituteCount={substituteCount}
+                requiredSubstituteCount={5}
                 isClosed={isClosed}
                 isSaving={saving}
                 isSubmitting={submitting}
                 hasChanges={hasChanges}
                 hasSavedLineup={savedLineup !== null}
                 lastSavedAt={savedLineup?.updated_at ?? null}
-                onSave={() => {
-                  void saveConcept();
-                }}
-                onSubmit={() => {
-                  void submitLineup();
-                }}
+                onSave={() => void saveConcept()}
+                onSubmit={() => void submitLineup()}
               />
             </div>
           </>
@@ -541,15 +655,15 @@ export default function MatchCoachEditorPage() {
               href={`/iedereen-coach/${match.id}/collectief`}
               className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center text-sm font-black transition hover:bg-white/10"
             >
-              Collectieve basiself
+              Collectieve selectie
             </Link>
           ) : null}
         </div>
       </div>
 
       <PlayerSelectionModal
-        isOpen={!isClosed && activePosition !== null}
-        position={activePosition}
+        isOpen={!isClosed && activeSelection !== null}
+        target={modalTarget}
         players={players}
         selectedPlayerIds={selectedPlayerIds}
         currentPlayerId={currentPlayerId}

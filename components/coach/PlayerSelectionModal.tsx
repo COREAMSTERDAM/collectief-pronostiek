@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
-import type {
-  CoachPlayer,
-  FormationPosition,
-} from "@/src/lib/coach";
+import type { CoachPlayer } from "@/src/lib/coach";
+
+export type PlayerSelectionTarget = {
+  code: string;
+  label: string;
+  kind: "starter" | "substitute";
+};
 
 type PlayerSelectionModalProps = {
   isOpen: boolean;
-  position: FormationPosition | null;
+  target: PlayerSelectionTarget | null;
   players: CoachPlayer[];
   selectedPlayerIds: number[];
   currentPlayerId: number | null;
@@ -30,7 +33,7 @@ function initials(name: string) {
 
 export default function PlayerSelectionModal({
   isOpen,
-  position,
+  target,
   players,
   selectedPlayerIds,
   currentPlayerId,
@@ -39,14 +42,10 @@ export default function PlayerSelectionModal({
   onClose,
 }: PlayerSelectionModalProps) {
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+    if (!isOpen) return;
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
+      if (event.key === "Escape") onClose();
     }
 
     document.addEventListener("keydown", handleKeyDown);
@@ -58,9 +57,7 @@ export default function PlayerSelectionModal({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen || !position) {
-    return null;
-  }
+  if (!isOpen || !target) return null;
 
   return (
     <div
@@ -69,22 +66,25 @@ export default function PlayerSelectionModal({
       aria-modal="true"
       aria-labelledby="player-modal-title"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
+        if (event.target === event.currentTarget) onClose();
       }}
     >
       <section className="max-h-[88vh] w-full max-w-2xl overflow-hidden rounded-t-[2rem] border border-white/15 bg-zinc-950 shadow-2xl shadow-black/60 sm:rounded-[2rem]">
         <header className="flex items-start justify-between gap-4 border-b border-white/10 p-5 sm:p-6">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.22em] text-amber-200/70">
-              {position.position_code}
+              {target.code}
             </p>
-            <h2 id="player-modal-title" className="mt-1 text-2xl font-black text-white">
+
+            <h2
+              id="player-modal-title"
+              className="mt-1 text-2xl font-black text-white"
+            >
               Kies een speler
             </h2>
+
             <p className="mt-1 text-sm text-white/50">
-              {position.position_label}
+              {target.label}
             </p>
           </div>
 
@@ -105,72 +105,68 @@ export default function PlayerSelectionModal({
               onClick={onRemove}
               className="mb-4 w-full rounded-2xl border border-red-300/20 bg-red-400/10 px-4 py-3 text-sm font-black text-red-100 transition hover:bg-red-400/15"
             >
-              Speler van deze positie verwijderen
+              Speler uit deze selectieplaats verwijderen
             </button>
           ) : null}
 
-          {players.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/15 p-6 text-center text-sm text-white/50">
-              Er zijn geen actieve spelers beschikbaar.
-            </div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {players.map((player) => {
-                const isCurrent = player.id === currentPlayerId;
-                const isUsedElsewhere =
-                  selectedPlayerIds.includes(player.id) && !isCurrent;
+          <div className="grid gap-3 sm:grid-cols-2">
+            {players.map((player) => {
+              const isCurrent = player.id === currentPlayerId;
+              const isUsedElsewhere =
+                selectedPlayerIds.includes(player.id) && !isCurrent;
 
-                return (
-                  <button
-                    key={player.id}
-                    type="button"
-                    disabled={isUsedElsewhere}
-                    onClick={() => onSelect(player)}
-                    className={[
-                      "flex items-center gap-3 rounded-2xl border p-3 text-left transition",
-                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300",
-                      isCurrent
-                        ? "border-amber-300/50 bg-amber-300/12"
-                        : "border-white/10 bg-white/[0.035] hover:border-white/25 hover:bg-white/[0.07]",
-                      isUsedElsewhere
-                        ? "cursor-not-allowed opacity-35"
-                        : "hover:-translate-y-0.5",
-                    ].join(" ")}
-                  >
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-black text-xs font-black text-white">
-                      {player.photo_url ? (
-                        <img
-                          src={player.photo_url}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        initials(player.name)
-                      )}
+              return (
+                <button
+                  key={player.id}
+                  type="button"
+                  disabled={isUsedElsewhere}
+                  onClick={() => onSelect(player)}
+                  className={[
+                    "flex items-center gap-3 rounded-2xl border p-3 text-left transition",
+                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300",
+                    isCurrent
+                      ? "border-amber-300/50 bg-amber-300/12"
+                      : "border-white/10 bg-white/[0.035] hover:border-white/25 hover:bg-white/[0.07]",
+                    isUsedElsewhere
+                      ? "cursor-not-allowed opacity-35"
+                      : "hover:-translate-y-0.5",
+                  ].join(" ")}
+                >
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-black text-xs font-black text-white">
+                    {player.photo_url ? (
+                      <img
+                        src={player.photo_url}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      initials(player.name)
+                    )}
+                  </span>
+
+                  <span className="min-w-0 flex-1">
+                    <span className="block break-words text-sm font-black text-white">
+                      {player.name}
                     </span>
 
-                    <span className="min-w-0 flex-1">
-                      <span className="block break-words text-sm font-black text-white">
-                        {player.name}
-                      </span>
-                      <span className="mt-1 block text-xs font-semibold text-white/45">
-                        {player.shirt_number !== null
-                          ? `Nr. ${player.shirt_number}`
-                          : "Geen rugnummer"}
-                        {" · "}
-                        {player.position ?? "Geen positie"}
-                      </span>
-                      {isUsedElsewhere ? (
-                        <span className="mt-1 block text-[11px] font-bold text-amber-200/70">
-                          Al opgesteld
-                        </span>
-                      ) : null}
+                    <span className="mt-1 block text-xs font-semibold text-white/45">
+                      {player.shirt_number !== null
+                        ? `Nr. ${player.shirt_number}`
+                        : "Geen rugnummer"}
+                      {" · "}
+                      {player.position ?? "Geen positie"}
                     </span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+
+                    {isUsedElsewhere ? (
+                      <span className="mt-1 block text-[11px] font-bold text-amber-200/70">
+                        Al geselecteerd
+                      </span>
+                    ) : null}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </section>
     </div>
