@@ -59,31 +59,67 @@ export async function submitAppFeedback(input: {
 }
 
 export async function getAllAppFeedback(): Promise<AppFeedback[]> {
-  const { data, error } = await supabase
+  const { data: feedbackData, error: feedbackError } = await supabase
     .from("app_feedback")
-    .select(`
-      id,
-      user_id,
-      category,
-      title,
-      message,
-      page_url,
-      status,
-      admin_note,
-      created_at,
-      updated_at,
-      profile:profiles!app_feedback_user_id_fkey (
-        name,
-        avatar_url
-      )
-    `)
+    .select(
+      `
+        id,
+        user_id,
+        category,
+        title,
+        message,
+        page_url,
+        status,
+        admin_note,
+        created_at,
+        updated_at
+      `,
+    )
     .order("created_at", { ascending: false });
 
-  if (error) {
-    throw new Error(`Feedback ophalen mislukt: ${error.message}`);
+  if (feedbackError) {
+    throw new Error(
+      `Feedback ophalen mislukt: ${feedbackError.message}`,
+    );
   }
 
-  return (data ?? []) as unknown as AppFeedback[];
+  const userIds = Array.from(
+    new Set((feedbackData ?? []).map((item) => item.user_id)),
+  );
+
+  const profilesById = new Map<
+    string,
+    {
+      name: string | null;
+      avatar_url: string | null;
+    }
+  >();
+
+  if (userIds.length > 0) {
+    const { data: profilesData, error: profilesError } =
+      await supabase
+        .from("profiles")
+        .select("id, name, avatar_url")
+        .in("id", userIds);
+
+    if (profilesError) {
+      throw new Error(
+        `Profielen ophalen mislukt: ${profilesError.message}`,
+      );
+    }
+
+    for (const profile of profilesData ?? []) {
+      profilesById.set(profile.id, {
+        name: profile.name,
+        avatar_url: profile.avatar_url,
+      });
+    }
+  }
+
+  return (feedbackData ?? []).map((item) => ({
+    ...item,
+    profile: profilesById.get(item.user_id) ?? null,
+  })) as AppFeedback[];
 }
 
 export async function updateAppFeedback(input: {
