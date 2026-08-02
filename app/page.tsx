@@ -179,6 +179,15 @@ export default function Home() {
             />
           )}
 
+<HubCard
+  href="/feedback"
+  icon="💬"
+  eyebrow="Supporters"
+  title="Help de app verbeteren"
+  description="Heb je een idee, verbeterpunt of bug gevonden? Laat het ons weten en help Collectief Wit en Zwet verder groeien."
+  action="Geef feedback"
+  accent="rose"
+/>
           {profile?.is_admin ? (
             <HubCard
               href="/admin-keuze"
