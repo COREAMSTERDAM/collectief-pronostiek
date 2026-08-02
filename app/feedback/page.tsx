@@ -46,6 +46,7 @@ export default function FeedbackPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     if (sending) return;
 
     if (title.trim().length < 3) {
@@ -92,19 +93,81 @@ export default function FeedbackPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-3xl">
         <header className="ucl-card text-center">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+          <img
+            src="/logo.png"
+            alt="Logo Collectief Wit en Zwet"
+            className="ucl-logo"
+          />
+
+          <p className="mt-4 text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
             Collectief Wit en Zwet
           </p>
 
           <h1 className="ucl-title mt-3">
-            Feedback van supporters
+            Help de app verbeteren 💬
           </h1>
 
-          <p className="ucl-subtitle mx-auto max-w-2xl">
-            Deel feedback, verbeterpunten, problemen of ideeën voor nieuwe
-            uitbreidingen.
+          <p className="ucl-subtitle mx-auto max-w-3xl">
+            <strong className="text-white">
+              Collectief Wit en Zwet wordt gebouwd voor én door supporters.
+            </strong>
+            <br />
+            Heb je een idee voor een nieuwe functie, zie je een fout of heb je
+            een voorstel om de app nog beter te maken? Laat het ons weten.
+            <br />
+            <br />
+            Alle feedback wordt gelezen en interessante voorstellen nemen we
+            mee in toekomstige updates.
           </p>
         </header>
+
+        <section className="ucl-card mt-6">
+          <h2 className="text-xl font-black text-white">
+            Waarvoor kan je dit gebruiken?
+          </h2>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <p className="font-black text-amber-200">
+                💡 Nieuwe uitbreidingen
+              </p>
+
+              <p className="mt-2 text-sm text-white/60">
+                Heb je een leuk idee voor een nieuwe functie of spelmodule?
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <p className="font-black text-sky-200">
+                🚀 Verbeterpunten
+              </p>
+
+              <p className="mt-2 text-sm text-white/60">
+                Kan iets duidelijker, sneller of gebruiksvriendelijker?
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <p className="font-black text-rose-200">
+                🐞 Bugs
+              </p>
+
+              <p className="mt-2 text-sm text-white/60">
+                Werkt iets niet zoals verwacht? Meld het hier.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <p className="font-black text-emerald-200">
+                ❤️ Algemene feedback
+              </p>
+
+              <p className="mt-2 text-sm text-white/60">
+                Ook positieve feedback of ideeën zijn altijd welkom.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {errorMessage ? (
           <div className="mt-6 rounded-2xl border border-red-400/25 bg-red-400/10 p-4 text-sm font-semibold text-red-100">
@@ -168,6 +231,10 @@ export default function FeedbackPage() {
               placeholder="Bijvoorbeeld: duidelijkere terugknop"
               className="ucl-input mt-3"
             />
+
+            <span className="mt-2 block text-right text-xs text-white/30">
+              {title.length}/120
+            </span>
           </label>
 
           <label className="mt-5 block">
@@ -183,6 +250,10 @@ export default function FeedbackPage() {
               placeholder="Beschrijf zo duidelijk mogelijk wat je bedoelt..."
               className="ucl-input mt-3 resize-y"
             />
+
+            <span className="mt-2 block text-right text-xs text-white/30">
+              {message.length}/3000
+            </span>
           </label>
 
           <label className="mt-5 block">
