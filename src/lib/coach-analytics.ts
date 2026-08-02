@@ -76,7 +76,7 @@ export type CommunityAnalytics = {
 
 export async function getCommunityAnalytics(
   teamId: number,
-  campaignKey = "iedereen-bondscoach",
+  campaignKey: string | null = null,
 ): Promise<CommunityAnalytics> {
   const { data, error } = await supabase.rpc("get_community_analytics", {
     target_team_id: teamId,
