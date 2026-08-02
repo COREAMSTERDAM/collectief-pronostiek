@@ -1,54 +1,47 @@
+import HubCard from "@/components/navigation/HubCard";
+import HubHeader from "@/components/navigation/HubHeader";
+
 export default function PronostiekPage() {
   return (
     <main className="ucl-page">
-      <div className="ucl-container">
-        <section className="ucl-card">
-          <img
-            src="/logo.png"
-            alt="Logo Collectief Pronostiek"
-            className="ucl-logo"
+      <div className="ucl-container !max-w-5xl">
+        <HubHeader
+          eyebrow="Pronostiek"
+          title="Maak je keuze"
+          description="Voorspel wedstrijden, bekijk je eigen pronostieken of volg het klassement."
+        />
+
+        <section className="mt-6 grid gap-5 md:grid-cols-2">
+          <HubCard
+            href="/wedstrijden"
+            icon="📅"
+            eyebrow="Wedstrijden"
+            title="Pronostiek invullen"
+            description="Bekijk de wedstrijden en vul je voorspelling in vóór de aftrap."
+            action="Open wedstrijden"
+            accent="sky"
           />
 
-          <div className="text-center">
-            <h1 className="ucl-title">
-              Collectief Wit en Zwet
-            </h1>
-
-            <p className="ucl-subtitle">
-              Kies wat je wilt doen binnen de pronostiek.
-            </p>
-          </div>
-        </section>
-
-        <div className="mt-6 space-y-4">
-          <a
-            href="/wedstrijden"
-            className="ucl-button-primary"
-          >
-            ⚽ Wedstrijden
-          </a>
-
-          <a
+          <HubCard
             href="/mijn-pronostieken"
-            className="ucl-button-secondary"
-          >
-            📝 Mijn pronostieken
-          </a>
+            icon="📜"
+            eyebrow="Historiek"
+            title="Mijn pronostieken"
+            description="Bekijk je ingediende voorspellingen en de behaalde punten."
+            action="Bekijk mijn pronostieken"
+            accent="white"
+          />
 
-          <a
+          <HubCard
             href="/klassement"
-            className="ucl-button-secondary"
-          >
-            🏆 Klassement
-          </a>
-
-          <a
-            href="/"
-            className="ucl-button-secondary"
-          >
-            ⬅️ Terug naar dashboard
-          </a>
-        </div>
+            icon="🏆"
+            eyebrow="Rangschikking"
+            title="Pronostiekklassement"
+            description="Bekijk wie aan de leiding staat en hoe je zelf presteert."
+            action="Open klassement"
+            accent="emerald"
+          />
+        </section>
       </div>
     </main>
   );

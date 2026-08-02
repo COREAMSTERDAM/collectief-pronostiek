@@ -1,100 +1,97 @@
-import Link from "next/link";
+import HubCard from "@/components/navigation/HubCard";
+import HubHeader from "@/components/navigation/HubHeader";
 
 export default function IedereenCoachKeuzePage() {
   return (
     <main className="ucl-page">
-      <div className="ucl-container">
-        <section className="ucl-card text-center">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
-            Iedereen Coach
-          </p>
+      <div className="ucl-container !max-w-6xl">
+        <HubHeader
+          eyebrow="Iedereen Coach"
+          title="Supporterscoach"
+          description="Stel je basiself samen, beoordeel spelers en ontdek wat de community kiest."
+        />
 
-          <h1 className="ucl-title mt-3">
-            Maak je keuze
-          </h1>
-
-          <p className="ucl-subtitle">
-            Stel een basiself samen, beoordeel spelers of bekijk je historiek.
-          </p>
-        </section>
-
-        <section className="mt-6 space-y-4">
-          <Link
+        <section className="mt-6 grid gap-5 md:grid-cols-2">
+          <HubCard
             href="/iedereen-coach"
-            className="ucl-card block transition hover:-translate-y-1"
-          >
-            <div className="text-center">
-              <span className="inline-flex rounded-full border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-amber-200">
-                ⚽ Nieuwe opstelling
-              </span>
+            icon="⚽"
+            eyebrow="Opstelling"
+            title="Elftal indienen"
+            description="Kies een open wedstrijd en stel jouw ideale basiself samen."
+            action="Stel je elftal samen"
+            accent="amber"
+          />
 
-              <h2 className="mt-5 text-2xl font-black text-white">
-                Elftal indienen
-              </h2>
-
-              <p className="mt-2 font-semibold text-white/55">
-                Kies een open wedstrijd en stel jouw ideale basiself samen.
-              </p>
-
-              <div className="ucl-button-primary mt-5">
-                Elftal indienen
-              </div>
-            </div>
-          </Link>
-
-          <Link
+          <HubCard
             href="/iedereen-coach/beoordelen"
-            className="ucl-card block transition hover:-translate-y-1"
-          >
-            <div className="text-center">
-              <span className="inline-flex rounded-full border border-sky-400/30 bg-sky-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-sky-200">
-                ⭐ Spelersbeoordeling
-              </span>
+            icon="⭐"
+            eyebrow="Na de wedstrijd"
+            title="Spelers beoordelen"
+            description="Geef actieve spelers een cijfer zolang de beoordelingsperiode open is."
+            action="Open beoordelingen"
+            accent="sky"
+          />
 
-              <h2 className="mt-5 text-2xl font-black text-white">
-                Spelers beoordelen
-              </h2>
-
-              <p className="mt-2 font-semibold text-white/55">
-                Bekijk wedstrijden waarvoor je spelers kunt beoordelen en open
-                het archief van afgesloten beoordelingen.
-              </p>
-
-              <div className="ucl-button-secondary mt-5">
-                Open spelersbeoordelingen
-              </div>
-            </div>
-          </Link>
-
-          <Link
+          <HubCard
             href="/iedereen-coach/mijn-opstellingen"
-            className="ucl-card block transition hover:-translate-y-1"
-          >
-            <div className="text-center">
-              <span className="inline-flex rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-white/60">
-                📚 Historiek
-              </span>
+            icon="📚"
+            eyebrow="Persoonlijk archief"
+            title="Mijn vorige opstellingen"
+            description="Bekijk je eigen basiselftallen van gesloten wedstrijden."
+            action="Bekijk mijn opstellingen"
+            accent="white"
+          />
 
-              <h2 className="mt-5 text-2xl font-black text-white">
-                Mijn vorige opstellingen
-              </h2>
+          <HubCard
+            href="/iedereen-coach/beoordelingen-archief"
+            icon="🗂️"
+            eyebrow="Resultaten"
+            title="Archief spelersbeoordelingen"
+            description="Bekijk per wedstrijd de definitieve gemiddelde spelersscores."
+            action="Open beoordelingsarchief"
+            accent="purple"
+          />
 
-              <p className="mt-2 font-semibold text-white/55">
-                Bekijk je opgeslagen basiselftallen van gesloten wedstrijden.
-              </p>
+          <HubCard
+            href="/iedereen-coach/collectief"
+            icon="👥"
+            eyebrow="Community"
+            title="Collectieve opstellingen"
+            description="Ontdek de populairste spelers en formaties over alle wedstrijden."
+            action="Bekijk collectieve keuzes"
+            accent="emerald"
+          />
 
-              <div className="ucl-button-secondary mt-5">
-                Mijn vorige opstellingen
-              </div>
-            </div>
-          </Link>
+          <HubCard
+            href="/iedereen-coach/klassement"
+            icon="📈"
+            eyebrow="Coachpunten"
+            title="Coachklassement"
+            description="Bekijk welke supporters de meeste punten verzamelden met hun basiself."
+            action="Open coachklassement"
+            accent="amber"
+          />
+
+          <HubCard
+            href="/iedereen-coach/spelershistoriek"
+            icon="👤"
+            eyebrow="Spelers"
+            title="Puntenhistoriek spelers"
+            description="Bekijk de gemiddelde beoordelingen van spelers over het seizoen."
+            action="Open spelershistoriek"
+            accent="sky"
+          />
+
+          <HubCard
+            href="/iedereen-coach/analytics"
+            icon="📊"
+            eyebrow="Analyse"
+            title="Community analytics"
+            description="Bekijk formatietrends, populaire spelers en collectieve inzichten."
+            action="Open analytics"
+            accent="white"
+          />
         </section>
-
-        <div className="mt-6">
-          <Link href="/" className="ucl-button-secondary">
-            🏠 Terug naar dashboard
-          </Link>
-        </div>
       </div>
     </main>
   );

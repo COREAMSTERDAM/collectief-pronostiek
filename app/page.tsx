@@ -1,51 +1,73 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import HubCard from "@/components/navigation/HubCard";
 import { supabase } from "@/src/lib/supabase";
 
-const navigation = [
-  {
-    href: "/pronostiekpagina",
-    label: "Pronostiek",
-    description: "Voorspel de volgende wedstrijden.",
-    icon: "⚽",
-    primary: true,
-  },
-  {
-    href: "/iedereencoachkeuze",
-    label: "Iedereen Coach BETA",
-    description: "Stel per wedstrijd jouw ideale basiself samen.",
-    icon: "🧠",
-  },
-  {
-    href: "/motmpagina",
-    label: "Man van de wedstrijd",
-    description: "Stem op de sterkste speler.",
-    icon: "⭐",
-  },
-  {
-    href: "/klassement",
-    label: "Klassement",
-    description: "Bekijk jouw positie en de top van de ranking.",
-    icon: "🏆",
-  },
-  {
-    href: "/profiel",
-    label: "Mijn profiel",
-    description: "Bekijk je statistieken en prestaties.",
-    icon: "👤",
-  },
-];
+type DashboardProfile = {
+  name: string | null;
+  is_admin: boolean | null;
+};
 
 export default function Home() {
+  const [profile, setProfile] = useState<DashboardProfile | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadSession() {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!mounted) return;
+
+        if (!user) {
+          setIsLoggedIn(false);
+          return;
+        }
+
+        setIsLoggedIn(true);
+
+        const { data } = await supabase
+          .from("profiles")
+          .select("name, is_admin")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (mounted) setProfile(data ?? null);
+      } finally {
+        if (mounted) setAuthLoading(false);
+      }
+    }
+
+    void loadSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   async function logout() {
-    await supabase.auth.signOut();
-    window.location.href = "/login";
+    if (loggingOut) return;
+
+    try {
+      setLoggingOut(true);
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    } finally {
+      setLoggingOut(false);
+    }
   }
 
   return (
     <main className="ucl-page">
-      <div className="ucl-container">
+      <div className="ucl-container !max-w-6xl">
         <section className="ucl-card text-center">
           <p className="mb-4 text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
             Supporterscollectief
@@ -53,66 +75,122 @@ export default function Home() {
 
           <img
             src="/logo.png"
-            alt="Logo Collectief Pronostiek"
+            alt="Logo Collectief Wit en Zwet"
             className="ucl-logo"
           />
 
-          <h1 className="ucl-title">Collectief Wit en Zwet</h1>
+          <h1 className="ucl-title">
+            {isLoggedIn && profile?.name
+              ? `Welkom, ${profile.name}`
+              : "Collectief Wit en Zwet"}
+          </h1>
 
-          <p className="ucl-subtitle mx-auto max-w-sm">
-            Voorspel wedstrijden, stel je basiself samen, stem op spelers
-            en strijd mee voor de eerste plaats.
+          <p className="ucl-subtitle mx-auto max-w-2xl">
+            Voorspel wedstrijden, stel je basiself samen, beoordeel spelers en
+            volg alle klassementen vanuit één overzicht.
           </p>
-        </section>
 
-        <section className="mt-6 space-y-3">
-          {navigation.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={
-                item.primary
-                  ? "ucl-button-primary !mt-0 !h-auto !justify-start !px-5 !py-4 !text-left"
-                  : "ucl-button-secondary !h-auto !justify-start !px-5 !py-4 !text-left"
-              }
-            >
-              <span className="text-2xl" aria-hidden="true">
-                {item.icon}
-              </span>
+          {!authLoading ? (
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+              {!isLoggedIn ? (
+                <>
+                  <Link href="/login" className="ucl-button-primary !mt-0">
+                    🔐 Inloggen
+                  </Link>
 
-              <span className="min-w-0">
-                <span className="block text-sm font-black">
-                  {item.label}
-                </span>
-                <span
-                  className={`mt-1 block text-xs font-semibold ${
-                    item.primary ? "text-black/55" : "text-white/40"
-                  }`}
+                  <Link href="/registreren" className="ucl-button-secondary">
+                    📝 Registreren
+                  </Link>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void logout()}
+                  disabled={loggingOut}
+                  className="ucl-button-danger !mt-0 disabled:opacity-40"
                 >
-                  {item.description}
-                </span>
-              </span>
-            </Link>
-          ))}
+                  {loggingOut ? "Uitloggen…" : "🚪 Uitloggen"}
+                </button>
+              )}
+            </div>
+          ) : null}
         </section>
 
-        <section className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Link href="/registreren" className="ucl-button-secondary">
-            📝 Registreren of inloggen
-          </Link>
+        <section className="mt-6 grid gap-5 md:grid-cols-2">
+          <HubCard
+            href="/pronostiekpagina"
+            icon="⚽"
+            eyebrow="Pronostiek"
+            title="Voorspel de wedstrijden"
+            description="Vul pronostieken in, bekijk je eerdere voorspellingen en volg de algemene rangschikking."
+            action="Open Pronostiek"
+            accent="sky"
+          />
 
-          <Link href="/admin-keuze" className="ucl-button-secondary">
-            ⚙️ Admin
-          </Link>
+          <HubCard
+            href="/iedereencoachkeuze"
+            icon="🧠"
+            eyebrow="Iedereen Coach"
+            title="Word de supporterscoach"
+            description="Stel een basiself samen, beoordeel spelers en ontdek wat de community kiest."
+            action="Open Iedereen Coach"
+            accent="amber"
+          />
+
+          <HubCard
+            href="/motmpagina"
+            icon="⭐"
+            eyebrow="Man van de wedstrijd"
+            title="Kies jouw uitblinker"
+            description="Breng je stem uit, bekijk de uitslagen en volg de speler van het seizoen."
+            action="Open Man van de Wedstrijd"
+            accent="purple"
+          />
+
+          <HubCard
+            href="/klassement"
+            icon="🏆"
+            eyebrow="Klassement"
+            title="Bekijk de rangschikking"
+            description="Volg de pronostiekstand, recente vorm en grootste stijgers."
+            action="Open klassement"
+            accent="emerald"
+          />
+
+          {isLoggedIn ? (
+            <HubCard
+              href="/profielkeuze"
+              icon="👤"
+              eyebrow="Mijn account"
+              title="Profiel en prestaties"
+              description="Bekijk je profiel, voorspellingen, statistieken en persoonlijke prestaties."
+              action="Open mijn account"
+              accent="white"
+            />
+          ) : (
+            <HubCard
+              href="/login"
+              icon="🔐"
+              eyebrow="Account"
+              title="Log in om mee te spelen"
+              description="Meld je aan om pronostieken, opstellingen en stemmen op te slaan."
+              action="Inloggen"
+              accent="white"
+            />
+          )}
+
+          {profile?.is_admin ? (
+            <HubCard
+              href="/admin-keuze"
+              icon="⚙️"
+              eyebrow="Admin"
+              title="Beheer de applicatie"
+              description="Beheer gebruikers, wedstrijden, spelers en Iedereen Coach."
+              action="Open admin"
+              accent="rose"
+            />
+          ) : null}
         </section>
-
-        <button
-          type="button"
-          onClick={logout}
-          className="ucl-button-danger mt-3"
-        >
-          🚪 Uitloggen
-        </button>
       </div>
     </main>
   );
