@@ -8,6 +8,7 @@ import {
   getSeparateCoachRanking,
   type MyCoachMatchScore,
   type SeparateCoachRanking,
+  type SeparateCoachRankingRow,
 } from "@/src/lib/separate-coach-ranking";
 
 function formatPoints(value: number) {
@@ -22,23 +23,13 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function initials(name: string) {
-  return (
-    name
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join("") || "?"
-  );
-}
-
 export default function SeparateCoachRankingPage() {
   const [ranking, setRanking] =
     useState<SeparateCoachRanking | null>(null);
   const [history, setHistory] = useState<MyCoachMatchScore[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showScoringGuide, setShowScoringGuide] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -86,183 +77,299 @@ export default function SeparateCoachRankingPage() {
     };
   }, []);
 
+  const rows = ranking?.ranking ?? [];
+  const first = rows[0];
+  const second = rows[1];
+  const third = rows[2];
+
+  if (loading) {
+    return (
+      <main className="ucl-page">
+        <div className="ucl-container">
+          <div className="ucl-card">
+            <p className="ucl-muted">Coachklassement laden...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="ucl-page">
-      <div className="ucl-container !max-w-6xl">
-        <header className="ucl-card text-center">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
-            Iedereen Coach
-          </p>
-
-          <h1 className="ucl-title mt-3">
+      <div className="ucl-container">
+        <div className="mb-7">
+          <h1 className="ucl-title">
             Coachklassement
           </h1>
 
-          <p className="ucl-subtitle mx-auto max-w-3xl">
-            Dit klassement staat volledig los van het pronostiekklassement.
-            De punten zijn de opgetelde definitieve gemiddelde scores van
-            de spelers uit je ingediende basiself.
-          </p>
-        </header>
-
-        <section className="ucl-card mt-6">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-white/35">
-            Berekening
+          <p className="ucl-subtitle">
+            Bekijk wie momenteel aan kop staat in Iedereen Coach.
           </p>
 
-          <p className="mt-2 text-sm font-semibold leading-6 text-white/55">
-            Per wedstrijd worden alleen de spelers uit je definitief
-            ingediende basiself meegeteld. Heeft een speler een definitief
-            gemiddelde, dan wordt dat gemiddelde bij je wedstrijdscore
-            opgeteld. Alle wedstrijdscores samen vormen je totaal.
-          </p>
+          <div className="mt-5">
+            <Link
+              href="/iedereencoachkeuze"
+              className="ucl-button-secondary"
+            >
+              ← Terug naar Iedereen Coach
+            </Link>
+          </div>
+        </div>
+
+        <section className="ucl-card mb-8">
+          <button
+            type="button"
+            onClick={() => setShowScoringGuide((current) => !current)}
+            aria-expanded={showScoringGuide}
+            aria-controls="coach-puntensysteem-uitleg"
+            className="flex w-full items-center justify-between gap-4 text-left"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-2xl">
+                🧠
+              </div>
+
+              <div className="min-w-0">
+                <h2 className="text-xl font-black text-white">
+                  Puntensysteem
+                </h2>
+
+                <p className="ucl-muted">
+                  Bekijk hoe je coachpunten per wedstrijd worden berekend.
+                </p>
+              </div>
+            </div>
+
+            <span
+              className={`shrink-0 text-2xl font-black text-amber-300 transition-transform duration-200 ${
+                showScoringGuide ? "rotate-180" : ""
+              }`}
+              aria-hidden="true"
+            >
+              ⌄
+            </span>
+          </button>
+
+          {showScoringGuide ? (
+            <div
+              id="coach-puntensysteem-uitleg"
+              className="mt-6 border-t border-white/10 pt-6"
+            >
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4">
+                  <p className="text-lg font-black text-white">
+                    ⚽ Jouw selectie
+                  </p>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    We nemen de spelers uit je definitief ingediende
+                    opstelling voor die wedstrijd.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-sky-400/20 bg-sky-500/10 p-4">
+                  <p className="text-lg font-black text-white">
+                    ⭐ Gemiddelde spelersscores
+                  </p>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    Alleen spelers met een definitief gemiddelde leveren
+                    coachpunten op.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4 sm:col-span-2">
+                  <p className="text-lg font-black text-white">
+                    🏆 Totaal coachklassement
+                  </p>
+
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    Per wedstrijd worden alle beschikbare gemiddelden uit je
+                    selectie opgeteld. Alle wedstrijdscores samen vormen je
+                    totaal in dit klassement.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </section>
 
         {errorMessage ? (
-          <div className="mt-6 rounded-2xl border border-red-400/25 bg-red-400/10 p-4 text-sm font-semibold text-red-100">
+          <div className="mb-8 rounded-2xl border border-red-400/25 bg-red-400/10 p-4 text-sm font-semibold text-red-100">
             {errorMessage}
           </div>
         ) : null}
 
-        {loading ? (
-          <section className="ucl-card mt-6 text-center">
-            <p className="ucl-subtitle">
-              Coachklassement laden…
-            </p>
+        {rows.length > 0 ? (
+          <section className="mb-8">
+            <div className="flex items-end justify-center gap-3">
+              {second ? (
+                <CoachPodiumCard
+                  player={second}
+                  position={2}
+                />
+              ) : null}
+
+              {first ? (
+                <CoachPodiumCard
+                  player={first}
+                  position={1}
+                />
+              ) : null}
+
+              {third ? (
+                <CoachPodiumCard
+                  player={third}
+                  position={3}
+                />
+              ) : null}
+            </div>
           </section>
-        ) : ranking && ranking.ranking.length > 0 ? (
-          <>
-            <section className="ucl-card mt-6 overflow-hidden !p-0">
-              <div className="divide-y divide-white/10">
-                {ranking.ranking.map((row) => (
-                  <article
-                    key={row.user_id}
-                    className={`grid grid-cols-[3.25rem_3.5rem_minmax(0,1fr)_7rem] items-center gap-3 px-4 py-4 sm:grid-cols-[4rem_4rem_minmax(0,1fr)_9rem] ${
-                      row.is_current_user
-                        ? "bg-amber-300/[0.08]"
-                        : ""
-                    }`}
-                  >
-                    <div className="text-center">
-                      <p className="text-2xl font-black text-amber-200">
-                        #{row.position}
-                      </p>
+        ) : null}
+
+        <section className="mb-8">
+          <div className="mb-4">
+            <h2 className="text-xl font-black text-white">
+              Volledig coachklassement
+            </h2>
+
+            <p className="ucl-muted">
+              Posities worden berekend op basis van het totale aantal
+              coachpunten.
+            </p>
+          </div>
+
+          {rows.length === 0 ? (
+            <div className="ucl-card">
+              <p className="ucl-muted">
+                Nog geen coachscores beschikbaar.
+              </p>
+            </div>
+          ) : (
+            <div className="ucl-card overflow-hidden p-0">
+              {rows.map((row, index) => (
+                <Link
+                  key={row.user_id}
+                  href={`/profiel/${row.user_id}`}
+                  aria-label={`Bekijk het profiel van ${row.coach_name}`}
+                  className={`group grid grid-cols-[minmax(0,1fr)_6.5rem_1.25rem] items-center gap-3 border-b border-white/[0.075] px-4 py-4 transition last:border-b-0 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 ${
+                    row.is_current_user
+                      ? "ucl-ranking-current"
+                      : ""
+                  }`}
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 font-black text-white">
+                      {index === 0
+                        ? "🥇"
+                        : index === 1
+                          ? "🥈"
+                          : index === 2
+                            ? "🥉"
+                            : index + 1}
                     </div>
 
-                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-black text-xs font-black">
-                      {row.avatar_url ? (
-                        <img
-                          src={row.avatar_url}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        initials(row.coach_name)
-                      )}
-                    </div>
+                    <CoachAvatar
+                      name={row.coach_name}
+                      avatarUrl={row.avatar_url}
+                      position={index + 1}
+                    />
 
                     <div className="min-w-0">
-                      <p className="truncate text-base font-black text-white sm:text-lg">
+                      <p className="cp-account-name-compact truncate text-white">
                         {row.coach_name}
+
                         {row.is_current_user ? (
-                          <span className="ml-2 text-xs text-emerald-300">
+                          <span className="ml-2 text-sm font-bold text-emerald-300">
                             jij
                           </span>
                         ) : null}
                       </p>
 
-                      <p className="mt-1 text-xs font-semibold text-white/40">
+                      <p className="mt-1 text-sm font-semibold text-slate-400">
                         {row.scored_matches}{" "}
                         {row.scored_matches === 1
                           ? "wedstrijd"
                           : "wedstrijden"}
-                        {" · "}
-                        gemiddeld {formatPoints(row.average_points)}
                       </p>
                     </div>
+                  </div>
 
-                    <div className="text-right">
-                      <p className="text-2xl font-black tabular-nums text-white sm:text-3xl">
-                        {formatPoints(row.total_points)}
-                      </p>
+                  <div className="w-[6.5rem] justify-self-end text-right">
+                    <p className="text-2xl font-black leading-none tabular-nums text-white">
+                      {formatPoints(row.total_points)}
+                    </p>
 
-                      <p className="text-[10px] font-black uppercase tracking-wide text-white/35">
-                        coachpunten
-                      </p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
+                    <p className="mt-1 text-xs font-semibold text-slate-400">
+                      punten
+                    </p>
+                  </div>
 
-            <section className="ucl-card mt-6">
-              <h2 className="text-2xl font-black text-white">
-                Mijn wedstrijdscores
-              </h2>
+                  <span
+                    className="justify-self-end text-lg font-black text-slate-600 transition group-hover:translate-x-1 group-hover:text-amber-300"
+                    aria-hidden="true"
+                  >
+                    ›
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
 
-              <p className="ucl-subtitle">
-                Bekijk hoeveel punten je per gefinaliseerde wedstrijd hebt
-                verzameld.
+        <section className="ucl-card mb-8">
+          <h2 className="text-2xl font-black text-white">
+            Mijn wedstrijdscores
+          </h2>
+
+          <p className="ucl-subtitle">
+            Bekijk hoeveel coachpunten je per gefinaliseerde wedstrijd hebt
+            verzameld.
+          </p>
+
+          {history.length === 0 ? (
+            <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4 text-center">
+              <p className="text-sm font-semibold text-white/45">
+                Je hebt nog geen berekende coachscores.
               </p>
+            </div>
+          ) : (
+            <div className="mt-5 space-y-3">
+              {history.map((match) => (
+                <article
+                  key={match.match_id}
+                  className="grid grid-cols-[minmax(0,1fr)_7rem] items-center gap-4 rounded-2xl border border-white/10 bg-black/20 p-4"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-black text-white">
+                      {match.home_team} – {match.away_team}
+                    </p>
 
-              {history.length === 0 ? (
-                <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4 text-center">
-                  <p className="text-sm font-semibold text-white/45">
-                    Je hebt nog geen berekende coachscores.
-                  </p>
-                </div>
-              ) : (
-                <div className="mt-5 space-y-3">
-                  {history.map((match) => (
-                    <article
-                      key={match.match_id}
-                      className="grid grid-cols-[minmax(0,1fr)_7rem] items-center gap-4 rounded-2xl border border-white/10 bg-black/20 p-4"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate font-black text-white">
-                          {match.home_team} – {match.away_team}
-                        </p>
+                    <p className="mt-1 text-xs text-white/40">
+                      {formatDate(match.kickoff)}
+                      {" · "}
+                      {match.scored_player_count} van{" "}
+                      {match.selected_player_count} spelers hadden een
+                      gemiddelde
+                    </p>
+                  </div>
 
-                        <p className="mt-1 text-xs text-white/40">
-                          {formatDate(match.kickoff)}
-                          {" · "}
-                          {match.scored_player_count} van{" "}
-                          {match.selected_player_count} spelers hadden een
-                          gemiddelde
-                        </p>
-                      </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-black tabular-nums text-amber-200">
+                      {formatPoints(match.score)}
+                    </p>
 
-                      <div className="text-right">
-                        <p className="text-2xl font-black tabular-nums text-amber-200">
-                          {formatPoints(match.score)}
-                        </p>
+                    <p className="text-[10px] font-black uppercase tracking-wide text-white/30">
+                      punten
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
 
-                        <p className="text-[10px] font-black uppercase tracking-wide text-white/30">
-                          punten
-                        </p>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </section>
-          </>
-        ) : (
-          <section className="ucl-card mt-6 text-center">
-            <div className="text-4xl">🏆</div>
-
-            <h2 className="mt-4 text-xl font-black text-white">
-              Nog geen coachscores
-            </h2>
-
-            <p className="ucl-subtitle">
-              Zodra een wedstrijd is gefinaliseerd en de coachscores zijn
-              berekend, verschijnt het aparte coachklassement hier.
-            </p>
-          </section>
-        )}
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Link
             href="/iedereencoachkeuze"
             className="ucl-button-secondary"
@@ -279,5 +386,140 @@ export default function SeparateCoachRankingPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+function CoachAvatar({
+  name,
+  avatarUrl,
+  position,
+  size = "md",
+}: {
+  name: string;
+  avatarUrl: string | null;
+  position?: number;
+  size?: "md" | "lg";
+}) {
+  const initials =
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "?";
+
+  const sizeClass =
+    size === "lg"
+      ? "h-20 w-20 text-xl"
+      : "h-12 w-12 text-sm";
+
+  const ringClass =
+    position === 1
+      ? "border-amber-300 ring-2 ring-amber-300/35"
+      : position === 2
+        ? "border-slate-200 ring-2 ring-slate-200/25"
+        : position === 3
+          ? "border-orange-400 ring-2 ring-orange-400/30"
+          : "border-white/15";
+
+  return (
+    <div
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border bg-gradient-to-br from-amber-500/25 to-orange-500/20 font-black text-white shadow-lg shadow-slate-950/20 ${sizeClass} ${ringClass}`}
+    >
+      {avatarUrl ? (
+        <img
+          src={avatarUrl}
+          alt={`Profielfoto van ${name}`}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <span aria-label={`Initialen van ${name}`}>{initials}</span>
+      )}
+    </div>
+  );
+}
+
+function CoachPodiumCard({
+  player,
+  position,
+}: {
+  player: SeparateCoachRankingRow;
+  position: 1 | 2 | 3;
+}) {
+  const podiumHeight =
+    position === 1
+      ? "h-24"
+      : position === 2
+        ? "h-16"
+        : "h-12";
+
+  const podiumIcon =
+    position === 1
+      ? "🥇"
+      : position === 2
+        ? "🥈"
+        : "🥉";
+
+  const cardClass =
+    position === 1
+      ? "border-amber-300/35 bg-amber-400/10"
+      : position === 2
+        ? "border-slate-300/25 bg-slate-300/10"
+        : "border-orange-400/25 bg-orange-400/10";
+
+  const podiumClass =
+    position === 1
+      ? "border-amber-300/25 bg-gradient-to-b from-amber-400/30 to-amber-700/20 text-amber-100"
+      : position === 2
+        ? "border-slate-300/20 bg-gradient-to-b from-slate-300/20 to-slate-700/20 text-slate-100"
+        : "border-orange-400/20 bg-gradient-to-b from-orange-400/20 to-orange-800/20 text-orange-100";
+
+  return (
+    <Link
+      href={`/profiel/${player.user_id}`}
+      aria-label={`Bekijk het profiel van ${player.coach_name}`}
+      className={`w-1/3 rounded-2xl border p-3 text-center backdrop-blur-xl transition hover:-translate-y-1 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 ${cardClass} ${
+        player.is_current_user
+          ? "ring-1 ring-emerald-400/60"
+          : ""
+      }`}
+    >
+      <div className="mb-3 flex justify-center">
+        <CoachAvatar
+          name={player.coach_name}
+          avatarUrl={player.avatar_url}
+          position={position}
+          size={position === 1 ? "lg" : "md"}
+        />
+      </div>
+
+      <div className={position === 1 ? "mb-2 text-4xl" : "mb-2 text-3xl"}>
+        {podiumIcon}
+      </div>
+
+      <p className="cp-account-name-compact truncate text-white">
+        {player.coach_name}
+      </p>
+
+      {player.is_current_user ? (
+        <p className="mt-1 text-xs font-bold text-emerald-300">
+          Jij
+        </p>
+      ) : null}
+
+      <p className="mt-1 text-sm font-semibold text-slate-200">
+        {formatPoints(player.total_points)} punten
+      </p>
+
+      <div
+        className={`mt-3 flex items-center justify-center rounded-xl border font-black ${podiumHeight} ${podiumClass}`}
+      >
+        {position}
+      </div>
+
+      <p className="mt-2 text-xs font-bold text-amber-300">
+        Bekijk profiel →
+      </p>
+    </Link>
   );
 }
