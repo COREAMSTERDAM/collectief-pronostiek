@@ -84,7 +84,7 @@ export default function CommunityAnalyticsPage() {
             </section>
           ) : (
             <>
-              <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 <article className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
                   <p className="text-xs font-black uppercase tracking-wide text-white/40">
                     Community
@@ -121,20 +121,7 @@ export default function CommunityAnalyticsPage() {
                   </p>
                 </article>
 
-                <article className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-                  <p className="text-xs font-black uppercase tracking-wide text-white/40">
-                    Meest controversieel
-                  </p>
-                  <p className="mt-2 text-xl font-black">
-                    {analytics.most_controversial_player?.player_name ?? "—"}
-                  </p>
-                  <p className="mt-1 text-xs text-white/40">
-                    Spreidingsscore{" "}
-                    {analytics.most_controversial_player?.controversy_score ??
-                      0}
-                    %
-                  </p>
-                </article>
+                
               </section>
 
               <div className="mt-6 grid gap-6 xl:grid-cols-2">
