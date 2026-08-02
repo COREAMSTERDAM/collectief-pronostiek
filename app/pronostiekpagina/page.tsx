@@ -17,7 +17,7 @@ export default function PronostiekPage() {
             icon="📅"
             eyebrow="Wedstrijden"
             title="Pronostiek invullen"
-            description="Bekijk de wedstrijden en vul je voorspelling in vóór de aftrap."
+            description="Bekijk de wedstrijden en vul je pronostiek in vóór de aftrap."
             action="Open wedstrijden"
             accent="sky"
           />
@@ -27,7 +27,7 @@ export default function PronostiekPage() {
             icon="📜"
             eyebrow="Historiek"
             title="Mijn pronostieken"
-            description="Bekijk je ingediende voorspellingen en de behaalde punten."
+            description="Bekijk je ingediende pronostieken en de behaalde punten."
             action="Bekijk mijn pronostieken"
             accent="white"
           />

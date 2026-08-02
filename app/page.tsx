@@ -122,7 +122,7 @@ export default function Home() {
             icon="⚽"
             eyebrow="Pronostiek"
             title="Voorspel de wedstrijden"
-            description="Vul pronostieken in, bekijk je eerdere voorspellingen en volg de algemene rangschikking."
+            description="Vul pronostieken in, bekijk je eerdere pronostieken en volg de algemene rangschikking."
             action="Open Pronostiek"
             accent="sky"
           />
@@ -130,10 +130,10 @@ export default function Home() {
           <HubCard
             href="/iedereencoachkeuze"
             icon="🧠"
-            eyebrow="Iedereen Coach"
-            title="Word de supporterscoach"
-            description="Stel een basiself samen, beoordeel spelers en ontdek wat de community kiest."
-            action="Open Iedereen Coach"
+            eyebrow="Iederiejn Coach"
+            title="Word de beste coach"
+            description="Stel een basiself samen, beoordeel spelers en ontdek wat andere supporters kiezen."
+            action="Open Iederiejn Coach"
             accent="amber"
           />
 
@@ -141,7 +141,7 @@ export default function Home() {
             href="/motmpagina"
             icon="⭐"
             eyebrow="Man van de wedstrijd"
-            title="Kies jouw uitblinker"
+            title="Kies jouw man van de match"
             description="Breng je stem uit, bekijk de uitslagen en volg de speler van het seizoen."
             action="Open Man van de Wedstrijd"
             accent="purple"

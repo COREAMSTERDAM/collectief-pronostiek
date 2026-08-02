@@ -17,7 +17,7 @@ export default function ManVanDeWedstrijdPage() {
             icon="🗳️"
             eyebrow="Stemmen"
             title="Breng je stem uit"
-            description="Kies de sterkste speler van een wedstrijd zolang de stemming open is."
+            description="Kies de 3 beste spelers van een wedstrijd zolang de stemming open is."
             action="Open stemmingen"
             accent="purple"
           />
