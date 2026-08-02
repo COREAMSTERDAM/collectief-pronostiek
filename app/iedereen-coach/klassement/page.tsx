@@ -2,809 +2,282 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { supabase } from "@/src/lib/supabase";
+import { getActiveCoachTeams } from "@/src/lib/coach";
+import {
+  getMySeparateCoachScores,
+  getSeparateCoachRanking,
+  type MyCoachMatchScore,
+  type SeparateCoachRanking,
+} from "@/src/lib/separate-coach-ranking";
 
-type Profile = {
-  id: string;
-  name: string;
-  avatar_url: string | null;
-};
-
-type Prediction = {
-  user_id: string;
-  points: number | null;
-  match_id: number;
-};
-
-type Ranking = {
-  user_id: string;
-  name: string;
-  avatar_url: string | null;
-  total_points: number;
-  movement: number;
-  recent_form: number[];
-};
-
-export default function KlassementPage() {
-  const [ranking, setRanking] = useState<Ranking[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [showScoringGuide, setShowScoringGuide] = useState(false);
-
-  useEffect(() => {
-    async function loadRanking() {
-      setLoading(true);
-
-const { data: userData } =
-  await supabase.auth.getUser();
-
-if (!userData.user) {
-  window.location.href = "/login?reason=login-required";
-  return;
+function formatPoints(value: number) {
+  return value.toFixed(2).replace(".", ",");
 }
 
-      setCurrentUserId(userData.user?.id ?? null);
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("nl-BE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(value));
+}
 
-      const { data: profiles, error: profilesError } =
-        await supabase
-          .from("profiles")
-          .select("id, name, avatar_url");
+function initials(name: string) {
+  return (
+    name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "?"
+  );
+}
 
-      if (profilesError) {
-        alert(profilesError.message);
-        setLoading(false);
-        return;
-      }
+export default function SeparateCoachRankingPage() {
+  const [ranking, setRanking] =
+    useState<SeparateCoachRanking | null>(null);
+  const [history, setHistory] = useState<MyCoachMatchScore[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
-      const { data: predictions, error: predictionsError } =
-        await supabase
-          .from("predictions")
-          .select("user_id, points, match_id");
+  useEffect(() => {
+    let mounted = true;
 
-      if (predictionsError) {
-        alert(predictionsError.message);
-        setLoading(false);
-        return;
-      }
+    async function loadPage() {
+      try {
+        setLoading(true);
+        setErrorMessage("");
 
-      const { data: matches, error: matchesError } =
-        await supabase
-          .from("matches")
-          .select("id, status, kickoff")
-          .eq("status", "afgewerkt")
-          .order("kickoff", { ascending: false });
+        const teams = await getActiveCoachTeams();
+        const team = teams[0];
 
-      if (matchesError) {
-        alert(matchesError.message);
-        setLoading(false);
-        return;
-      }
-
-      const latestFinishedMatchId = matches?.[0]?.id;
-      const latestFinishedMatchIds =
-        matches?.slice(0, 5).map((match) => Number(match.id)) ?? [];
-
-      function buildRecentForm(userId: string) {
-        return latestFinishedMatchIds
-          .slice()
-          .reverse()
-          .map((matchId) =>
-            predictions?.find(
-              (prediction: Prediction) =>
-                prediction.user_id === userId &&
-                Number(prediction.match_id) === matchId &&
-                prediction.points !== null,
-            ),
-          )
-          .filter(
-            (prediction): prediction is Prediction =>
-              Boolean(prediction),
-          )
-          .map((prediction) => prediction.points ?? 0);
-      }
-
-      function buildRanking(excludeMatchId?: number) {
-        const totals =
-          profiles?.map((profile: Profile) => {
-            const userPredictions =
-              predictions?.filter((prediction: Prediction) => {
-                const sameUser =
-                  prediction.user_id === profile.id;
-
-                const notExcluded =
-                  !excludeMatchId ||
-                  Number(prediction.match_id) !==
-                    Number(excludeMatchId);
-
-                return sameUser && notExcluded;
-              }) ?? [];
-
-            const totalPoints = userPredictions.reduce(
-              (sum, prediction) =>
-                sum + (prediction.points || 0),
-              0
-            );
-
-            return {
-              user_id: profile.id,
-              name: profile.name,
-              avatar_url: profile.avatar_url,
-              total_points: totalPoints,
-              movement: 0,
-              recent_form: buildRecentForm(profile.id),
-            };
-          }) ?? [];
-
-        totals.sort(
-          (a, b) => b.total_points - a.total_points
-        );
-
-        return totals;
-      }
-
-      const currentRanking = buildRanking();
-
-      const previousRanking = latestFinishedMatchId
-        ? buildRanking(Number(latestFinishedMatchId))
-        : currentRanking;
-
-      const rankingWithMovement = currentRanking.map(
-        (player, currentIndex) => {
-          const previousIndex = previousRanking.findIndex(
-            (oldPlayer) =>
-              oldPlayer.user_id === player.user_id
-          );
-
-          const movement =
-            previousIndex >= 0
-              ? previousIndex - currentIndex
-              : 0;
-
-          return {
-            ...player,
-            movement,
-          };
+        if (!team) {
+          throw new Error("Er is geen actief coachteam ingesteld.");
         }
-      );
 
-      setRanking(rankingWithMovement);
-      setLoading(false);
+        const [rankingResult, historyResult] = await Promise.all([
+          getSeparateCoachRanking(team.id),
+          getMySeparateCoachScores(team.id),
+        ]);
+
+        if (!mounted) return;
+
+        setRanking(rankingResult);
+        setHistory(historyResult);
+      } catch (error) {
+        if (!mounted) return;
+
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Het coachklassement kon niet worden geladen.",
+        );
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
     }
 
-    loadRanking();
+    void loadPage();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
-
-  const first = ranking[0];
-  const second = ranking[1];
-  const third = ranking[2];
-
-  const biggestRiser =
-    ranking
-      .filter((player) => player.movement > 0)
-      .sort((a, b) => {
-        if (b.movement !== a.movement) {
-          return b.movement - a.movement;
-        }
-
-        return b.total_points - a.total_points;
-      })[0] ?? null;
-
-  const biggestRiserPosition = biggestRiser
-    ? ranking.findIndex(
-        (player) => player.user_id === biggestRiser.user_id,
-      ) + 1
-    : null;
-
-  const biggestRiserPreviousPosition =
-    biggestRiser && biggestRiserPosition
-      ? biggestRiserPosition + biggestRiser.movement
-      : null;
-
-  function movementLabel(movement: number) {
-    if (movement > 0) return `↑ ${movement}`;
-    if (movement < 0) return `↓ ${Math.abs(movement)}`;
-    return "—";
-  }
-
-  function movementClass(movement: number) {
-    if (movement > 0) return "text-emerald-400";
-    if (movement < 0) return "text-rose-400";
-    return "text-slate-400";
-  }
-
-  if (loading) {
-    return (
-      <main className="ucl-page">
-        <div className="ucl-container">
-          <div className="ucl-card">
-            <p className="ucl-muted">
-              Klassement laden...
-            </p>
-          </div>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="ucl-page">
-      <div className="ucl-container">
-        <div className="mb-7">
-          <h1 className="ucl-title">
-            Klassement
-          </h1>
-
-          <p className="ucl-subtitle">
-            Bekijk wie momenteel aan kop staat.
+      <div className="ucl-container !max-w-6xl">
+        <header className="ucl-card text-center">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+            Iedereen Coach
           </p>
 
-          <div className="mt-5">
-            <a
-              href="/"
-              className="ucl-button-secondary"
-            >
-              ← Terug naar dashboard
-            </a>
+          <h1 className="ucl-title mt-3">
+            Coachklassement
+          </h1>
+
+          <p className="ucl-subtitle mx-auto max-w-3xl">
+            Dit klassement staat volledig los van het pronostiekklassement.
+            De punten zijn de opgetelde definitieve gemiddelde scores van
+            de spelers uit je ingediende basiself.
+          </p>
+        </header>
+
+        <section className="ucl-card mt-6">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-white/35">
+            Berekening
+          </p>
+
+          <p className="mt-2 text-sm font-semibold leading-6 text-white/55">
+            Per wedstrijd worden alleen de spelers uit je definitief
+            ingediende basiself meegeteld. Heeft een speler een definitief
+            gemiddelde, dan wordt dat gemiddelde bij je wedstrijdscore
+            opgeteld. Alle wedstrijdscores samen vormen je totaal.
+          </p>
+        </section>
+
+        {errorMessage ? (
+          <div className="mt-6 rounded-2xl border border-red-400/25 bg-red-400/10 p-4 text-sm font-semibold text-red-100">
+            {errorMessage}
           </div>
-        </div>
+        ) : null}
 
-        <section className="ucl-card mb-8">
-          <button
-            type="button"
-            onClick={() => setShowScoringGuide((current) => !current)}
-            aria-expanded={showScoringGuide}
-            aria-controls="puntensysteem-uitleg"
-            className="flex w-full items-center justify-between gap-4 text-left"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-2xl">
-                🏆
-              </div>
-
-              <div className="min-w-0">
-                <h2 className="text-xl font-black text-white">
-                  Puntensysteem
-                </h2>
-
-                <p className="ucl-muted">
-                  Bekijk wanneer je 5, 3, 2 of 0 punten krijgt.
-                </p>
-              </div>
-            </div>
-
-            <span
-              className={`shrink-0 text-2xl font-black text-sky-300 transition-transform duration-200 ${
-                showScoringGuide ? "rotate-180" : ""
-              }`}
-              aria-hidden="true"
-            >
-             ⌄
-            </span>
-          </button>
-
-          {showScoringGuide && (
-            <div
-              id="puntensysteem-uitleg"
-              className="mt-6 border-t border-white/10 pt-6"
-            >
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4">
-                  <p className="text-lg font-black text-white">
-                    ✅ Exacte uitslag
-                  </p>
-                  <p className="mt-2 text-4xl font-black text-emerald-300">
-                    5
-                  </p>
-                  <p className="text-sm text-slate-300">punten</p>
-                </div>
-
-                <div className="rounded-2xl border border-sky-400/20 bg-sky-500/10 p-4">
-                  <p className="text-lg font-black text-white">
-                    ⚽ Juist doelpuntensaldo
-                  </p>
-                  <p className="mt-2 text-4xl font-black text-sky-300">
-                    3
-                  </p>
-                  <p className="text-sm text-slate-300">punten</p>
-                </div>
-
-                <div className="rounded-2xl border border-amber-400/20 bg-amber-500/10 p-4">
-                  <p className="text-lg font-black text-white">
-                    👍 Juiste winnaar of gelijkspel
-                  </p>
-                  <p className="mt-2 text-4xl font-black text-amber-300">
-                    2
-                  </p>
-                  <p className="text-sm text-slate-300">punten</p>
-                </div>
-
-                <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 p-4">
-                  <p className="text-lg font-black text-white">
-                    ❌ Verkeerde voorspelling
-                  </p>
-                  <p className="mt-2 text-4xl font-black text-rose-300">
-                    0
-                  </p>
-                  <p className="text-sm text-slate-300">punten</p>
-                </div>
-              </div>
-
-              <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
-                <h3 className="mb-3 text-lg font-black text-white">
-                  Voorbeelden
-                </h3>
-
-                <div className="space-y-2 text-sm text-slate-300">
-                  <p>
-                    <strong>Voorspeld 2-1, uitslag 2-1:</strong>{" "}
-                    <span className="font-bold text-emerald-300">
-                      5 punten
-                    </span>
-                  </p>
-
-                  <p>
-                    <strong>Voorspeld 2-1, uitslag 3-2:</strong>{" "}
-                    <span className="font-bold text-sky-300">
-                      3 punten
-                    </span>
-                  </p>
-
-                  <p>
-                    <strong>Voorspeld 2-1, uitslag 4-2:</strong>{" "}
-                    <span className="font-bold text-amber-300">
-                      2 punten
-                    </span>
-                  </p>
-
-                  <p>
-                    <strong>Voorspeld 2-1, uitslag 1-2:</strong>{" "}
-                    <span className="font-bold text-rose-300">
-                      0 punten
-                    </span>
-                  </p>
-                </div>
-
-                <div className="mt-5 rounded-xl border border-sky-400/20 bg-sky-500/10 p-4">
-                  <p className="text-sm font-black text-white">
-                    Wat is doelpuntensaldo?
-                  </p>
-
-                  <p className="mt-2 text-sm leading-6 text-slate-300">
-                    Het doelpuntensaldo is het verschil tussen de doelpunten.
-                    De uitslagen <strong>2-1</strong>, <strong>3-2</strong> en{" "}
-                    <strong>1-0</strong> hebben allemaal een verschil van één
-                    doelpunt.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {ranking.length > 0 && (
-          <section className="mb-8">
-            <div className="flex items-end justify-center gap-3">
-              {second && (
-                <PodiumCard
-                  player={second}
-                  position={2}
-                  movementLabel={movementLabel}
-                  movementClass={movementClass}
-                  isCurrentUser={
-                    second.user_id === currentUserId
-                  }
-                />
-              )}
-
-              {first && (
-                <PodiumCard
-                  player={first}
-                  position={1}
-                  movementLabel={movementLabel}
-                  movementClass={movementClass}
-                  isCurrentUser={
-                    first.user_id === currentUserId
-                  }
-                />
-              )}
-
-              {third && (
-                <PodiumCard
-                  player={third}
-                  position={3}
-                  movementLabel={movementLabel}
-                  movementClass={movementClass}
-                  isCurrentUser={
-                    third.user_id === currentUserId
-                  }
-                />
-              )}
-            </div>
-          </section>
-        )}
-
-        <section className="mb-8">
-          {biggestRiser ? (
-            <Link
-              href={`/profiel/${biggestRiser.user_id}`}
-              className="group mx-auto block max-w-xl rounded-3xl border border-emerald-300/20 bg-gradient-to-br from-emerald-500/15 via-slate-950/90 to-sky-500/10 p-5 shadow-xl shadow-emerald-950/10 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-300/40"
-              aria-label={`Bekijk het profiel van grootste stijger ${biggestRiser.name}`}
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/25 bg-emerald-500/15 text-3xl">
-                  🚀
-                </div>
-
-                <PlayerAvatar
-                  name={biggestRiser.name}
-                  avatarUrl={biggestRiser.avatar_url}
-                />
-
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">
-                    Grootste stijger
-                  </p>
-
-                  <h2 className="cp-account-name mt-1 truncate text-white">
-                    {biggestRiser.name}
-                  </h2>
-
-                  <p className="mt-1 text-sm font-bold text-slate-400">
-                    Van #{biggestRiserPreviousPosition} naar #
-                    {biggestRiserPosition}
-                  </p>
-                </div>
-
-                <div className="shrink-0 text-right">
-                  <p className="text-3xl font-black text-emerald-300">
-                    +{biggestRiser.movement}
-                  </p>
-
-                  <p className="text-xs font-black uppercase tracking-wider text-slate-500">
-                    plaatsen
-                  </p>
-                </div>
-              </div>
-
-              <p className="mt-4 text-center text-xs font-bold text-emerald-200/80">
-                Bekijk profiel →
-              </p>
-            </Link>
-          ) : (
-            <div className="mx-auto max-w-xl rounded-3xl border border-white/10 bg-white/5 p-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-3xl">
-                  🚀
-                </div>
-
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
-                    Grootste stijger
-                  </p>
-
-                  <h2 className="mt-1 text-xl font-black text-white">
-                    Nog geen stijger
-                  </h2>
-
-                  <p className="mt-1 text-sm font-semibold text-slate-400">
-                    Na de volgende positiewijziging verschijnt hier automatisch
-                    de grootste stijger.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-
-        <section>
-          <div className="mb-4">
-            <h2 className="text-xl font-black text-white">
-              Volledig klassement
-            </h2>
-
-            <p className="ucl-muted">
-              Posities worden berekend op basis van het totale aantal punten.
+        {loading ? (
+          <section className="ucl-card mt-6 text-center">
+            <p className="ucl-subtitle">
+              Coachklassement laden…
             </p>
-          </div>
-
-          {ranking.length === 0 ? (
-            <div className="ucl-card">
-              <p className="ucl-muted">
-                Nog geen spelers beschikbaar.
-              </p>
-            </div>
-          ) : (
-            <div className="ucl-card overflow-hidden p-0">
-              {ranking.map((player, index) => {
-                const isCurrentUser =
-                  player.user_id === currentUserId;
-
-                return (
-                  <Link
-                    key={player.user_id}
-                    href={`/profiel/${player.user_id}`}
-                    aria-label={`Bekijk het profiel van ${player.name}`}
-                    className={`group grid grid-cols-[minmax(0,1fr)_6rem_1.25rem] items-center gap-3 border-b border-white/[0.075] px-4 py-4 transition last:border-b-0 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 ${
-                      isCurrentUser
-                        ? "ucl-ranking-current"
+          </section>
+        ) : ranking && ranking.ranking.length > 0 ? (
+          <>
+            <section className="ucl-card mt-6 overflow-hidden !p-0">
+              <div className="divide-y divide-white/10">
+                {ranking.ranking.map((row) => (
+                  <article
+                    key={row.user_id}
+                    className={`grid grid-cols-[3.25rem_3.5rem_minmax(0,1fr)_7rem] items-center gap-3 px-4 py-4 sm:grid-cols-[4rem_4rem_minmax(0,1fr)_9rem] ${
+                      row.is_current_user
+                        ? "bg-amber-300/[0.08]"
                         : ""
                     }`}
                   >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 font-black text-white">
-                        {index === 0
-                          ? "🥇"
-                          : index === 1
-                          ? "🥈"
-                          : index === 2
-                          ? "🥉"
-                          : index + 1}
-                      </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-black text-amber-200">
+                        #{row.position}
+                      </p>
+                    </div>
 
-                      <PlayerAvatar
-                        name={player.name}
-                        avatarUrl={player.avatar_url}
-                        position={index + 1}
-                        size="md"
-                      />
-
-                      <div className="min-w-0">
-                        <p className="cp-account-name-compact truncate text-white">
-                          {player.name}
-
-                          {isCurrentUser && (
-                            <span className="ml-2 text-sm font-bold text-emerald-300">
-                              jij
-                            </span>
-                          )}
-                        </p>
-
-                        <p
-                          className={`text-sm font-bold ${movementClass(
-                            player.movement
-                          )}`}
-                        >
-                          {movementLabel(player.movement)}
-                        </p>
-
-                        <RecentForm
-                          points={player.recent_form}
-                          compact
+                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-black text-xs font-black">
+                      {row.avatar_url ? (
+                        <img
+                          src={row.avatar_url}
+                          alt=""
+                          className="h-full w-full object-cover"
                         />
-                      </div>
+                      ) : (
+                        initials(row.coach_name)
+                      )}
                     </div>
 
-                    <div className="w-24 justify-self-end text-right">
-                      <p className="text-2xl font-black leading-none tabular-nums text-white">
-                        {player.total_points}
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-black text-white sm:text-lg">
+                        {row.coach_name}
+                        {row.is_current_user ? (
+                          <span className="ml-2 text-xs text-emerald-300">
+                            jij
+                          </span>
+                        ) : null}
                       </p>
 
-                      <p className="mt-1 text-xs font-semibold text-slate-400">
-                        punten
+                      <p className="mt-1 text-xs font-semibold text-white/40">
+                        {row.scored_matches}{" "}
+                        {row.scored_matches === 1
+                          ? "wedstrijd"
+                          : "wedstrijden"}
+                        {" · "}
+                        gemiddeld {formatPoints(row.average_points)}
                       </p>
                     </div>
 
-                    <span
-                      className="justify-self-end text-lg font-black text-slate-600 transition group-hover:translate-x-1 group-hover:text-sky-300"
-                      aria-hidden="true"
+                    <div className="text-right">
+                      <p className="text-2xl font-black tabular-nums text-white sm:text-3xl">
+                        {formatPoints(row.total_points)}
+                      </p>
+
+                      <p className="text-[10px] font-black uppercase tracking-wide text-white/35">
+                        coachpunten
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="ucl-card mt-6">
+              <h2 className="text-2xl font-black text-white">
+                Mijn wedstrijdscores
+              </h2>
+
+              <p className="ucl-subtitle">
+                Bekijk hoeveel punten je per gefinaliseerde wedstrijd hebt
+                verzameld.
+              </p>
+
+              {history.length === 0 ? (
+                <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4 text-center">
+                  <p className="text-sm font-semibold text-white/45">
+                    Je hebt nog geen berekende coachscores.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-5 space-y-3">
+                  {history.map((match) => (
+                    <article
+                      key={match.match_id}
+                      className="grid grid-cols-[minmax(0,1fr)_7rem] items-center gap-4 rounded-2xl border border-white/10 bg-black/20 p-4"
                     >
-                      ›
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </section>
+                      <div className="min-w-0">
+                        <p className="truncate font-black text-white">
+                          {match.home_team} – {match.away_team}
+                        </p>
 
+                        <p className="mt-1 text-xs text-white/40">
+                          {formatDate(match.kickoff)}
+                          {" · "}
+                          {match.scored_player_count} van{" "}
+                          {match.selected_player_count} spelers hadden een
+                          gemiddelde
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-2xl font-black tabular-nums text-amber-200">
+                          {formatPoints(match.score)}
+                        </p>
+
+                        <p className="text-[10px] font-black uppercase tracking-wide text-white/30">
+                          punten
+                        </p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+          </>
+        ) : (
+          <section className="ucl-card mt-6 text-center">
+            <div className="text-4xl">🏆</div>
+
+            <h2 className="mt-4 text-xl font-black text-white">
+              Nog geen coachscores
+            </h2>
+
+            <p className="ucl-subtitle">
+              Zodra een wedstrijd is gefinaliseerd en de coachscores zijn
+              berekend, verschijnt het aparte coachklassement hier.
+            </p>
+          </section>
+        )}
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <Link
+            href="/iedereencoachkeuze"
+            className="ucl-button-secondary"
+          >
+            ← Terug naar Iedereen Coach
+          </Link>
+
+          <Link
+            href="/klassement"
+            className="ucl-button-secondary"
+          >
+            Gewoon pronostiekklassement
+          </Link>
+        </div>
       </div>
     </main>
-  );
-}
-
-function RecentForm({
-  points,
-  compact = false,
-}: {
-  points: number[];
-  compact?: boolean;
-}) {
-  if (points.length === 0) {
-    return (
-      <p className="mt-1 text-xs font-semibold text-slate-500">
-        Nog geen vorm
-      </p>
-    );
-  }
-
-  return (
-    <div
-      className={`flex items-center gap-1 ${compact ? "mt-1" : ""}`}
-      aria-label={`Recente vorm: ${points.join(", ")} punten`}
-      title="Recente vorm · oud naar nieuw"
-    >
-      {points.map((point, index) => {
-        const style =
-          point === 5
-            ? "border-emerald-300/30 bg-emerald-500/20 text-emerald-200"
-            : point === 3
-            ? "border-sky-300/30 bg-sky-500/20 text-sky-200"
-            : point === 2
-            ? "border-amber-300/30 bg-amber-500/20 text-amber-200"
-            : "border-rose-300/25 bg-rose-500/15 text-rose-200";
-
-        return (
-          <span
-            key={`${point}-${index}`}
-            className={`flex items-center justify-center rounded-md border font-black ${style} ${
-              compact
-                ? "h-6 min-w-6 px-1 text-[10px]"
-                : "h-9 min-w-9 px-2 text-sm"
-            }`}
-          >
-            {point}
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
-function PlayerAvatar({
-  name,
-  avatarUrl,
-  position,
-  size = "md",
-}: {
-  name: string;
-  avatarUrl: string | null;
-  position?: number;
-  size?: "md" | "lg";
-}) {
-  const initials =
-    name
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join("") || "?";
-
-  const sizeClass =
-    size === "lg"
-      ? "h-20 w-20 text-xl"
-      : "h-12 w-12 text-sm";
-
-  const ringClass =
-    position === 1
-      ? "border-amber-300 ring-2 ring-amber-300/35"
-      : position === 2
-      ? "border-slate-200 ring-2 ring-slate-200/25"
-      : position === 3
-      ? "border-orange-400 ring-2 ring-orange-400/30"
-      : "border-white/15";
-
-  return (
-    <div
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border bg-gradient-to-br from-sky-500/25 to-indigo-500/20 font-black text-white shadow-lg shadow-slate-950/20 ${sizeClass} ${ringClass}`}
-    >
-      {avatarUrl ? (
-        <img
-          src={avatarUrl}
-          alt={`Profielfoto van ${name}`}
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <span aria-label={`Initialen van ${name}`}>{initials}</span>
-      )}
-    </div>
-  );
-}
-
-function PodiumCard({
-  player,
-  position,
-  movementLabel,
-  movementClass,
-  isCurrentUser,
-}: {
-  player: Ranking;
-  position: 1 | 2 | 3;
-  movementLabel: (movement: number) => string;
-  movementClass: (movement: number) => string;
-  isCurrentUser: boolean;
-}) {
-  const podiumHeight =
-    position === 1
-      ? "h-24"
-      : position === 2
-      ? "h-16"
-      : "h-12";
-
-  const podiumIcon =
-    position === 1
-      ? "🥇"
-      : position === 2
-      ? "🥈"
-      : "🥉";
-
-  const cardClass =
-    position === 1
-      ? "border-amber-300/35 bg-amber-400/10"
-      : position === 2
-      ? "border-slate-300/25 bg-slate-300/10"
-      : "border-orange-400/25 bg-orange-400/10";
-
-  const podiumClass =
-    position === 1
-      ? "border-amber-300/25 bg-gradient-to-b from-amber-400/30 to-amber-700/20 text-amber-100"
-      : position === 2
-      ? "border-slate-300/20 bg-gradient-to-b from-slate-300/20 to-slate-700/20 text-slate-100"
-      : "border-orange-400/20 bg-gradient-to-b from-orange-400/20 to-orange-800/20 text-orange-100";
-
-  return (
-    <Link
-      href={`/profiel/${player.user_id}`}
-      aria-label={`Bekijk het profiel van ${player.name}`}
-      className={`w-1/3 rounded-2xl border p-3 text-center backdrop-blur-xl transition hover:-translate-y-1 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 ${cardClass} ${
-        isCurrentUser
-          ? "ring-1 ring-emerald-400/60"
-          : ""
-      }`}
-    >
-      <div className="mb-3 flex justify-center">
-        <PlayerAvatar
-          name={player.name}
-          avatarUrl={player.avatar_url}
-          position={position}
-          size={position === 1 ? "lg" : "md"}
-        />
-      </div>
-
-      <div
-        className={
-          position === 1
-            ? "mb-2 text-4xl"
-            : "mb-2 text-3xl"
-        }
-      >
-        {podiumIcon}
-      </div>
-
-      <p className="cp-account-name-compact truncate text-white">
-        {player.name}
-      </p>
-
-      {isCurrentUser && (
-        <p className="mt-1 text-xs font-bold text-emerald-300">
-          Jij
-        </p>
-      )}
-
-      <p className="mt-1 text-sm font-semibold text-slate-200">
-        {player.total_points} punten
-      </p>
-
-      <p
-        className={`mt-1 font-black ${movementClass(
-          player.movement
-        )}`}
-      >
-        {movementLabel(player.movement)}
-      </p>
-
-      <div className="mt-3 flex justify-center">
-        <RecentForm points={player.recent_form} compact />
-      </div>
-
-      <div
-        className={`mt-3 flex items-center justify-center rounded-xl border font-black ${podiumHeight} ${podiumClass}`}
-      >
-        {position}
-      </div>
-
-      <p className="mt-2 text-xs font-bold text-sky-300">
-        Bekijk profiel →
-      </p>
-    </Link>
   );
 }
