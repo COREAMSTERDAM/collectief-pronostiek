@@ -38,7 +38,7 @@ export default function ManVanDeWedstrijdPage() {
             eyebrow="Seizoen"
             title="Speler van het seizoen"
             description="Volg welke speler over het hele seizoen de meeste stemmen verzamelt."
-            action="Open seizoensklassement"
+            action="Open seizoensklassementa"
             accent="amber"
           />
         </section>
