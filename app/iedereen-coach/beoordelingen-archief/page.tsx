@@ -2,26 +2,26 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import OpenRatingMatchCard from "@/components/coach/OpenRatingMatchCard";
+import RatingArchiveMatchCard from "@/components/coach/RatingArchiveMatchCard";
 import {
-  getOpenMatchRatings,
-  type OpenRatingMatch,
-} from "@/src/lib/open-match-ratings";
+  getRatingArchive,
+  type RatingArchiveMatch,
+} from "@/src/lib/rating-archive";
 
-export default function OpenMatchRatingsPage() {
-  const [matches, setMatches] = useState<OpenRatingMatch[]>([]);
+export default function RatingArchivePage() {
+  const [matches, setMatches] = useState<RatingArchiveMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     let mounted = true;
 
-    async function loadMatches() {
+    async function loadArchive() {
       try {
         setLoading(true);
         setErrorMessage("");
 
-        const result = await getOpenMatchRatings();
+        const result = await getRatingArchive();
 
         if (mounted) {
           setMatches(result);
@@ -31,7 +31,7 @@ export default function OpenMatchRatingsPage() {
           setErrorMessage(
             error instanceof Error
               ? error.message
-              : "De open spelersbeoordelingen konden niet worden geladen.",
+              : "Het archief kon niet worden geladen.",
           );
         }
       } finally {
@@ -41,7 +41,7 @@ export default function OpenMatchRatingsPage() {
       }
     }
 
-    void loadMatches();
+    void loadArchive();
 
     return () => {
       mounted = false;
@@ -57,44 +57,14 @@ export default function OpenMatchRatingsPage() {
           </p>
 
           <h1 className="ucl-title mt-3">
-            Spelers beoordelen
+            Archief spelersbeoordelingen
           </h1>
 
           <p className="ucl-subtitle mx-auto max-w-2xl">
-            Kies een wedstrijd waarvoor de beoordelingsperiode momenteel open
-            is.
+            Bekijk per afgesloten wedstrijd de definitieve gemiddelde score
+            van iedere speler.
           </p>
         </header>
-
-        <div className="mt-6">
-          <Link
-            href="/iedereen-coach/beoordelingen-archief"
-            className="ucl-card block transition hover:-translate-y-1 hover:border-amber-300/25"
-          >
-            <div className="flex flex-col gap-4 text-center sm:flex-row sm:items-center sm:text-left">
-              <div className="text-4xl">📚</div>
-
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-200/70">
-                  Historiek
-                </p>
-
-                <h2 className="mt-1 text-xl font-black text-white">
-                  Archief spelersbeoordelingen
-                </h2>
-
-                <p className="mt-1 text-sm font-semibold text-white/45">
-                  Bekijk definitieve gemiddelde spelersscores van afgesloten
-                  wedstrijden.
-                </p>
-              </div>
-
-              <span className="text-2xl font-black text-white/30">
-                ›
-              </span>
-            </div>
-          </Link>
-        </div>
 
         {errorMessage ? (
           <div className="mt-6 rounded-2xl border border-red-400/25 bg-red-400/10 p-4 text-sm font-semibold text-red-100">
@@ -105,26 +75,25 @@ export default function OpenMatchRatingsPage() {
         {loading ? (
           <section className="ucl-card mt-6 text-center">
             <p className="ucl-subtitle">
-              Open spelersbeoordelingen laden…
+              Archief laden…
             </p>
           </section>
         ) : matches.length === 0 ? (
           <section className="ucl-card mt-6 text-center">
-            <div className="text-4xl">⭐</div>
+            <div className="text-4xl">📚</div>
 
             <h2 className="mt-4 text-xl font-black text-white">
-              Geen open spelersbeoordelingen
+              Nog geen afgesloten beoordelingen
             </h2>
 
             <p className="ucl-subtitle">
-              Er zijn momenteel geen wedstrijden waarvoor je spelers kunt
-              beoordelen.
+              Gefinaliseerde wedstrijden verschijnen hier automatisch.
             </p>
           </section>
         ) : (
-          <section className="mt-6 grid gap-6 lg:grid-cols-2">
+          <section className="mt-6 space-y-6">
             {matches.map((match) => (
-              <OpenRatingMatchCard
+              <RatingArchiveMatchCard
                 key={match.match_id}
                 match={match}
               />
@@ -132,12 +101,19 @@ export default function OpenMatchRatingsPage() {
           </section>
         )}
 
-        <div className="mt-8">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <Link
+            href="/iedereen-coach/beoordelen"
+            className="ucl-button-secondary"
+          >
+            ← Open beoordelingen
+          </Link>
+
           <Link
             href="/iedereencoachkeuze"
             className="ucl-button-secondary"
           >
-            ← Terug naar Iedereen Coach
+            Iedereen Coach
           </Link>
         </div>
       </div>
