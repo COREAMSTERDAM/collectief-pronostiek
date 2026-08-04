@@ -241,7 +241,7 @@ export default function ClubCardPanel() {
             </h2>
 
             <p className="mt-2 max-w-2xl text-sm leading-6 text-white/50">
-              Vul de volledige Club Card-link of alleen de code in. De code
+              Vul de Club Card-code in. De code
               wordt privé opgeslagen en is niet zichtbaar wanneer andere
               supporters je profiel bekijken.
             </p>
@@ -303,12 +303,12 @@ export default function ClubCardPanel() {
                 Nog geen Club Card gekoppeld
               </h3>
 
-              <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-white/45">
+              {/* <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-white/45">
                 Voorbeeldlink:
                 <span className="mt-1 block break-all font-bold text-white/65">
                   https://eendracht-aalst-lede.eventpay.be/w/A12T4FG1
                 </span>
-              </p>
+              </p> */}
             </div>
           )}
 
@@ -318,7 +318,7 @@ export default function ClubCardPanel() {
           >
             <label className="block">
               <span className="text-sm font-black text-white">
-                Club Card-link of code
+                Club Card-code
               </span>
 
               <p className="mt-1 text-xs leading-5 text-white/40">
