@@ -203,7 +203,7 @@ export default function ClubCardPanel() {
     }
   }
 
-  async function startScanner() {
+ async function startScanner() {
   if (startingCamera || saving) return;
 
   try {
@@ -212,8 +212,9 @@ export default function ClubCardPanel() {
     setErrorMessage("");
     setMessage("");
 
+    // Wacht tot de modal en het video-element echt in de DOM staan.
     await new Promise<void>((resolve) => {
-      window.requestAnimationFrame(() => resolve());
+      window.setTimeout(resolve, 150);
     });
 
     const videoElement = videoRef.current;
@@ -222,38 +223,63 @@ export default function ClubCardPanel() {
       throw new Error("De cameravoorvertoning kon niet worden geopend.");
     }
 
-    const { BrowserQRCodeReader } = await import("@zxing/browser");
+    videoElement.muted = true;
+    videoElement.autoplay = true;
+    videoElement.playsInline = true;
+    videoElement.setAttribute("playsinline", "true");
+    videoElement.setAttribute("webkit-playsinline", "true");
 
-    const reader = new BrowserQRCodeReader();
-
-    const controls = await reader.decodeFromConstraints(
-      {
-        audio: false,
-        video: {
-          facingMode: {
-            ideal: "environment",
-          },
-          width: {
-            ideal: 1280,
-          },
-          height: {
-            ideal: 720,
-          },
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: {
+          ideal: "environment",
+        },
+        width: {
+          ideal: 1280,
+        },
+        height: {
+          ideal: 720,
         },
       },
+    });
+
+    videoElement.srcObject = stream;
+
+    await new Promise<void>((resolve, reject) => {
+      const timeout = window.setTimeout(() => {
+        reject(new Error("De camera gaf geen beeld."));
+      }, 8000);
+
+      videoElement.onloadedmetadata = async () => {
+        try {
+          window.clearTimeout(timeout);
+          await videoElement.play();
+          resolve();
+        } catch {
+          reject(
+            new Error(
+              "De cameravoorvertoning kon niet worden afgespeeld.",
+            ),
+          );
+        }
+      };
+    });
+
+    const { BrowserQRCodeReader } = await import("@zxing/browser");
+    const reader = new BrowserQRCodeReader();
+
+    const controls = await reader.decodeFromStream(
+      stream,
       videoElement,
-      (result, error, controls) => {
+      (result) => {
         if (!result) return;
 
-        controls.stop();
+        controlsRef.current?.stop();
         controlsRef.current = null;
 
-        const stream = videoElement.srcObject;
-
-        if (stream instanceof MediaStream) {
-          for (const track of stream.getTracks()) {
-            track.stop();
-          }
+        for (const track of stream.getTracks()) {
+          track.stop();
         }
 
         videoElement.srcObject = null;
@@ -263,16 +289,6 @@ export default function ClubCardPanel() {
     );
 
     controlsRef.current = controls;
-
-    window.setTimeout(() => {
-      if (!controlsRef.current) return;
-
-      stopScanner();
-      setScannerOpen(false);
-      setErrorMessage(
-        "Er werd geen QR-code gevonden. Probeer opnieuw en houd de code goed binnen het kader.",
-      );
-    }, 30_000);
   } catch (error) {
     stopScanner();
     setScannerOpen(false);
