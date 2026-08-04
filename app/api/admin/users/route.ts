@@ -70,9 +70,33 @@ export async function GET(request: NextRequest) {
       (profiles ?? []).map((profile) => [profile.id, profile]),
     );
 
+    const { data: clubCards, error: clubCardsError } =
+      userIds.length === 0
+        ? { data: [], error: null }
+        : await supabaseAdmin
+            .from("profile_club_cards")
+            .select("user_id, clubcard_code")
+            .in("user_id", userIds);
+
+    if (clubCardsError) {
+      throw new Error(
+        `Club Cards ophalen mislukt: ${clubCardsError.message}`,
+      );
+    }
+
+    const clubCardsByUserId = new Map(
+      (clubCards ?? []).map((clubCard) => [
+        clubCard.user_id,
+        clubCard.clubcard_code,
+      ]),
+    );
+
     return NextResponse.json({
       users: users.map((user) => {
         const profile = profilesById.get(user.id);
+
+        const clubcardCode =
+          clubCardsByUserId.get(user.id) ?? null;
 
         return {
           id: user.id,
@@ -83,6 +107,12 @@ export async function GET(request: NextRequest) {
           email_confirmed_at: user.email_confirmed_at ?? null,
           last_sign_in_at: user.last_sign_in_at ?? null,
           created_at: user.created_at,
+          clubcard_code: clubcardCode,
+          clubcard_top_up_url: clubcardCode
+            ? `https://eendracht-aalst-lede.eventpay.be/w/${encodeURIComponent(
+                clubcardCode,
+              )}/wallet`
+            : null,
         };
       }),
       page,
