@@ -249,7 +249,7 @@ export default function ClubCardPanel() {
         </div>
 
         {clubCard ? (
-          <span className="inline-flex shrink-0 items-center rounded-full border border-emerald-300/25 bg-emerald-400/10 px-3 py-2 text-xs font-black text-emerald-200">
+          <span className="inline-flex shrink-0 items-center rounded-full border bordehttps://eendracht-aalst-lede.eventpay.be/w/A12T4FG1-emerald-300/25 bg-emerald-400/10 px-3 py-2 text-xs font-black text-emerald-200">
             ✓ Gekoppeld
           </span>
         ) : null}
@@ -331,7 +331,7 @@ export default function ClubCardPanel() {
                 onChange={(event) =>
                   setManualValue(event.target.value)
                 }
-                placeholder="Bijvoorbeeld : A12T4FG1"
+                placeholder="Bijvoorbeeld : A11AABC0"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck={false}
