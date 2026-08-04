@@ -322,8 +322,7 @@ export default function ClubCardPanel() {
               </span>
 
               <p className="mt-1 text-xs leading-5 text-white/40">
-                Je mag de volledige EventPay-link plakken of alleen het laatste
-                deel, bijvoorbeeld <strong>A12T4FG1</strong>.
+                Voer de code in van je Club Card - onder je QR-code<strong>A12T4FG1</strong>.
               </p>
 
               <input
@@ -332,7 +331,7 @@ export default function ClubCardPanel() {
                 onChange={(event) =>
                   setManualValue(event.target.value)
                 }
-                placeholder="https://.../w/A12T4FG1"
+                placeholder="Bijvoorbeeld : A12T4FG1"
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck={false}
