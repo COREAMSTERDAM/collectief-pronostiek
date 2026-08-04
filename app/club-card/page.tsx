@@ -35,6 +35,7 @@ export default function ClubCardPage() {
     useState<BalanceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [openingTopUp, setOpeningTopUp] = useState(false);
   const [missingCard, setMissingCard] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -108,6 +109,60 @@ export default function ClubCardPage() {
     },
     [],
   );
+
+  const openTopUpPage = useCallback(async () => {
+    if (openingTopUp) return;
+
+    try {
+      setOpeningTopUp(true);
+      setErrorMessage("");
+
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
+        window.location.href =
+          "/login?reason=login-required";
+        return;
+      }
+
+      const response = await fetch(
+        "/api/club-card/top-up",
+        {
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            Authorization:
+              `Bearer ${session.access_token}`,
+          },
+        },
+      );
+
+      const payload = (await response.json()) as {
+        url?: string;
+        error?: string;
+      };
+
+      if (!response.ok || !payload.url) {
+        throw new Error(
+          payload.error ??
+            "De oplaadpagina kon niet worden geopend.",
+        );
+      }
+
+      window.location.assign(payload.url);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "De oplaadpagina kon niet worden geopend.",
+      );
+    } finally {
+      setOpeningTopUp(false);
+    }
+  }, [openingTopUp]);
 
   useEffect(() => {
     void loadBalance();
@@ -183,16 +238,29 @@ export default function ClubCardPage() {
               </div>
             </section>
 
-            <button
-              type="button"
-              onClick={() => void loadBalance(true)}
-              disabled={refreshing}
-              className="ucl-button-primary w-full disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {refreshing
-                ? "Saldo vernieuwen…"
-                : "↻ Saldo vernieuwen"}
-            </button>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => void openTopUpPage()}
+                disabled={openingTopUp || refreshing}
+                className="ucl-button-primary !mt-0 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {openingTopUp
+                  ? "Oplaadpagina openen…"
+                  : "＋ Club Card opladen"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void loadBalance(true)}
+                disabled={refreshing || openingTopUp}
+                className="ucl-button-secondary disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {refreshing
+                  ? "Saldo vernieuwen…"
+                  : "↻ Saldo vernieuwen"}
+              </button>
+            </div>
           </>
         ) : (
           <section className="ucl-card mt-6 text-center">
