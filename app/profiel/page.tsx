@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/src/lib/supabase";
+import ClubCardPanel from "@/components/profile/ClubCardPanel";
 
 type Profile = {
   id: string;
@@ -776,6 +777,10 @@ export default function ProfielPage() {
             </div>
           </div>
         </section>
+
+        <div className="mt-6">
+          <ClubCardPanel />
+        </div>
 
         <section className="ucl-card mt-6">
           <div className="flex items-start gap-4">
