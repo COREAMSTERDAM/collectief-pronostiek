@@ -204,62 +204,88 @@ export default function ClubCardPanel() {
   }
 
   async function startScanner() {
-    if (startingCamera || saving) return;
+  if (startingCamera || saving) return;
 
-    try {
-      setScannerOpen(true);
-      setStartingCamera(true);
-      setErrorMessage("");
-      setMessage("");
+  try {
+    setScannerOpen(true);
+    setStartingCamera(true);
+    setErrorMessage("");
+    setMessage("");
 
-      await new Promise<void>((resolve) => {
-        window.requestAnimationFrame(() => resolve());
-      });
+    await new Promise<void>((resolve) => {
+      window.requestAnimationFrame(() => resolve());
+    });
 
-      const videoElement = videoRef.current;
+    const videoElement = videoRef.current;
 
-      if (!videoElement) {
-        throw new Error("De cameravoorvertoning kon niet worden geopend.");
-      }
-
-      const { BrowserQRCodeReader } = await import("@zxing/browser");
-      const devices = await BrowserQRCodeReader.listVideoInputDevices();
-
-      if (devices.length === 0) {
-        throw new Error("Er werd geen camera gevonden op dit toestel.");
-      }
-
-      const preferredDevice =
-        devices.find((device) =>
-          /back|rear|environment|achter/i.test(device.label),
-        ) ?? devices[devices.length - 1];
-
-      const reader = new BrowserQRCodeReader();
-
-      const controls = await reader.decodeFromVideoDevice(
-        preferredDevice.deviceId,
-        videoElement,
-        (result) => {
-          if (!result) return;
-
-          stopScanner();
-          void saveCode(result.getText());
-        },
-      );
-
-      controlsRef.current = controls;
-    } catch (error) {
-      stopScanner();
-
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "De camera kon niet worden gestart.",
-      );
-    } finally {
-      setStartingCamera(false);
+    if (!videoElement) {
+      throw new Error("De cameravoorvertoning kon niet worden geopend.");
     }
+
+    const { BrowserQRCodeReader } = await import("@zxing/browser");
+
+    const reader = new BrowserQRCodeReader();
+
+    const controls = await reader.decodeFromConstraints(
+      {
+        audio: false,
+        video: {
+          facingMode: {
+            ideal: "environment",
+          },
+          width: {
+            ideal: 1280,
+          },
+          height: {
+            ideal: 720,
+          },
+        },
+      },
+      videoElement,
+      (result, error, controls) => {
+        if (!result) return;
+
+        controls.stop();
+        controlsRef.current = null;
+
+        const stream = videoElement.srcObject;
+
+        if (stream instanceof MediaStream) {
+          for (const track of stream.getTracks()) {
+            track.stop();
+          }
+        }
+
+        videoElement.srcObject = null;
+
+        void saveCode(result.getText());
+      },
+    );
+
+    controlsRef.current = controls;
+
+    window.setTimeout(() => {
+      if (!controlsRef.current) return;
+
+      stopScanner();
+      setScannerOpen(false);
+      setErrorMessage(
+        "Er werd geen QR-code gevonden. Probeer opnieuw en houd de code goed binnen het kader.",
+      );
+    }, 30_000);
+  } catch (error) {
+    stopScanner();
+    setScannerOpen(false);
+
+    setErrorMessage(
+      error instanceof Error
+        ? error.message
+        : "De camera kon niet worden gestart.",
+    );
+  } finally {
+    setStartingCamera(false);
   }
+}
 
   async function removeClubCard() {
     if (!userId || removing) return;
@@ -443,11 +469,13 @@ export default function ClubCardPanel() {
 
             <div className="relative mt-5 aspect-[3/4] overflow-hidden rounded-3xl border border-amber-300/25 bg-black sm:aspect-video">
               <video
-                ref={videoRef}
-                className="h-full w-full object-cover"
-                muted
-                playsInline
-              />
+  ref={videoRef}
+  className="h-full w-full object-cover"
+  muted
+  playsInline
+  autoPlay
+  controls={false}
+/>
 
               <div className="pointer-events-none absolute inset-[14%] rounded-3xl border-2 border-amber-200/80 shadow-[0_0_0_999px_rgba(0,0,0,0.28)]">
                 <span className="absolute left-4 right-4 top-1/2 h-px bg-amber-200/70 shadow-[0_0_12px_rgba(253,230,138,0.9)]" />
