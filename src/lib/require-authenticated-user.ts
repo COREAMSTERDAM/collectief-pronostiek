@@ -3,12 +3,6 @@ import "server-only";
 import { NextRequest } from "next/server";
 import { getSupabaseAdmin } from "@/src/lib/supabase-admin";
 
-/**
- * Controleert een Bearer-token uit de huidige Supabase-sessie.
- *
- * De client stuurt uitsluitend zijn access token mee. De service-role key
- * blijft server-side en wordt nooit naar de browser gestuurd.
- */
 export async function requireAuthenticatedUser(
   request: NextRequest,
 ) {

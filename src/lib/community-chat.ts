@@ -46,6 +46,34 @@ export type CommunityMessage = {
   reactions: CommunityReaction[];
 };
 
+async function getAccessToken() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  return session?.access_token ?? null;
+}
+
+async function sendPushForMessage(messageId: string) {
+  const accessToken = await getAccessToken();
+
+  if (!accessToken) return;
+
+  try {
+    await fetch("/api/community/push/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ messageId }),
+      keepalive: true,
+    });
+  } catch {
+    // Een pushfout mag het reeds opgeslagen chatbericht niet doen falen.
+  }
+}
+
 export async function getCommunityChannel(
   channelId: number,
 ): Promise<CommunityChannelDetail | null> {
@@ -57,7 +85,9 @@ export async function getCommunityChannel(
   );
 
   if (error) {
-    throw new Error(`Kanaal ophalen mislukt: ${error.message}`);
+    throw new Error(
+      `Kanaal ophalen mislukt: ${error.message}`,
+    );
   }
 
   return (data as CommunityChannelDetail | null) ?? null;
@@ -80,7 +110,9 @@ export async function getCommunityMessages(
   );
 
   if (error) {
-    throw new Error(`Berichten ophalen mislukt: ${error.message}`);
+    throw new Error(
+      `Berichten ophalen mislukt: ${error.message}`,
+    );
   }
 
   return (data ?? []) as CommunityMessage[];
@@ -100,15 +132,22 @@ export async function createCommunityMessage({
     {
       target_channel_id: channelId,
       target_content: content,
-      target_reply_to_message_id: replyToMessageId ?? null,
+      target_reply_to_message_id:
+        replyToMessageId ?? null,
     },
   );
 
   if (error) {
-    throw new Error(`Bericht versturen mislukt: ${error.message}`);
+    throw new Error(
+      `Bericht versturen mislukt: ${error.message}`,
+    );
   }
 
-  return data as string;
+  const messageId = data as string;
+
+  await sendPushForMessage(messageId);
+
+  return messageId;
 }
 
 export async function updateCommunityMessage(
@@ -124,11 +163,15 @@ export async function updateCommunityMessage(
   );
 
   if (error) {
-    throw new Error(`Bericht bewerken mislukt: ${error.message}`);
+    throw new Error(
+      `Bericht bewerken mislukt: ${error.message}`,
+    );
   }
 }
 
-export async function deleteCommunityMessage(messageId: string) {
+export async function deleteCommunityMessage(
+  messageId: string,
+) {
   const { error } = await supabase.rpc(
     "delete_community_message",
     {
@@ -137,11 +180,15 @@ export async function deleteCommunityMessage(messageId: string) {
   );
 
   if (error) {
-    throw new Error(`Bericht verwijderen mislukt: ${error.message}`);
+    throw new Error(
+      `Bericht verwijderen mislukt: ${error.message}`,
+    );
   }
 }
 
-export async function toggleCommunityMessagePin(messageId: string) {
+export async function toggleCommunityMessagePin(
+  messageId: string,
+) {
   const { data, error } = await supabase.rpc(
     "toggle_community_message_pin",
     {
@@ -150,7 +197,9 @@ export async function toggleCommunityMessagePin(messageId: string) {
   );
 
   if (error) {
-    throw new Error(`Vastpinnen mislukt: ${error.message}`);
+    throw new Error(
+      `Vastpinnen mislukt: ${error.message}`,
+    );
   }
 
   return Boolean(data);
