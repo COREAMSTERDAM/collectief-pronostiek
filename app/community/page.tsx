@@ -9,7 +9,8 @@ import {
 import { supabase } from "@/src/lib/supabase";
 
 export default function CommunityPage() {
-  const [categories, setCategories] = useState<CommunityCategory[]>([]);
+  const [categories, setCategories] =
+    useState<CommunityCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -23,12 +24,16 @@ export default function CommunityPage() {
         } = await supabase.auth.getUser();
 
         if (!user) {
-          window.location.href = "/login?reason=login-required";
+          window.location.href =
+            "/login?reason=login-required";
           return;
         }
 
         const result = await getMyCommunityStructure();
-        if (mounted) setCategories(result);
+
+        if (mounted) {
+          setCategories(result);
+        }
       } catch (error) {
         if (mounted) {
           setErrorMessage(
@@ -38,7 +43,9 @@ export default function CommunityPage() {
           );
         }
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     }
 
@@ -57,12 +64,13 @@ export default function CommunityPage() {
             Collectief Wit en Zwet
           </p>
 
-          <h1 className="ucl-title mt-3">Community</h1>
+          <h1 className="ucl-title mt-3">
+            Community
+          </h1>
 
           <p className="ucl-subtitle max-w-3xl">
-            Ontdek de categorieën en kanalen waarvoor je toegang hebt.
-            Berichten en realtime chat worden in een volgende sprint
-            toegevoegd.
+            Praat mee in de categorieën en kanalen waarvoor je toegang
+            hebt. Nieuwe berichten verschijnen automatisch.
           </p>
         </header>
 
@@ -74,7 +82,9 @@ export default function CommunityPage() {
 
         {loading ? (
           <section className="ucl-card mt-6 text-center">
-            <p className="ucl-muted">Community laden…</p>
+            <p className="ucl-muted">
+              Community laden…
+            </p>
           </section>
         ) : categories.length === 0 ? (
           <section className="ucl-card mt-6 text-center">
@@ -119,9 +129,10 @@ export default function CommunityPage() {
                     </p>
                   ) : (
                     category.channels.map((channel) => (
-                      <div
+                      <Link
                         key={channel.id}
-                        className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4"
+                        href={`/community/${channel.id}`}
+                        className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-amber-300/25 hover:bg-white/[0.055]"
                       >
                         <span className="text-lg">
                           {channel.icon}
@@ -144,9 +155,11 @@ export default function CommunityPage() {
                             Alleen lezen
                           </span>
                         ) : (
-                          <span className="text-white/20">›</span>
+                          <span className="text-white/20 transition group-hover:translate-x-1 group-hover:text-amber-200">
+                            ›
+                          </span>
                         )}
-                      </div>
+                      </Link>
                     ))
                   )}
                 </div>
@@ -156,7 +169,10 @@ export default function CommunityPage() {
         )}
 
         <div className="mt-8">
-          <Link href="/" className="ucl-button-secondary">
+          <Link
+            href="/"
+            className="ucl-button-secondary"
+          >
             ← Terug naar dashboard
           </Link>
         </div>
