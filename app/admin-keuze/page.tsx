@@ -51,6 +51,16 @@ export default function AdminKeuzePage() {
             action="Open Iedereen Coach admin"
             accent="amber"
           />
+          <HubCard
+  href="/admin/community"
+  icon="💬"
+  eyebrow="Community"
+  title="Communitybeheer"
+  description="Beheer rollen, categorieën, kanalen en toegangsrechten."
+  action="Open Community Admin"
+  accent="purple"
+/>
+
 
           <HubCard
   href="/admin/feedback"
