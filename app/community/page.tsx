@@ -7,11 +7,17 @@ import {
   type CommunityCategory,
 } from "@/src/lib/community";
 import { supabase } from "@/src/lib/supabase";
+import {
+  getCommunityUnreadCounts,
+  type CommunityUnreadCounts,
+} from "@/src/lib/community-experience";
 
 export default function CommunityPage() {
   const [categories, setCategories] =
     useState<CommunityCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unreadCounts, setUnreadCounts] =
+    useState<CommunityUnreadCounts>({});
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -29,10 +35,14 @@ export default function CommunityPage() {
           return;
         }
 
-        const result = await getMyCommunityStructure();
+        const [result, unreadResult] = await Promise.all([
+          getMyCommunityStructure(),
+          getCommunityUnreadCounts(),
+        ]);
 
         if (mounted) {
           setCategories(result);
+          setUnreadCounts(unreadResult);
         }
       } catch (error) {
         if (mounted) {
@@ -150,15 +160,26 @@ export default function CommunityPage() {
                           ) : null}
                         </div>
 
-                        {channel.is_read_only ? (
-                          <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[9px] font-black uppercase text-white/35">
-                            Alleen lezen
-                          </span>
-                        ) : (
-                          <span className="text-white/20 transition group-hover:translate-x-1 group-hover:text-amber-200">
-                            ›
-                          </span>
-                        )}
+                        <div className="flex shrink-0 items-center gap-2">
+                          {(unreadCounts[String(channel.id)] ?? 0) > 0 ? (
+                            <span className="flex min-w-6 items-center justify-center rounded-full bg-red-500 px-2 py-1 text-[10px] font-black text-white shadow-lg shadow-red-950/30">
+                              {Math.min(
+                                unreadCounts[String(channel.id)] ?? 0,
+                                99,
+                              )}
+                            </span>
+                          ) : null}
+
+                          {channel.is_read_only ? (
+                            <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[9px] font-black uppercase text-white/35">
+                              Alleen lezen
+                            </span>
+                          ) : (
+                            <span className="text-white/20 transition group-hover:translate-x-1 group-hover:text-amber-200">
+                              ›
+                            </span>
+                          )}
+                        </div>
                       </Link>
                     ))
                   )}

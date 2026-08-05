@@ -12,12 +12,19 @@ export type CommunityChannelDetail = {
   category_icon: string;
   can_post: boolean;
   can_moderate: boolean;
+  reactions: CommunityReaction[];
 };
 
 export type CommunityReplyPreview = {
   id: string;
   user_name: string;
   content: string;
+};
+
+export type CommunityReaction = {
+  emoji: string;
+  count: number;
+  reacted_by_me: boolean;
 };
 
 export type CommunityMessage = {

@@ -20,10 +20,16 @@ import {
   type CommunityMessage,
 } from "@/src/lib/community-chat";
 import { supabase } from "@/src/lib/supabase";
+import {
+  markCommunityChannelRead,
+  toggleCommunityReaction,
+} from "@/src/lib/community-experience";
 
 type CommunityChannelViewProps = {
   channelId: number;
 };
+
+const QUICK_REACTIONS = ["👍", "❤️", "😂", "🔥", "⚽", "👏"];
 
 function formatMessageTime(value: string) {
   return new Intl.DateTimeFormat("nl-BE", {
@@ -61,6 +67,8 @@ export default function CommunityChannelView({
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [reactionPickerMessageId, setReactionPickerMessageId] =
+    useState<string | null>(null);
 
   const pinnedMessages = useMemo(
     () =>
@@ -126,6 +134,7 @@ export default function CommunityChannelView({
 
         setChannel(channelResult);
         await loadMessages(true);
+        await markCommunityChannelRead(channelId);
       } catch (error) {
         if (mounted) {
           setErrorMessage(
@@ -156,6 +165,18 @@ export default function CommunityChannelView({
           schema: "public",
           table: "community_messages",
           filter: `channel_id=eq.${channelId}`,
+        },
+        () => {
+          void loadMessages(false);
+          void markCommunityChannelRead(channelId);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "community_message_reactions",
         },
         () => {
           void loadMessages(false);
@@ -403,7 +424,84 @@ export default function CommunityChannelView({
                 </div>
 
                 {!message.deleted_at ? (
-                  <div className="mt-3 flex flex-wrap gap-2 pl-14 opacity-100 sm:opacity-0 sm:transition sm:group-hover:opacity-100">
+                  <>
+                    <div className="mt-3 flex flex-wrap gap-2 pl-14">
+                      {message.reactions.map((reaction) => (
+                        <button
+                          key={reaction.emoji}
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await toggleCommunityReaction(
+                                message.id,
+                                reaction.emoji,
+                              );
+                              await loadMessages(false);
+                            } catch (error) {
+                              setErrorMessage(
+                                error instanceof Error
+                                  ? error.message
+                                  : "Reactie opslaan mislukt.",
+                              );
+                            }
+                          }}
+                          className={`rounded-full border px-2.5 py-1 text-xs font-black transition ${
+                            reaction.reacted_by_me
+                              ? "border-amber-300/35 bg-amber-300/15 text-amber-100"
+                              : "border-white/10 bg-white/5 text-white/55"
+                          }`}
+                        >
+                          {reaction.emoji} {reaction.count}
+                        </button>
+                      ))}
+
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setReactionPickerMessageId((current) =>
+                              current === message.id ? null : message.id,
+                            )
+                          }
+                          className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-black text-white/45"
+                          aria-label="Reactie toevoegen"
+                        >
+                          ＋ 🙂
+                        </button>
+
+                        {reactionPickerMessageId === message.id ? (
+                          <div className="absolute bottom-full left-0 z-30 mb-2 flex gap-1 rounded-2xl border border-white/10 bg-zinc-950 p-2 shadow-2xl">
+                            {QUICK_REACTIONS.map((emoji) => (
+                              <button
+                                key={emoji}
+                                type="button"
+                                onClick={async () => {
+                                  try {
+                                    await toggleCommunityReaction(
+                                      message.id,
+                                      emoji,
+                                    );
+                                    setReactionPickerMessageId(null);
+                                    await loadMessages(false);
+                                  } catch (error) {
+                                    setErrorMessage(
+                                      error instanceof Error
+                                        ? error.message
+                                        : "Reactie opslaan mislukt.",
+                                    );
+                                  }
+                                }}
+                                className="flex h-9 w-9 items-center justify-center rounded-xl text-lg transition hover:bg-white/10 active:scale-90"
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2 pl-14 opacity-100 sm:opacity-0 sm:transition sm:group-hover:opacity-100">
                     {channel.can_post ? (
                       <button
                         type="button"
@@ -477,7 +575,8 @@ export default function CommunityChannelView({
                         📌 {message.is_pinned ? "Losmaken" : "Vastpinnen"}
                       </button>
                     ) : null}
-                  </div>
+                    </div>
+                  </>
                 ) : null}
               </article>
             ))
