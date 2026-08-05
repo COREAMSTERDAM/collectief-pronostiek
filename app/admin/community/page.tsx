@@ -51,6 +51,25 @@ export default function CommunityAdminPage() {
             action="Open community"
             accent="emerald"
           />
+          <HubCard
+  href="/admin/community/gebruikersrollen"
+  icon="👥"
+  eyebrow="Gebruikers"
+  title="Gebruikersrollen"
+  description="Ken één of meerdere communityrollen toe aan gebruikers."
+  action="Open gebruikersrollen"
+  accent="emerald"
+/>
+
+<HubCard
+  href="/admin/community/kanaalrechten"
+  icon="🔏"
+  eyebrow="Kanalen"
+  title="Kanaalrechten"
+  description="Laat kanalen rechten overnemen of stel eigen uitzonderingen in."
+  action="Open kanaalrechten"
+  accent="amber"
+/>
         </section>
       </div>
     </main>
