@@ -12,7 +12,6 @@ export type CommunityChannelDetail = {
   category_icon: string;
   can_post: boolean;
   can_moderate: boolean;
-  reactions: CommunityReaction[];
 };
 
 export type CommunityReplyPreview = {
@@ -44,6 +43,7 @@ export type CommunityMessage = {
   updated_at: string;
   is_own: boolean;
   can_moderate: boolean;
+  reactions: CommunityReaction[];
 };
 
 export async function getCommunityChannel(
