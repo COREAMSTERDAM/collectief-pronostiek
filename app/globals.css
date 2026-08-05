@@ -539,10 +539,14 @@ textarea:focus-visible {
   --native-text: #ffffff;
   --native-muted: rgba(255, 255, 255, 0.46);
   --native-dim: rgba(255, 255, 255, 0.28);
-  --native-gold: #f2cf59;
-  --native-gold-soft: rgba(242, 207, 89, 0.13);
+  --native-accent: #22c55e;
+  --native-accent-soft: rgba(34, 197, 94, 0.14);
   --native-danger: #ff6b78;
   --native-success: #61e6b3;
+  --native-accent-strong: #16a34a;
+  --native-accent-light: #4ade80;
+  --native-accent-border: rgba(34, 197, 94, 0.28);
+  --native-accent-glow: rgba(34, 197, 94, 0.22);
   --native-radius-xl: 2rem;
   --native-radius-lg: 1.5rem;
   --native-radius-md: 1.15rem;
@@ -584,7 +588,7 @@ a {
   background:
     radial-gradient(
       circle at 15% -10%,
-      rgba(242, 207, 89, 0.13),
+      rgba(34, 197, 94, 0.14),
       transparent 32%
     ),
     radial-gradient(
@@ -616,7 +620,7 @@ a {
       145deg,
       rgba(255, 255, 255, 0.095),
       rgba(255, 255, 255, 0.035) 52%,
-      rgba(242, 207, 89, 0.075)
+      rgba(34, 197, 94, 0.08)
     );
   padding: 1.25rem;
   box-shadow: var(--native-shadow);
@@ -660,7 +664,7 @@ a {
 
 .native-eyebrow {
   margin: 0;
-  color: rgba(242, 207, 89, 0.78);
+  color: rgba(74, 222, 128, 0.82);
   font-size: 0.67rem;
   font-weight: 900;
   letter-spacing: 0.22em;
@@ -704,7 +708,7 @@ a {
 
 .native-icon-button:active {
   transform: scale(0.92);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(34, 197, 94, 0.16);
 }
 
 .native-card {
@@ -732,7 +736,7 @@ a {
 
 .native-card-interactive:active {
   transform: scale(0.985);
-  border-color: rgba(242, 207, 89, 0.28);
+  border-color: rgba(34, 197, 94, 0.32);
 }
 
 .native-section-header {
@@ -751,7 +755,7 @@ a {
 }
 
 .native-section-action {
-  color: rgba(242, 207, 89, 0.82);
+  color: rgba(74, 222, 128, 0.86);
   font-size: 0.78rem;
   font-weight: 850;
 }
@@ -776,7 +780,7 @@ a {
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
-  border: 1px solid rgba(242, 207, 89, 0.17);
+  border: 1px solid rgba(34, 197, 94, 0.20);
   border-radius: 1.65rem;
   background:
     linear-gradient(
@@ -891,7 +895,7 @@ a {
 .native-button-primary {
   background: white;
   color: black;
-  box-shadow: 0 12px 28px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 28px rgba(34, 197, 94, 0.16);
 }
 
 .native-button-secondary {
@@ -1020,7 +1024,8 @@ a {
 }
 
 .native-nav-item-active {
-  color: var(--native-gold);
+  color: var(--native-accent-light);
+  text-shadow: 0 0 18px var(--native-accent-glow);
 }
 
 .native-nav-icon {
@@ -1099,4 +1104,29 @@ a {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+
+/* Groene accentlaag */
+.native-tile:hover .native-tile-icon-wrap,
+.native-tile:focus-visible .native-tile-icon-wrap {
+  border-color: var(--native-accent-border);
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.43),
+    0 0 32px var(--native-accent-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+.native-section-action,
+.native-eyebrow {
+  color: var(--native-accent-light);
+}
+
+.native-icon-button:focus-visible,
+.native-button:focus-visible,
+.native-nav-item:focus-visible,
+.native-list-row:focus-visible,
+.native-tile:focus-visible {
+  outline: 2px solid var(--native-accent-light);
+  outline-offset: 3px;
 }
