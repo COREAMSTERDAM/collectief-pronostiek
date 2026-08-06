@@ -276,7 +276,7 @@ export default function SeparateCoachRankingPage() {
                     />
 
                     <div className="min-w-0">
-                      <p className="line-clamp-2 text-sm font-bold leading-tight text-white break-words">
+                      <p className="text-sm font-bold leading-tight text-white break-words whitespace-normal">
                         {row.coach_name}
 
                         {row.is_current_user ? (
@@ -497,7 +497,7 @@ function CoachPodiumCard({
         {podiumIcon}
       </div>
 
-      <p className="line-clamp-2 text-[0.72rem] font-bold leading-tight text-white break-words">
+      <p className="text-[0.72rem] font-bold leading-tight text-white break-words whitespace-normal">
         {player.coach_name}
       </p>
 
