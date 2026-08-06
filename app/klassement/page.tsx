@@ -575,11 +575,11 @@ if (!userData.user) {
                     </div>
 
                     <div className="w-[5rem] justify-self-end text-right">
-                      <p className="text-xl font-black leading-none tabular-nums text-white">
+                      <p className="text-sm font-bold tabular-nums text-white">
                         {player.total_points}
                       </p>
 
-                      <p className="mt-1 text-xs font-semibold text-slate-400">
+                      <p className="text-sm font-bold tabular-nums text-white">
                         punten
                       </p>
                     </div>
