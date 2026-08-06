@@ -55,7 +55,7 @@ function PlayerResult({
       </div>
 
       <div className="min-w-0">
-        <p className="truncate font-black text-white">
+        <p className="whitespace-normal break-words text-sm font-bold leading-tight text-white">
           {player.player_name}
         </p>
 
@@ -69,7 +69,7 @@ function PlayerResult({
       </div>
 
       <div className="text-right">
-        <p className="text-2xl font-black tabular-nums text-amber-200">
+        <p className="text-lg font-black leading-none tabular-nums text-amber-200">
           {player.average_rating.toFixed(1).replace(".", ",")}
         </p>
 
