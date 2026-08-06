@@ -252,7 +252,7 @@ export default function SeparateCoachRankingPage() {
                   key={row.user_id}
                   href={`/profiel/${row.user_id}`}
                   aria-label={`Bekijk het profiel van ${row.coach_name}`}
-                  className={`group grid grid-cols-[minmax(0,1fr)_6.5rem_1.25rem] items-center gap-3 border-b border-white/[0.075] px-4 py-4 transition last:border-b-0 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 ${
+                  className={`group grid grid-cols-[minmax(0,1fr)_5.5rem_1rem] items-center gap-2 border-b border-white/[0.075] px-3 py-3 transition last:border-b-0 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70 ${
                     row.is_current_user
                       ? "ucl-ranking-current"
                       : ""
@@ -276,7 +276,7 @@ export default function SeparateCoachRankingPage() {
                     />
 
                     <div className="min-w-0">
-                      <p className="cp-account-name-compact truncate text-white">
+                      <p className="line-clamp-2 text-sm font-bold leading-tight text-white break-words">
                         {row.coach_name}
 
                         {row.is_current_user ? (
@@ -296,11 +296,11 @@ export default function SeparateCoachRankingPage() {
                   </div>
 
                   <div className="w-[6.5rem] justify-self-end text-right">
-                    <p className="text-2xl font-black leading-none tabular-nums text-white">
+                    <p className="text-lg font-black leading-none tabular-nums text-white">
                       {formatPoints(row.total_points)}
                     </p>
 
-                    <p className="mt-1 text-xs font-semibold text-slate-400">
+                    <p className="text-[10px] uppercase tracking-wide text-white/35">
                       punten
                     </p>
                   </div>
@@ -410,8 +410,8 @@ function CoachAvatar({
 
   const sizeClass =
     size === "lg"
-      ? "h-20 w-20 text-xl"
-      : "h-12 w-12 text-sm";
+      ? "h-10 w-10 text-sm"
+      : "h-6 w-6 text-[10px]";
 
   const ringClass =
     position === 1
@@ -497,7 +497,7 @@ function CoachPodiumCard({
         {podiumIcon}
       </div>
 
-      <p className="cp-account-name-compact truncate text-white">
+      <p className="line-clamp-2 text-[0.72rem] font-bold leading-tight text-white break-words">
         {player.coach_name}
       </p>
 
