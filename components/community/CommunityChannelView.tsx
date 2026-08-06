@@ -265,7 +265,7 @@ export default function CommunityChannelView({
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col">
+    <div className="flex min-h-[100dvh] flex-col overflow-x-hidden">
       <header className="sticky top-0 z-20 border-b border-white/10 bg-black/85 px-4 py-4 backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex max-w-5xl items-center gap-4">
           <Link
@@ -294,7 +294,7 @@ export default function CommunityChannelView({
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-5 sm:px-6">
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-5 pb-4 sm:px-6">
         {channel.description ? (
           <section className="mb-5 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
             <p className="text-sm leading-6 text-white/50">
@@ -615,7 +615,7 @@ export default function CommunityChannelView({
                 </div>
               ) : null}
 
-              <div className="flex items-end gap-3">
+              <div className="flex min-w-0 items-end gap-2 sm:gap-3">
                 <textarea
                   value={content}
                   onChange={(event) => setContent(event.target.value)}
@@ -631,13 +631,13 @@ export default function CommunityChannelView({
                   rows={1}
                   maxLength={4000}
                   placeholder={`Bericht aan #${channel.name}`}
-                  className="min-h-12 max-h-40 flex-1 resize-y rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3 text-sm text-white outline-none placeholder:text-white/25 focus:border-amber-300/30"
+                  className="min-h-12 min-w-0 flex-1 resize-y rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3 text-base leading-6 text-white outline-none placeholder:text-white/25 focus:border-green-400/50"
                 />
 
                 <button
                   type="submit"
                   disabled={!content.trim() || sending}
-                  className="flex h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-5 text-sm font-black text-black transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+                  className="flex h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-4 text-sm font-black text-black transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 sm:px-5"
                 >
                   {sending
                     ? "…"

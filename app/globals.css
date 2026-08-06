@@ -1130,3 +1130,29 @@ a {
   outline: 2px solid var(--native-accent-light);
   outline-offset: 3px;
 }
+
+/* iPhone/Safari invoervelden en viewport */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+input,
+textarea,
+select {
+  font-size: 16px !important;
+}
+
+/* Voorkomt horizontale verschuiving tijdens focus op iOS */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Zorgt dat de chatcomposer correct rekening houdt met de iPhone safe area */
+@supports (padding: max(0px)) {
+  .community-chat-composer {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
