@@ -1,98 +1,129 @@
-import HubCard from "@/components/navigation/HubCard";
-import HubHeader from "@/components/navigation/HubHeader";
+import NativeButton from "@/components/native/NativeButton";
+import NativeCard from "@/components/native/NativeCard";
+import NativeListRow from "@/components/native/NativeListRow";
+import NativeTopBar from "@/components/native/NativeTopBar";
 
 export default function IedereenCoachKeuzePage() {
   return (
-    <main className="ucl-page">
-      <div className="ucl-container !max-w-6xl">
-        <HubHeader
-          eyebrow="Iedereen Coach"
-          title="Supporterscoach"
-          description="Stel je basiself samen, beoordeel spelers en ontdek wat de community kiest."
-        />
+    <div className="native-screen native-module-screen native-coach-screen">
+      <NativeTopBar
+        eyebrow="Iedereen Coach"
+        title="Supporterscoach"
+        description="Stel je elftal samen, beoordeel spelers en volg de community."
+        backHref="/"
+        compact
+      />
 
-        <section className="mt-6 grid gap-5 md:grid-cols-2">
-          <HubCard
-            href="/iedereen-coach"
-            icon="⚽"
-            eyebrow="Opstelling"
-            title="Elftal indienen"
-            description="Kies een open wedstrijd en stel jouw ideale basiself samen."
-            action="Stel je elftal samen"
-            accent="amber"
-          />
+      <NativeCard
+        className="native-primary-card native-module-hero"
+        elevated
+      >
+        <div className="native-primary-card-copy">
+          <p className="native-eyebrow">
+            Volgende actie
+          </p>
 
-          <HubCard
+          <h2 className="native-primary-title">
+            Elftal indienen
+          </h2>
+
+          <p className="native-primary-description">
+            Kies een open wedstrijd en stel jouw ideale basiself samen.
+          </p>
+        </div>
+
+        <NativeButton
+          href="/iedereen-coach"
+          fullWidth
+          icon={<span aria-hidden="true">⚽</span>}
+        >
+          Stel je elftal samen
+          <span aria-hidden="true">›</span>
+        </NativeButton>
+      </NativeCard>
+
+      <section className="native-module-section">
+        <p className="native-section-title">
+          Mijn coachspel
+        </p>
+
+        <NativeCard className="native-list-card native-module-list">
+          <NativeListRow
             href="/iedereen-coach/beoordelen"
             icon="⭐"
-            eyebrow="Na de wedstrijd"
             title="Spelers beoordelen"
-            description="Geef actieve spelers een cijfer zolang de beoordelingsperiode open is."
-            action="Open beoordelingen"
-            accent="sky"
+            subtitle="Geef spelers een cijfer na de wedstrijd."
           />
 
-          <HubCard
+          <NativeListRow
             href="/iedereen-coach/mijn-opstellingen"
             icon="📚"
-            eyebrow="Persoonlijk archief"
-            title="Mijn vorige opstellingen"
-            description="Bekijk je eigen basiselftallen van gesloten wedstrijden."
-            action="Bekijk mijn opstellingen"
-            accent="white"
+            title="Mijn opstellingen"
+            subtitle="Bekijk je eerder ingediende elftallen."
           />
 
-          <HubCard
-            href="/iedereen-coach/beoordelingen-archief"
-            icon="🗂️"
-            eyebrow="Resultaten"
-            title="Archief spelersbeoordelingen"
-            description="Bekijk per wedstrijd de definitieve gemiddelde spelersscores."
-            action="Open beoordelingsarchief"
-            accent="purple"
-          />
-
-          <HubCard
-            href="/iedereen-coach/collectief"
-            icon="👥"
-            eyebrow="Community"
-            title="Collectieve opstellingen"
-            description="Ontdek de populairste spelers en formaties over alle wedstrijden."
-            action="Bekijk collectieve keuzes"
-            accent="emerald"
-          />
-
-          <HubCard
+          <NativeListRow
             href="/iedereen-coach/klassement"
             icon="📈"
-            eyebrow="Coachpunten"
             title="Coachklassement"
-            description="Bekijk welke supporters de meeste punten verzamelden met hun basiself."
-            action="Open coachklassement"
-            accent="amber"
+            subtitle="Bekijk je positie en de algemene rangschikking."
+          />
+        </NativeCard>
+      </section>
+
+      <section className="native-module-section">
+        <p className="native-section-title">
+          Community & analyse
+        </p>
+
+        <NativeCard className="native-list-card native-module-list">
+          <NativeListRow
+            href="/iedereen-coach/collectief"
+            icon="👥"
+            title="Collectieve opstellingen"
+            subtitle="Bekijk populaire spelers en formaties."
           />
 
-          <HubCard
+          <NativeListRow
+            href="/iedereen-coach/beoordelingen-archief"
+            icon="🗂️"
+            title="Beoordelingsarchief"
+            subtitle="Bekijk definitieve gemiddelde spelersscores."
+          />
+
+          <NativeListRow
             href="/iedereen-coach/spelershistoriek"
             icon="👤"
-            eyebrow="Spelers"
-            title="Puntenhistoriek spelers"
-            description="Bekijk de gemiddelde beoordelingen van spelers over het seizoen."
-            action="Open spelershistoriek"
-            accent="sky"
+            title="Spelershistoriek"
+            subtitle="Volg beoordelingen over het seizoen."
           />
 
-          <HubCard
+          <NativeListRow
             href="/iedereen-coach/analytics"
             icon="📊"
-            eyebrow="Analyse"
             title="Community analytics"
-            description="Bekijk formatietrends, populaire spelers en collectieve inzichten."
-            action="Open analytics"
-            accent="white"
+            subtitle="Ontdek trends en collectieve inzichten."
           />
-        </section>
-      </div>
-    </main>
+        </NativeCard>
+      </section>
+
+      <section className="native-coach-shortcuts">
+        <NativeButton
+          href="/"
+          variant="secondary"
+          fullWidth
+        >
+          Naar home
+        </NativeButton>
+
+        <NativeButton
+          href="/meldingen"
+          variant="ghost"
+          fullWidth
+        >
+          Meldingen
+        </NativeButton>
+      </section>
+    </div>
   );
 }
