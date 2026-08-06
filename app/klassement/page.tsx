@@ -549,15 +549,24 @@ if (!userData.user) {
                       />
 
                       <div className="min-w-0">
-                        <p className="truncate text-[0.72rem] font-bold leading-tight text-white">
-                          {player.name}
+                        <p
+  className="
+    line-clamp-2
+    text-[0.72rem]
+    font-bold
+    leading-tight
+    text-white
+    break-words
+  "
+>
+  {player.name}
 
-                          {isCurrentUser && (
-                            <span className="ml-2 text-sm font-bold text-emerald-300">
-                              jij
-                            </span>
-                          )}
-                        </p>
+  {isCurrentUser && (
+    <span className="ml-1 text-[10px] font-bold text-emerald-300">
+      jij
+    </span>
+  )}
+</p>
 
                         <p
                           className={`text-sm font-bold ${movementClass(
