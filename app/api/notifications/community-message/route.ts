@@ -84,13 +84,24 @@ export async function POST(request: NextRequest) {
 
     if (recipientError) throw recipientError;
 
-    const recipientUserIds = [
-      ...new Set(
-        (recipients ?? []).map(
-          (recipient: { user_id: string }) => recipient.user_id,
-        ),
+    type CommunityRecipient = {
+  user_id: string;
+};
+
+const typedRecipients =
+  (recipients ?? []) as CommunityRecipient[];
+
+const recipientUserIds: string[] = [
+  ...new Set(
+    typedRecipients
+      .map((recipient) => recipient.user_id)
+      .filter(
+        (userId): userId is string =>
+          typeof userId === "string" &&
+          userId.length > 0,
       ),
-    ];
+  ),
+];
 
     const { notificationId, recipientCount } =
       await createNotification({
