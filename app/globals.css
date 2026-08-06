@@ -1708,3 +1708,183 @@ body {
     transition: none;
   }
 }
+
+
+/* ==========================================================
+   Compact Home — ontworpen voor één mobiel scherm
+   ========================================================== */
+
+.native-home-compact {
+  display: flex;
+  min-height: calc(
+    100dvh - 6.5rem - env(safe-area-inset-bottom)
+  );
+  flex-direction: column;
+  padding-top: max(
+    0.75rem,
+    env(safe-area-inset-top)
+  );
+  padding-bottom: 0.7rem;
+}
+
+.native-home-compact .native-home-header {
+  margin-bottom: 0.75rem;
+}
+
+.native-home-compact .native-home-greeting {
+  font-size: 0.78rem;
+}
+
+.native-home-compact .native-home-name {
+  margin-top: 0.05rem;
+  font-size: clamp(1.65rem, 8vw, 2.25rem);
+  line-height: 1;
+}
+
+.native-home-compact .native-profile-logo,
+.native-home-compact .native-bell-button {
+  width: 2.55rem !important;
+  height: 2.55rem !important;
+  min-width: 2.55rem;
+}
+
+.native-primary-card-compact {
+  padding: 0.9rem;
+  border-radius: 1.2rem;
+}
+
+.native-primary-card-compact::after {
+  right: -5rem;
+  top: -5.5rem;
+}
+
+.native-primary-card-compact
+  .native-primary-card-copy {
+  margin-bottom: 0.7rem;
+}
+
+.native-primary-card-compact
+  .native-primary-title {
+  margin-top: 0.25rem;
+  font-size: clamp(1.18rem, 5vw, 1.45rem);
+}
+
+.native-primary-card-compact
+  .native-primary-description {
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.native-primary-card-compact .native-button {
+  min-height: 2.7rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.85rem;
+  font-size: 0.84rem;
+}
+
+.native-home-section-compact {
+  margin-top: 0.7rem;
+}
+
+.native-home-compact .native-quick-grid {
+  gap: 0.55rem;
+}
+
+.native-home-compact .native-tile {
+  min-height: 4.8rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.7rem;
+  border-radius: 1rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.native-home-compact .native-tile-icon-wrap {
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: 0 0 auto;
+  border-radius: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.native-home-compact .native-tile-copy {
+  min-width: 0;
+}
+
+.native-home-compact .native-tile-title {
+  overflow: hidden;
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.native-home-compact .native-tile-subtitle {
+  display: none;
+}
+
+.native-home-compact-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+
+.native-home-action-pill {
+  display: flex;
+  min-width: 0;
+  min-height: 2.7rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 1px solid var(--native-border);
+  border-radius: 0.9rem;
+  padding: 0.55rem 0.45rem;
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.69rem;
+  font-weight: 850;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.native-home-action-pill:active {
+  transform: scale(0.97);
+  border-color: rgba(46, 230, 138, 0.32);
+  background: rgba(46, 230, 138, 0.08);
+}
+
+@media (max-height: 700px) {
+  .native-home-compact {
+    padding-top: max(
+      0.45rem,
+      env(safe-area-inset-top)
+    );
+  }
+
+  .native-home-compact .native-home-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .native-primary-card-compact {
+    padding: 0.75rem;
+  }
+
+  .native-home-compact .native-tile {
+    min-height: 4.25rem;
+    padding-block: 0.5rem;
+  }
+
+  .native-home-compact-actions {
+    margin-top: 0.5rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .native-home-compact {
+    max-width: 34rem;
+  }
+}
