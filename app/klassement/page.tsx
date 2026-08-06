@@ -445,7 +445,7 @@ if (!userData.user) {
                     Grootste stijger
                   </p>
 
-                  <h2 className="cp-account-name mt-1 truncate text-white">
+                  <h2 className="mt-1 truncate text-sm font-black leading-tight text-white">
                     {biggestRiser.name}
                   </h2>
 
@@ -524,7 +524,7 @@ if (!userData.user) {
                     key={player.user_id}
                     href={`/profiel/${player.user_id}`}
                     aria-label={`Bekijk het profiel van ${player.name}`}
-                    className={`group grid grid-cols-[minmax(0,1fr)_5.5rem_1.25rem] items-center gap-3 border-b border-white/[0.075] px-4 py-4 transition last:border-b-0 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 ${
+                    className={`group grid grid-cols-[minmax(0,1fr)_5rem_1rem] items-center gap-2 border-b border-white/[0.075] px-3 py-3 transition last:border-b-0 hover:bg-white/[0.07] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 ${
                       isCurrentUser
                         ? "ucl-ranking-current"
                         : ""
@@ -549,7 +549,7 @@ if (!userData.user) {
                       />
 
                       <div className="min-w-0">
-                        <p className="cp-account-name-compact truncate text-white">
+                        <p className="truncate text-[0.72rem] font-bold leading-tight text-white">
                           {player.name}
 
                           {isCurrentUser && (
@@ -574,8 +574,8 @@ if (!userData.user) {
                       </div>
                     </div>
 
-                    <div className="w-[5.5rem] justify-self-end text-right">
-                      <p className="text-2xl font-black leading-none tabular-nums text-white">
+                    <div className="w-[5rem] justify-self-end text-right">
+                      <p className="text-xl font-black leading-none tabular-nums text-white">
                         {player.total_points}
                       </p>
 
@@ -671,8 +671,8 @@ function PlayerAvatar({
 
   const sizeClass =
     size === "lg"
-      ? "h-20 w-20 text-xl"
-      : "h-12 w-12 text-sm";
+      ? "h-10 w-10 text-sm"
+      : "h-6 w-6 text-[10px]";
 
   const ringClass =
     position === 1
@@ -751,7 +751,7 @@ function PodiumCard({
           : ""
       }`}
     >
-      <div className="mb-3 flex justify-center">
+      <div className="mb-2 flex justify-center">
         <PlayerAvatar
           name={player.name}
           avatarUrl={player.avatar_url}
@@ -770,7 +770,7 @@ function PodiumCard({
         {podiumIcon}
       </div>
 
-      <p className="cp-account-name-compact truncate text-white">
+      <p className="truncate text-[0.68rem] font-bold leading-tight text-white">
         {player.name}
       </p>
 
