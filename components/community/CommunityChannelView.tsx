@@ -58,6 +58,7 @@ export default function CommunityChannelView({
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesScrollRef = useRef<HTMLElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const initialScrollDoneRef = useRef(false);
   const [viewportFrame, setViewportFrame] = useState({
     height: 0,
     offsetTop: 0,
@@ -112,6 +113,10 @@ export default function CommunityChannelView({
     [],
   );
 
+  useEffect(() => {
+    initialScrollDoneRef.current = false;
+  }, [channelId]);
+
   const pinnedMessages = useMemo(
     () =>
       messages.filter(
@@ -129,6 +134,11 @@ export default function CommunityChannelView({
 
         if (scrollToBottom) {
           scrollToLatestMessage("auto");
+
+          window.setTimeout(
+            () => scrollToLatestMessage("auto"),
+            120,
+          );
         }
       } catch (error) {
         setErrorMessage(
@@ -211,6 +221,44 @@ export default function CommunityChannelView({
       mounted = false;
     };
   }, [channelId, loadMessages]);
+
+  useEffect(() => {
+    if (
+      loading ||
+      !channel ||
+      initialScrollDoneRef.current
+    ) {
+      return;
+    }
+
+    initialScrollDoneRef.current = true;
+
+    const timers = [
+      window.setTimeout(
+        () => scrollToLatestMessage("auto"),
+        0,
+      ),
+      window.setTimeout(
+        () => scrollToLatestMessage("auto"),
+        120,
+      ),
+      window.setTimeout(
+        () => scrollToLatestMessage("auto"),
+        400,
+      ),
+    ];
+
+    return () => {
+      timers.forEach((timer) =>
+        window.clearTimeout(timer),
+      );
+    };
+  }, [
+    channel,
+    loading,
+    messages.length,
+    scrollToLatestMessage,
+  ]);
 
   useEffect(() => {
     const subscription = supabase
