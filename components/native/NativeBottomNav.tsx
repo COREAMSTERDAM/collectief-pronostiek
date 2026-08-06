@@ -8,26 +8,11 @@ export type NativeNavItem = {
 };
 
 const defaultItems: NativeNavItem[] = [
-  {
-    href: "/",
-    label: "Home",
-    icon: "⌂",
-  },
-  {
-    href: "/community",
-    label: "Community",
-    icon: "💬",
-  },
-  {
-    href: "/klassement",
-    label: "Ranking",
-    icon: "🏆",
-  },
-  {
-    href: "/profiel",
-    label: "Profiel",
-    icon: "○",
-  },
+  { href: "/", label: "Home", icon: "⌂" },
+  { href: "/community", label: "Community", icon: "◌" },
+  { href: "/pronostiekpagina", label: "Pronostiek", icon: "⚽" },
+  { href: "/club-card", label: "Club Card", icon: "▣" },
+  { href: "/profielkeuze", label: "Profiel", icon: "○" },
 ];
 
 type NativeBottomNavProps = {
@@ -40,7 +25,7 @@ export default function NativeBottomNav({
   activeHref,
 }: NativeBottomNavProps) {
   return (
-    <nav className="native-bottom-nav">
+    <nav className="native-bottom-nav" aria-label="Hoofdnavigatie">
       <div className="native-bottom-nav-inner">
         {items.map((item) => {
           const active =
@@ -58,17 +43,13 @@ export default function NativeBottomNav({
             >
               <span className="native-nav-icon">
                 {item.icon}
-
                 {item.badge && item.badge > 0 ? (
                   <span className="native-nav-badge">
                     {Math.min(item.badge, 99)}
                   </span>
                 ) : null}
               </span>
-
-              <span className="native-nav-label">
-                {item.label}
-              </span>
+              <span className="native-nav-label">{item.label}</span>
             </Link>
           );
         })}

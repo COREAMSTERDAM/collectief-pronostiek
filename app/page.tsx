@@ -1,25 +1,37 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import HubCard from "@/components/navigation/HubCard";
+import { useEffect, useMemo, useState } from "react";
+import NativeButton from "@/components/native/NativeButton";
+import NativeCard from "@/components/native/NativeCard";
+import NativeListRow from "@/components/native/NativeListRow";
+import NativeSectionHeader from "@/components/native/NativeSectionHeader";
+import NativeTile from "@/components/native/NativeTile";
+import NotificationBadgeButton from "@/components/notifications/NotificationBadgeButton";
 import { supabase } from "@/src/lib/supabase";
 
-type DashboardProfile = {
+ type DashboardProfile = {
   name: string | null;
   is_admin: boolean | null;
 };
 
+function greeting() {
+  const hour = new Date().getHours();
+
+  if (hour < 12) return "Goedemorgen";
+  if (hour < 18) return "Goedemiddag";
+  return "Goedenavond";
+}
+
 export default function Home() {
   const [profile, setProfile] = useState<DashboardProfile | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [loggingOut, setLoggingOut] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
 
-    async function loadSession() {
+    async function load() {
       try {
         const {
           data: { user },
@@ -42,165 +54,168 @@ export default function Home() {
 
         if (mounted) setProfile(data ?? null);
       } finally {
-        if (mounted) setAuthLoading(false);
+        if (mounted) setLoading(false);
       }
     }
 
-    void loadSession();
+    void load();
 
     return () => {
       mounted = false;
     };
   }, []);
 
-  async function logout() {
-    if (loggingOut) return;
+  const firstName = useMemo(() => {
+    const value = profile?.name?.trim();
+    return value ? value.split(/\s+/)[0] : "supporter";
+  }, [profile?.name]);
 
-    try {
-      setLoggingOut(true);
-      await supabase.auth.signOut();
-      window.location.href = "/";
-    } finally {
-      setLoggingOut(false);
-    }
+  if (!loading && !isLoggedIn) {
+    return (
+      <div className="native-screen native-screen-centered">
+        <div className="native-auth-hero">
+          <img
+            src="/logo.png"
+            alt="Collectief Wit en Zwet"
+            className="native-auth-logo"
+          />
+
+          <p className="native-eyebrow">Supporterscollectief</p>
+          <h1 className="native-welcome-title">
+            Alles van het collectief in één app.
+          </h1>
+          <p className="native-welcome-copy">
+            Community, pronostiek, Club Card en Iedereen Coach — eenvoudig en
+            altijd binnen handbereik.
+          </p>
+
+          <div className="native-auth-actions">
+            <NativeButton href="/login" fullWidth>
+              Inloggen
+            </NativeButton>
+            <NativeButton href="/registreren" variant="secondary" fullWidth>
+              Account aanmaken
+            </NativeButton>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <main className="ucl-page">
-      <div className="ucl-container !max-w-6xl">
-        <section className="ucl-card text-center">
-          <p className="mb-4 text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
-            Supporterscollectief
-          </p>
-
-          <img
-            src="/logo.png"
-            alt="Logo Collectief Wit en Zwet"
-            className="ucl-logo"
-          />
-
-          <h1 className="ucl-title">
-            {isLoggedIn && profile?.name
-              ? `Welkom, ${profile.name}`
-              : "Collectief Wit en Zwet"}
+    <div className="native-screen native-home-screen">
+      <header className="native-home-header">
+        <div>
+          <p className="native-home-greeting">{greeting()}</p>
+          <h1 className="native-home-name">
+            {loading ? "Welkom" : `${firstName} 👋`}
           </h1>
+          <p className="native-home-subtitle">Fijn dat je er bent.</p>
+        </div>
 
-          <p className="ucl-subtitle mx-auto max-w-2xl">
-            Voorspel wedstrijden, stel je basiself samen, beoordeel spelers en
-            volg alle klassementen vanuit één overzicht.
+        <div className="native-home-header-actions">
+          <Link href="/profielkeuze" className="native-profile-logo">
+            <img src="/logo.png" alt="Profiel" />
+          </Link>
+          <NotificationBadgeButton label="" className="native-bell-button" />
+        </div>
+      </header>
+
+      <NativeCard className="native-primary-card" elevated>
+        <div className="native-primary-card-copy">
+          <p className="native-eyebrow">Vandaag in de app</p>
+          <h2 className="native-primary-title">
+            Klaar voor de volgende speelronde?
+          </h2>
+          <p className="native-primary-description">
+            Vul je pronostiek in en bekijk daarna hoe je ervoor staat.
           </p>
+        </div>
 
-          {!authLoading ? (
-            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-              {!isLoggedIn ? (
-                <>
-                  <Link href="/login" className="ucl-button-primary !mt-0">
-                    🔐 Inloggen
-                  </Link>
+        <NativeButton href="/pronostiekpagina" fullWidth>
+          Pronostiek invullen <span aria-hidden="true">›</span>
+        </NativeButton>
+      </NativeCard>
 
-                  <Link href="/registreren" className="ucl-button-secondary">
-                    📝 Registreren
-                  </Link>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => void logout()}
-                  disabled={loggingOut}
-                  className="ucl-button-danger !mt-0 disabled:opacity-40"
-                >
-                  {loggingOut ? "Uitloggen…" : "🚪 Uitloggen"}
-                </button>
-              )}
-            </div>
-          ) : null}
-        </section>
-
-        <section className="mt-6 grid gap-5 md:grid-cols-2">
-          <HubCard
+      <section className="native-home-section">
+        <NativeSectionHeader title="Snel naar" />
+        <div className="native-quick-grid">
+          <NativeTile
             href="/pronostiekpagina"
+            title="Pronostiek"
             icon="⚽"
-            eyebrow="Pronostiek"
-            title="Voorspel de wedstrijden"
-            description="Vul pronostieken in, bekijk je eerdere pronostieken en volg de algemene rangschikking."
-            action="Open Pronostiek"
-            accent="sky"
+            subtitle="Wedstrijden"
           />
-
-          <HubCard
+          <NativeTile
+            href="/community"
+            title="Community"
+            icon="💬"
+            subtitle="Praat mee"
+          />
+          <NativeTile
+            href="/club-card"
+            title="Club Card"
+            icon="▣"
+            subtitle="Saldo & opladen"
+          />
+          <NativeTile
             href="/iedereencoachkeuze"
+            title="Iedereen Coach"
             icon="🧠"
-            eyebrow="Iederiejn Coach"
-            title="Word de beste coach"
-            description="Stel een basiself samen, beoordeel spelers en ontdek wat andere supporters kiezen."
-            action="Open Iederiejn Coach"
-            accent="amber"
+            subtitle="Stel je team op"
           />
+        </div>
+      </section>
 
-          <HubCard
-            href="/motmpagina"
-            icon="⭐"
-            eyebrow="Man van de wedstrijd"
-            title="Kies jouw man van de match"
-            description="Breng je stem uit, bekijk de uitslagen en volg de speler van het seizoen."
-            action="Open Man van de Wedstrijd"
-            accent="purple"
+      <section className="native-home-section">
+        <NativeSectionHeader title="Voor jou" />
+        <NativeCard className="native-list-card">
+          <NativeListRow
+            href="/meldingen"
+            icon="🔔"
+            title="Meldingen"
+            subtitle="Bekijk wat je gemist hebt"
           />
+          <NativeListRow
+            href="/community"
+            icon="💬"
+            title="Nieuwe gesprekken"
+            subtitle="Ga verder waar je gebleven was"
+          />
+        </NativeCard>
+      </section>
 
-          <HubCard
+      <section className="native-home-section">
+        <NativeSectionHeader title="Meer" />
+        <NativeCard className="native-list-card">
+          <NativeListRow
             href="/klassement"
             icon="🏆"
-            eyebrow="Klassement"
-            title="Bekijk de rangschikking"
-            description="Volg de pronostiekstand, recente vorm en grootste stijgers."
-            action="Open klassement"
-            accent="emerald"
+            title="Klassement"
+            subtitle="Bekijk de algemene rangschikking"
           />
-
-          {isLoggedIn ? (
-            <HubCard
-              href="/profielkeuze"
-              icon="👤"
-              eyebrow="Mijn account"
-              title="Profiel en prestaties"
-              description="Bekijk je profiel, voorspellingen, statistieken en persoonlijke prestaties."
-              action="Open mijn account"
-              accent="white"
-            />
-          ) : (
-            <HubCard
-              href="/login"
-              icon="🔐"
-              eyebrow="Account"
-              title="Log in om mee te spelen"
-              description="Meld je aan om pronostieken, opstellingen en stemmen op te slaan."
-              action="Inloggen"
-              accent="white"
-            />
-          )}
-
-<HubCard
-  href="/feedback"
-  icon="💬"
-  eyebrow="Supporters"
-  title="Help de app verbeteren"
-  description="Heb je een idee, verbeterpunt of bug gevonden? Laat het ons weten en help Collectief Wit en Zwet verder groeien."
-  action="Geef feedback"
-  accent="rose"
-/>
+          <NativeListRow
+            href="/motmpagina"
+            icon="⭐"
+            title="Man van de wedstrijd"
+            subtitle="Breng je stem uit"
+          />
+          <NativeListRow
+            href="/feedback"
+            icon="💡"
+            title="Feedback"
+            subtitle="Help de app verbeteren"
+          />
           {profile?.is_admin ? (
-            <HubCard
+            <NativeListRow
               href="/admin-keuze"
               icon="⚙️"
-              eyebrow="Admin"
-              title="Beheer de applicatie"
-              description="Beheer gebruikers, wedstrijden, spelers en Iedereen Coach."
-              action="Open admin"
-              accent="rose"
+              title="Beheer"
+              subtitle="Open het adminpanel"
             />
           ) : null}
-        </section>
-      </div>
-    </main>
+        </NativeCard>
+      </section>
+    </div>
   );
 }

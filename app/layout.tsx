@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import NativeAppFrame from "@/components/native/NativeAppFrame";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,10 +13,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
+  metadataBase: new URL("https://app.collectiefwitenzwet.be"),
   title: "Collectief WIT en ZWET APP",
   description: "Pronostiek, community en clubplatform.",
-
   openGraph: {
     title: "Collectief WIT en ZWET APP",
     description: "Pronostiek, community en clubplatform.",
@@ -32,7 +33,6 @@ export const metadata = {
     locale: "nl_BE",
     type: "website",
   },
-
   twitter: {
     card: "summary_large_image",
     title: "Collectief WIT en ZWET APP",
@@ -45,6 +45,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#050505",
 };
 
 export default function RootLayout({
@@ -57,8 +58,9 @@ export default function RootLayout({
       lang="nl"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full bg-black text-white">
+        <NativeAppFrame>{children}</NativeAppFrame>
+      </body>
     </html>
   );
 }
-
