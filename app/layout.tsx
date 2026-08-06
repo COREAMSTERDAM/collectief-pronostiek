@@ -12,9 +12,33 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Collectief Wit en Zwet App",
-  description: "De app voor Iendracht supporters",
+export const metadata = {
+  title: "Collectief WIT en ZWET APP",
+  description: "Pronostiek, community en clubplatform.",
+
+  openGraph: {
+    title: "Collectief WIT en ZWET APP",
+    description: "Pronostiek, community en clubplatform.",
+    url: "https://app.collectiefwitenzwet.be",
+    siteName: "Collectief WIT en ZWET APP",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Collectief WIT en ZWET",
+      },
+    ],
+    locale: "nl_BE",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Collectief WIT en ZWET APP",
+    description: "Pronostiek, community en clubplatform.",
+    images: ["/og-image.png"],
+  },
 };
 
 export const viewport: Viewport = {
@@ -37,3 +61,4 @@ export default function RootLayout({
     </html>
   );
 }
+
