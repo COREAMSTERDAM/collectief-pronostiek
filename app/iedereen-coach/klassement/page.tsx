@@ -275,7 +275,7 @@ export default function SeparateCoachRankingPage() {
                       position={index + 1}
                     />
 
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-bold leading-tight text-white break-words whitespace-normal">
                         {row.coach_name}
 
