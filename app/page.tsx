@@ -171,32 +171,36 @@ export default function Home() {
       </NativeCard>
 
       <section className="native-home-section native-home-section-compact">
-        <div className="native-quick-grid">
-          <NativeTile
-            href="/pronostiekpagina"
-            title="Pronostiek"
-            icon="⚽"
-          />
+  <div className="native-quick-grid">
+    <NativeTile
+      href="/pronostiekpagina"
+      title="Pronostiek"
+      icon="⚽"
+    />
 
-          <NativeTile
-            href="/community"
-            title="Community"
-            icon="💬"
-          />
+    {profile?.is_admin ? (
+      <>
+        <NativeTile
+          href="/community"
+          title="Community"
+          icon="💬"
+        />
 
-          <NativeTile
-            href="/club-card"
-            title="Club Card"
-            icon="▣"
-          />
+        <NativeTile
+          href="/club-card"
+          title="Club Card"
+          icon="▣"
+        />
+      </>
+    ) : null}
 
-          <NativeTile
-            href="/iedereencoachkeuze"
-            title="Coach"
-            icon="🧠"
-          />
-        </div>
-      </section>
+    <NativeTile
+      href="/iedereencoachkeuze"
+      title="Coach"
+      icon="🧠"
+    />
+  </div>
+</section>
 
       <section className="native-home-compact-actions">
         <Link
