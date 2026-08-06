@@ -56,6 +56,7 @@ export default function CommunityChannelView({
   channelId,
 }: CommunityChannelViewProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const messagesScrollRef = useRef<HTMLElement | null>(null);
   const [channel, setChannel] =
     useState<CommunityChannelDetail | null>(null);
   const [messages, setMessages] =
@@ -105,8 +106,18 @@ export default function CommunityChannelView({
 
         if (scrollToBottom) {
           window.requestAnimationFrame(() => {
-            bottomRef.current?.scrollIntoView({
-              behavior: "smooth",
+            window.requestAnimationFrame(() => {
+              const container = messagesScrollRef.current;
+
+              if (container) {
+                container.scrollTop =
+                  container.scrollHeight;
+              } else {
+                bottomRef.current?.scrollIntoView({
+                  behavior: "auto",
+                  block: "end",
+                });
+              }
             });
           });
         }
@@ -302,7 +313,7 @@ export default function CommunityChannelView({
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col">
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-black/85 px-4 py-4 backdrop-blur-xl sm:px-6">
+      <header className="z-20 shrink-0 border-b border-white/10 bg-black/90 px-4 py-4 backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex max-w-5xl items-center gap-4">
           <Link
             href="/community"
@@ -344,7 +355,10 @@ export default function CommunityChannelView({
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-5 sm:px-6">
+      <main
+        ref={messagesScrollRef}
+        className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-5 sm:px-6"
+      >
         {channel.description ? (
           <section className="mb-5 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
             <p className="text-sm leading-6 text-white/50">
@@ -636,7 +650,7 @@ export default function CommunityChannelView({
         </section>
       </main>
 
-      <footer className="sticky bottom-0 z-20 border-t border-white/10 bg-black/90 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:px-6">
+      <footer className="z-30 shrink-0 border-t border-white/10 bg-black/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:px-6">
         <div className="mx-auto max-w-5xl">
           {channel.can_post ? (
             <form onSubmit={submit}>
@@ -687,6 +701,17 @@ export default function CommunityChannelView({
                   rows={1}
                   maxLength={4000}
                   placeholder={`Bericht aan #${channel.name}`}
+                  onFocus={() => {
+                    window.setTimeout(() => {
+                      const container =
+                        messagesScrollRef.current;
+
+                      if (container) {
+                        container.scrollTop =
+                          container.scrollHeight;
+                      }
+                    }, 150);
+                  }}
                   className="w-full rounded-2xl bg-black/20 p-4 text-base text-white"
                 />
 
