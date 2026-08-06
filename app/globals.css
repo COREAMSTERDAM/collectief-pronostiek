@@ -1888,3 +1888,147 @@ body {
     max-width: 34rem;
   }
 }
+/* ==========================================================
+   Pronostiekpagina — Emerald Compact
+   ========================================================== */
+
+.native-module-screen {
+  display: flex;
+  min-height: calc(
+    100dvh - 6.5rem - env(safe-area-inset-bottom)
+  );
+  flex-direction: column;
+  padding-top: max(
+    0.8rem,
+    env(safe-area-inset-top)
+  );
+  padding-bottom: 0.8rem;
+}
+
+.native-module-screen .native-topbar {
+  margin-bottom: 0.75rem;
+}
+
+.native-module-screen .native-topbar-row {
+  align-items: center;
+}
+
+.native-module-screen .native-topbar-compact {
+  padding: 0;
+}
+
+.native-module-screen .native-page-title {
+  font-size: clamp(1.65rem, 8vw, 2.2rem);
+  line-height: 1;
+}
+
+.native-module-screen .native-page-description {
+  margin-top: 0.3rem;
+  max-width: 22rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.native-module-hero {
+  padding: 0.95rem;
+  border-radius: 1.2rem;
+}
+
+.native-module-hero .native-primary-card-copy {
+  margin-bottom: 0.8rem;
+}
+
+.native-module-hero .native-primary-title {
+  margin-top: 0.25rem;
+  font-size: clamp(1.25rem, 6vw, 1.55rem);
+}
+
+.native-module-hero .native-primary-description {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.native-module-hero .native-button {
+  min-height: 2.8rem;
+  border-radius: 0.9rem;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.native-module-section {
+  margin-top: 0.8rem;
+}
+
+.native-module-section .native-section-title {
+  margin-bottom: 0.5rem;
+  padding-inline: 0.1rem;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.7rem;
+}
+
+.native-module-list {
+  border-radius: 1.1rem;
+}
+
+.native-module-list .native-list-row {
+  min-height: 4.1rem;
+  padding: 0.65rem 0.8rem;
+}
+
+.native-module-list .native-list-icon {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.72rem;
+  background: rgba(46, 230, 138, 0.09);
+  font-size: 1rem;
+}
+
+.native-module-list .native-list-title {
+  font-size: 0.88rem;
+}
+
+.native-module-list .native-list-subtitle {
+  margin-top: 0.12rem;
+  font-size: 0.68rem;
+  line-height: 1.25;
+}
+
+.native-pronostiek-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.native-pronostiek-shortcuts .native-button {
+  min-height: 2.7rem;
+  border-radius: 0.9rem;
+  padding: 0.6rem;
+  font-size: 0.76rem;
+}
+
+@media (max-height: 700px) {
+  .native-module-screen {
+    padding-top: max(
+      0.45rem,
+      env(safe-area-inset-top)
+    );
+  }
+
+  .native-module-screen .native-topbar {
+    margin-bottom: 0.5rem;
+  }
+
+  .native-module-hero {
+    padding: 0.75rem;
+  }
+
+  .native-module-section {
+    margin-top: 0.55rem;
+  }
+
+  .native-pronostiek-shortcuts {
+    margin-top: 0.55rem;
+  }
+}

@@ -1,48 +1,86 @@
-import HubCard from "@/components/navigation/HubCard";
-import HubHeader from "@/components/navigation/HubHeader";
+import NativeButton from "@/components/native/NativeButton";
+import NativeCard from "@/components/native/NativeCard";
+import NativeListRow from "@/components/native/NativeListRow";
+import NativeTopBar from "@/components/native/NativeTopBar";
 
 export default function PronostiekPage() {
   return (
-    <main className="ucl-page">
-      <div className="ucl-container !max-w-5xl">
-        <HubHeader
-          eyebrow="Pronostiek"
-          title="Maak je keuze"
-          description="Voorspel wedstrijden, bekijk je eigen pronostieken of volg het klassement."
-        />
+    <div className="native-screen native-module-screen native-pronostiek-screen">
+      <NativeTopBar
+        eyebrow="Pronostiek"
+        title="Maak je keuze"
+        description="Alles voor je voorspellingen op één plek."
+        backHref="/"
+        compact
+      />
 
-        <section className="mt-6 grid gap-5 md:grid-cols-2">
-          <HubCard
-            href="/wedstrijden"
-            icon="📅"
-            eyebrow="Wedstrijden"
-            title="Pronostiek invullen"
-            description="Bekijk de wedstrijden en vul je pronostiek in vóór de aftrap."
-            action="Open wedstrijden"
-            accent="sky"
-          />
+      <NativeCard
+        className="native-primary-card native-module-hero"
+        elevated
+      >
+        <div className="native-primary-card-copy">
+          <p className="native-eyebrow">
+            Volgende actie
+          </p>
 
-          <HubCard
+          <h2 className="native-primary-title">
+            Pronostiek invullen
+          </h2>
+
+          <p className="native-primary-description">
+            Bekijk de komende wedstrijden en dien je voorspelling tijdig in.
+          </p>
+        </div>
+
+        <NativeButton
+          href="/wedstrijden"
+          fullWidth
+          icon={<span aria-hidden="true">⚽</span>}
+        >
+          Open wedstrijden
+          <span aria-hidden="true">›</span>
+        </NativeButton>
+      </NativeCard>
+
+      <section className="native-module-section">
+        <p className="native-section-title">
+          Mijn pronostiek
+        </p>
+
+        <NativeCard className="native-list-card native-module-list">
+          <NativeListRow
             href="/mijn-pronostieken"
             icon="📜"
-            eyebrow="Historiek"
             title="Mijn pronostieken"
-            description="Bekijk je ingediende pronostieken en de behaalde punten."
-            action="Bekijk mijn pronostieken"
-            accent="white"
+            subtitle="Bekijk je voorspellingen en behaalde punten."
           />
 
-          <HubCard
+          <NativeListRow
             href="/klassement"
             icon="🏆"
-            eyebrow="Rangschikking"
-            title="Pronostiekklassement"
-            description="Bekijk wie aan de leiding staat en hoe je zelf presteert."
-            action="Open klassement"
-            accent="emerald"
+            title="Klassement"
+            subtitle="Bekijk je positie en de algemene rangschikking."
           />
-        </section>
-      </div>
-    </main>
+        </NativeCard>
+      </section>
+
+      <section className="native-pronostiek-shortcuts">
+        <NativeButton
+          href="/"
+          variant="secondary"
+          fullWidth
+        >
+          Naar home
+        </NativeButton>
+
+        <NativeButton
+          href="/meldingen"
+          variant="ghost"
+          fullWidth
+        >
+          Meldingen
+        </NativeButton>
+      </section>
+    </div>
   );
 }
