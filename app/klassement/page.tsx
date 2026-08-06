@@ -579,9 +579,9 @@ if (!userData.user) {
                         {player.total_points}
                       </p>
 
-                      <p className="text-sm font-bold tabular-nums text-white">
-                        punten
-                      </p>
+                      <p className="text-[9px] uppercase tracking-wider text-white/35">
+  Punten
+</p>
                     </div>
 
                     <span
