@@ -552,7 +552,7 @@ if (!userData.user) {
                         <p
   className="
     line-clamp-2
-    text-[0.72rem]
+    text-sm
     font-bold
     leading-tight
     text-white
@@ -584,11 +584,11 @@ if (!userData.user) {
                     </div>
 
                     <div className="w-[5rem] justify-self-end text-right">
-                      <p className="text-sm font-bold tabular-nums text-white">
+                      <p className="text-2xl font-black leading-none tabular-nums text-white">
                         {player.total_points}
                       </p>
 
-                      <p className="text-[9px] uppercase tracking-wider text-white/35">
+                      <p className="text-sm text-slate-300">
   Punten
 </p>
                     </div>
