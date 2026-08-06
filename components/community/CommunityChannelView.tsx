@@ -57,6 +57,11 @@ export default function CommunityChannelView({
 }: CommunityChannelViewProps) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesScrollRef = useRef<HTMLElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [viewportFrame, setViewportFrame] = useState({
+    height: 0,
+    offsetTop: 0,
+  });
   const [channel, setChannel] =
     useState<CommunityChannelDetail | null>(null);
   const [messages, setMessages] =
@@ -89,6 +94,24 @@ export default function CommunityChannelView({
     currentUserAvatarUrl: currentUser?.avatarUrl ?? null,
   });
 
+  const scrollToLatestMessage = useCallback(
+    (behavior: ScrollBehavior = "auto") => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          const container = messagesScrollRef.current;
+
+          if (container) {
+            container.scrollTo({
+              top: container.scrollHeight,
+              behavior,
+            });
+          }
+        });
+      });
+    },
+    [],
+  );
+
   const pinnedMessages = useMemo(
     () =>
       messages.filter(
@@ -105,21 +128,7 @@ export default function CommunityChannelView({
         setMessages(result);
 
         if (scrollToBottom) {
-          window.requestAnimationFrame(() => {
-            window.requestAnimationFrame(() => {
-              const container = messagesScrollRef.current;
-
-              if (container) {
-                container.scrollTop =
-                  container.scrollHeight;
-              } else {
-                bottomRef.current?.scrollIntoView({
-                  behavior: "auto",
-                  block: "end",
-                });
-              }
-            });
-          });
+          scrollToLatestMessage("auto");
         }
       } catch (error) {
         setErrorMessage(
@@ -129,7 +138,7 @@ export default function CommunityChannelView({
         );
       }
     },
-    [channelId],
+    [channelId, scrollToLatestMessage],
   );
 
   useEffect(() => {
@@ -181,6 +190,7 @@ export default function CommunityChannelView({
 
         setChannel(channelResult);
         await loadMessages(true);
+      scrollToLatestMessage("smooth");
         await markCommunityChannelRead(channelId);
       } catch (error) {
         if (mounted) {
@@ -235,6 +245,62 @@ export default function CommunityChannelView({
       void supabase.removeChannel(subscription);
     };
   }, [channelId, loadMessages]);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+
+    const updateViewportFrame = () => {
+      setViewportFrame({
+        height:
+          viewport?.height ??
+          window.innerHeight,
+        offsetTop:
+          viewport?.offsetTop ?? 0,
+      });
+    };
+
+    updateViewportFrame();
+
+    viewport?.addEventListener(
+      "resize",
+      updateViewportFrame,
+    );
+    viewport?.addEventListener(
+      "scroll",
+      updateViewportFrame,
+    );
+    window.addEventListener(
+      "resize",
+      updateViewportFrame,
+    );
+
+    return () => {
+      viewport?.removeEventListener(
+        "resize",
+        updateViewportFrame,
+      );
+      viewport?.removeEventListener(
+        "scroll",
+        updateViewportFrame,
+      );
+      window.removeEventListener(
+        "resize",
+        updateViewportFrame,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+
+    if (!textarea) return;
+
+    textarea.style.height = "0px";
+    textarea.style.height = `${Math.min(
+      textarea.scrollHeight,
+      144,
+    )}px`;
+  }, [content]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -312,8 +378,17 @@ export default function CommunityChannelView({
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col">
-      <header className="z-20 shrink-0 border-b border-white/10 bg-black/90 px-4 py-4 backdrop-blur-xl sm:px-6">
+    <div
+      className="fixed inset-x-0 z-50 flex min-h-0 flex-col overflow-hidden bg-black"
+      style={{
+        top: viewportFrame.offsetTop,
+        height:
+          viewportFrame.height > 0
+            ? viewportFrame.height
+            : "100dvh",
+      }}
+    >
+      <header className="z-20 shrink-0 border-b border-white/10 bg-black/95 px-4 py-3 backdrop-blur-xl sm:px-6 sm:py-4">
         <div className="mx-auto flex max-w-5xl items-center gap-4">
           <Link
             href="/community"
@@ -357,7 +432,7 @@ export default function CommunityChannelView({
 
       <main
         ref={messagesScrollRef}
-        className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-5 sm:px-6"
+        className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-5 [scrollbar-gutter:stable] sm:px-6"
       >
         {channel.description ? (
           <section className="mb-5 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
@@ -646,11 +721,11 @@ export default function CommunityChannelView({
             ))
           )}
 
-          <div ref={bottomRef} />
+          <div ref={bottomRef} className="h-px" />
         </section>
       </main>
 
-      <footer className="z-30 shrink-0 border-t border-white/10 bg-black/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:px-6">
+      <footer className="z-30 shrink-0 border-t border-white/10 bg-black/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:px-6">
         <div className="mx-auto max-w-5xl">
           {channel.can_post ? (
             <form onSubmit={submit}>
@@ -679,8 +754,9 @@ export default function CommunityChannelView({
                 </div>
               ) : null}
 
-              <div className="flex items-end gap-3">
+              <div className="flex min-w-0 items-end gap-2 sm:gap-3">
                 <textarea
+                  ref={textareaRef}
                   value={content}
                   onChange={(event) => {
                     setContent(event.target.value);
@@ -703,22 +779,16 @@ export default function CommunityChannelView({
                   placeholder={`Bericht aan #${channel.name}`}
                   onFocus={() => {
                     window.setTimeout(() => {
-                      const container =
-                        messagesScrollRef.current;
-
-                      if (container) {
-                        container.scrollTop =
-                          container.scrollHeight;
-                      }
-                    }, 150);
+                      scrollToLatestMessage("smooth");
+                    }, 180);
                   }}
-                  className="w-full rounded-2xl bg-black/20 p-4 text-base text-white"
+                  className="max-h-36 min-h-12 min-w-0 flex-1 resize-none overflow-y-auto rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-base leading-6 text-white outline-none placeholder:text-white/30 focus:border-green-400/50"
                 />
 
                 <button
                   type="submit"
                   disabled={!content.trim() || sending}
-                  className="flex h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-5 text-sm font-black text-black transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
+                  className="flex h-12 shrink-0 items-center justify-center rounded-2xl bg-green-400 px-4 text-sm font-black text-black transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 sm:px-5"
                 >
                   {sending
                     ? "…"
