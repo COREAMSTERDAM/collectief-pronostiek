@@ -24,6 +24,7 @@ import {
   markCommunityChannelRead,
   toggleCommunityReaction,
 } from "@/src/lib/community-experience";
+import { useCommunityRealtime } from "@/src/lib/community/useCommunityRealtime";
 
 type CommunityChannelViewProps = {
   channelId: number;
@@ -69,6 +70,23 @@ export default function CommunityChannelView({
   const [errorMessage, setErrorMessage] = useState("");
   const [reactionPickerMessageId, setReactionPickerMessageId] =
     useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  } | null>(null);
+
+  const {
+    onlineUsers,
+    onlineCount,
+    typingLabel,
+    broadcastTyping,
+  } = useCommunityRealtime({
+    channelId,
+    currentUserId: currentUser?.id ?? null,
+    currentUserName: currentUser?.name ?? "Supporter",
+    currentUserAvatarUrl: currentUser?.avatarUrl ?? null,
+  });
 
   const pinnedMessages = useMemo(
     () =>
@@ -120,6 +138,24 @@ export default function CommunityChannelView({
             "/login?reason=login-required";
           return;
         }
+
+        const metadataName =
+          typeof user.user_metadata?.name === "string"
+            ? user.user_metadata.name
+            : typeof user.user_metadata?.full_name === "string"
+              ? user.user_metadata.full_name
+              : user.email?.split("@")[0] ?? "Supporter";
+
+        const metadataAvatar =
+          typeof user.user_metadata?.avatar_url === "string"
+            ? user.user_metadata.avatar_url
+            : null;
+
+        setCurrentUser({
+          id: user.id,
+          name: metadataName,
+          avatarUrl: metadataAvatar,
+        });
 
         const channelResult =
           await getCommunityChannel(channelId);
@@ -265,7 +301,7 @@ export default function CommunityChannelView({
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col overflow-x-hidden">
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col">
       <header className="sticky top-0 z-20 border-b border-white/10 bg-black/85 px-4 py-4 backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex max-w-5xl items-center gap-4">
           <Link
@@ -286,15 +322,29 @@ export default function CommunityChannelView({
             </h1>
           </div>
 
-          {channel.is_read_only ? (
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-black uppercase text-white/40">
-              Alleen lezen
-            </span>
-          ) : null}
+          <div className="flex shrink-0 items-center gap-2">
+            <div
+              className="hidden items-center gap-2 rounded-full border border-emerald-300/15 bg-emerald-400/[0.08] px-3 py-2 sm:flex"
+              title={onlineUsers
+                .map((user) => user.name)
+                .join(", ")}
+            >
+              <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(74,222,128,0.8)]" />
+              <span className="text-[10px] font-black uppercase text-emerald-100/70">
+                {onlineCount} online
+              </span>
+            </div>
+
+            {channel.is_read_only ? (
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-black uppercase text-white/40">
+                Alleen lezen
+              </span>
+            ) : null}
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-5 pb-4 sm:px-6">
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-5 sm:px-6">
         {channel.description ? (
           <section className="mb-5 rounded-2xl border border-white/10 bg-white/[0.035] p-4">
             <p className="text-sm leading-6 text-white/50">
@@ -355,7 +405,7 @@ export default function CommunityChannelView({
               <article
                 id={`message-${message.id}`}
                 key={message.id}
-                className={`group rounded-2xl border p-4 transition ${
+                className={`community-message-enter group rounded-2xl border p-4 transition ${
                   message.is_pinned
                     ? "border-amber-300/25 bg-amber-300/[0.06]"
                     : "border-white/10 bg-white/[0.035]"
@@ -615,10 +665,16 @@ export default function CommunityChannelView({
                 </div>
               ) : null}
 
-              <div className="flex min-w-0 items-end gap-2 sm:gap-3">
+              <div className="flex items-end gap-3">
                 <textarea
                   value={content}
-                  onChange={(event) => setContent(event.target.value)}
+                  onChange={(event) => {
+                    setContent(event.target.value);
+
+                    if (event.target.value.trim()) {
+                      broadcastTyping();
+                    }
+                  }}
                   onKeyDown={(event) => {
                     if (
                       event.key === "Enter" &&
@@ -631,13 +687,13 @@ export default function CommunityChannelView({
                   rows={1}
                   maxLength={4000}
                   placeholder={`Bericht aan #${channel.name}`}
-                  className="min-h-12 min-w-0 flex-1 resize-y rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3 text-base leading-6 text-white outline-none placeholder:text-white/25 focus:border-green-400/50"
+                  className="w-full rounded-2xl bg-black/20 p-4 text-base text-white"
                 />
 
                 <button
                   type="submit"
                   disabled={!content.trim() || sending}
-                  className="flex h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-4 text-sm font-black text-black transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 sm:px-5"
+                  className="flex h-12 shrink-0 items-center justify-center rounded-2xl bg-white px-5 text-sm font-black text-black transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-35"
                 >
                   {sending
                     ? "…"
@@ -647,9 +703,22 @@ export default function CommunityChannelView({
                 </button>
               </div>
 
-              <p className="mt-2 text-[10px] font-semibold text-white/25">
-                Enter verstuurt · Shift+Enter maakt een nieuwe regel
-              </p>
+              <div className="mt-2 min-h-4">
+                {typingLabel ? (
+                  <p className="flex items-center gap-2 text-[11px] font-semibold text-emerald-200/65">
+                    <span className="inline-flex gap-0.5">
+                      <span className="community-typing-dot">•</span>
+                      <span className="community-typing-dot [animation-delay:150ms]">•</span>
+                      <span className="community-typing-dot [animation-delay:300ms]">•</span>
+                    </span>
+                    {typingLabel}
+                  </p>
+                ) : (
+                  <p className="text-[10px] font-semibold text-white/25">
+                    Enter verstuurt · Shift+Enter maakt een nieuwe regel
+                  </p>
+                )}
+              </div>
             </form>
           ) : (
             <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-center text-sm font-bold text-white/40">

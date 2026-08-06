@@ -1156,3 +1156,47 @@ body {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 }
+
+/* Community Realtime Core */
+
+@keyframes community-message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.community-message-enter {
+  animation: community-message-enter 220ms ease-out both;
+}
+
+@keyframes community-typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+.community-typing-dot {
+  display: inline-block;
+  animation: community-typing-dot 900ms infinite ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .community-message-enter,
+  .community-typing-dot {
+    animation: none !important;
+  }
+}
