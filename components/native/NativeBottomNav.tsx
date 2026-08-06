@@ -11,7 +11,7 @@ const defaultItems: NativeNavItem[] = [
   { href: "/", label: "Home", icon: "⌂" },
   { href: "/community", label: "Community", icon: "◌" },
   { href: "/pronostiekpagina", label: "Pronostiek", icon: "⚽" },
-  { href: "/iedereencoach", label: "Coach", icon: "▣" },
+  { href: "/iedereencoachkeuze", label: "Coach", icon: "▣" },
   { href: "/profielkeuze", label: "Profiel", icon: "○" },
 ];
 
