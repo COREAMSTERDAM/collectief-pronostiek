@@ -61,6 +61,13 @@ export default function PronostiekPage() {
             title="Klassement"
             subtitle="Bekijk je positie en de algemene rangschikking."
           />
+
+          <NativeListRow
+            href="/pronostiekhistoriek"
+            icon="📚"
+            title="Pronostiekhistoriek"
+            subtitle="Bekijk je pronostieken van gesloten en afgewerkte wedstrijden."
+          />
         </NativeCard>
       </section>
 
