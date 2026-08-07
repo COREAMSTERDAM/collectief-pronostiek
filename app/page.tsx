@@ -293,7 +293,7 @@ export default function Home() {
             Bouw mee aan onze app
           </p>
 
-          <h2 className="native-primary-title">
+          <h2 className="native-secondary-title">
             Jullie feedback is belangrijk
           </h2>
 
