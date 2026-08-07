@@ -49,20 +49,20 @@ export default function PronostiekPage() {
 
         <NativeCard className="native-list-card native-module-list">
           <NativeListRow
+            href="/klassement"
+            icon="🏆"
+            title="Klassement"
+            subtitle="Bekijk je positie en de algemene rangschikking."
+          />
+          
+          <NativeListRow
             href="/mijn-pronostieken"
             icon="📜"
             title="Mijn pronostieken"
             subtitle="Bekijk je voorspellingen en behaalde punten."
           />
 
-          <NativeListRow
-            href="/klassement"
-            icon="🏆"
-            title="Klassement"
-            subtitle="Bekijk je positie en de algemene rangschikking."
-          />
-
-          <NativeListRow
+                    <NativeListRow
             href="/pronostiekhistoriek"
             icon="📚"
             title="Pronostiekhistoriek"
