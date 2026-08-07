@@ -283,6 +283,34 @@ export default function Home() {
           </Link>
         )}
       </section>
+
+      <NativeCard
+        className="native-primary-card native-primary-card-compact mt-4"
+        elevated
+      >
+        <div className="native-primary-card-copy">
+          <p className="native-eyebrow">
+            Bouw mee aan onze app
+          </p>
+
+          <h2 className="native-primary-title">
+            Jullie feedback is belangrijk
+          </h2>
+
+          <p className="native-primary-description">
+            Help ons om samen de beste app voor het collectief te maken.
+            Deel je ideeën, opmerkingen of suggesties met ons.
+          </p>
+        </div>
+
+        <NativeButton
+          href="/feedback"
+          fullWidth
+        >
+          Geef feedback
+          <span aria-hidden="true">›</span>
+        </NativeButton>
+      </NativeCard>
     </div>
   );
 }
