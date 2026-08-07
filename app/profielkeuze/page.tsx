@@ -1,5 +1,4 @@
 import Link from "next/link";
-import NativeTile from "@/components/native/NativeTile";
 
 export default function ProfielKeuzePage() {
   return (
@@ -30,29 +29,45 @@ export default function ProfielKeuzePage() {
 
       <section className="native-home-section native-home-section-compact">
         <div className="native-quick-grid">
-          <NativeTile
+          <Link
             href="/profiel"
-            title="Mijn profiel"
-            icon="👤"
-          />
+            className="native-tile flex min-h-[7rem] flex-col items-center justify-center gap-2 px-3 py-4 text-center"
+          >
+            <span className="text-2xl" aria-hidden="true">👤</span>
+            <span className="w-full whitespace-normal break-words text-sm font-black leading-tight text-white [overflow-wrap:anywhere]">
+              Mijn profiel
+            </span>
+          </Link>
 
-          <NativeTile
+          <Link
             href="/mijn-pronostieken"
-            title="Mijn voorspellingen"
-            icon="📜"
-          />
+            className="native-tile flex min-h-[7rem] flex-col items-center justify-center gap-2 px-3 py-4 text-center"
+          >
+            <span className="text-2xl" aria-hidden="true">📜</span>
+            <span className="w-full whitespace-normal break-words text-sm font-black leading-tight text-white [overflow-wrap:anywhere]">
+              Mijn voorspellingen
+            </span>
+          </Link>
 
-          <NativeTile
+          <Link
             href="/iedereen-coach/mijn-opstellingen"
-            title="Mijn opstellingen"
-            icon="⚽"
-          />
+            className="native-tile flex min-h-[7rem] flex-col items-center justify-center gap-2 px-3 py-4 text-center"
+          >
+            <span className="text-2xl" aria-hidden="true">⚽</span>
+            <span className="w-full whitespace-normal break-words text-sm font-black leading-tight text-white [overflow-wrap:anywhere]">
+              Mijn opstellingen
+            </span>
+          </Link>
 
-          <NativeTile
+          <Link
             href="/klassement"
-            title="Mijn positie"
-            icon="🏆"
-          />
+            className="native-tile flex min-h-[7rem] flex-col items-center justify-center gap-2 px-3 py-4 text-center"
+          >
+            <span className="text-2xl" aria-hidden="true">🏆</span>
+            <span className="w-full whitespace-normal break-words text-sm font-black leading-tight text-white [overflow-wrap:anywhere]">
+              Mijn positie
+            </span>
+          </Link>
         </div>
       </section>
 
