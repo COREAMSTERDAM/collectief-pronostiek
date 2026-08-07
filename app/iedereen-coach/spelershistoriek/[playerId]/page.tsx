@@ -91,7 +91,7 @@ export default function PlayerHistoryDetailPage() {
                 <p className="text-xs font-black uppercase text-white/35">
                   Gemiddelde
                 </p>
-                <p className="mt-2 text-3xl font-black text-amber-200">
+                <p className="mt-2 text-3xl font-black text-emerald-200">
                   {formatScore(detail.summary.overall_average)}
                 </p>
               </article>
@@ -142,7 +142,7 @@ export default function PlayerHistoryDetailPage() {
                       </p>
                     </div>
 
-                    <p className="text-2xl font-black text-amber-200">
+                    <p className="text-2xl font-black text-emerald-200">
                       {formatScore(match.average_rating)}
                     </p>
                   </article>

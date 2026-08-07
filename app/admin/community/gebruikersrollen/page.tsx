@@ -160,7 +160,7 @@ export default function CommunityUserRolesPage() {
               </div>
 
               {savingUserId === user.id ? (
-                <p className="mt-3 text-xs font-bold text-amber-200">
+                <p className="mt-3 text-xs font-bold text-emerald-200">
                   Rollen opslaan…
                 </p>
               ) : null}

@@ -42,7 +42,7 @@ export default function CoachRatingAdminOverviewPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-6xl">
         <header className="ucl-card">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Iedereen Coach Admin
           </p>
 

@@ -6,7 +6,7 @@ export default function NotificationsPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-3xl">
         <header className="ucl-card">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-green-300/70">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-300/70">
             Activity Center
           </p>
           <h1 className="ucl-title mt-3">Meldingen</h1>

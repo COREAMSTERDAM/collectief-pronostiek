@@ -72,7 +72,7 @@ export default function CommunityRolesAdminPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-6xl">
         <header className="ucl-card">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-purple-200/70">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Community Admin
           </p>
           <h1 className="ucl-title mt-3">Rollen beheren</h1>
@@ -242,7 +242,7 @@ export default function CommunityRolesAdminPage() {
                         <p className="font-black text-white">
                           {role.name}
                           {role.is_system ? (
-                            <span className="ml-2 text-[10px] uppercase text-sky-300">
+                            <span className="ml-2 text-[10px] uppercase text-emerald-300">
                               systeem
                             </span>
                           ) : null}

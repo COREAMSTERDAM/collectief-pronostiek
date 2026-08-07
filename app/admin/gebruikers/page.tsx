@@ -250,7 +250,7 @@ export default function AdminUsersPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-6xl">
         <header className="ucl-card">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Admin
           </p>
 
@@ -332,7 +332,7 @@ export default function AdminUsersPage() {
                   key={user.id}
                   className={`ucl-card ${
                     locked
-                      ? "!border-amber-300/20 !bg-amber-300/[0.04]"
+                      ? "!border-emerald-300/20 !bg-emerald-300/[0.04]"
                       : ""
                   }`}
                 >
@@ -391,7 +391,7 @@ export default function AdminUsersPage() {
                   </div>
 
                   {locked ? (
-                    <div className="mt-4 rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm font-bold text-amber-100">
+                    <div className="mt-4 rounded-2xl border border-emerald-300/25 bg-emerald-300/10 p-4 text-sm font-bold text-emerald-100">
                       🔒 Dit is een administratoraccount. Naam,
                       e-mailadres en wachtwoordreset zijn geblokkeerd.
                     </div>
@@ -418,10 +418,10 @@ export default function AdminUsersPage() {
                     </p>
                   </div>
 
-                  <div className="mt-4 rounded-2xl border border-amber-300/15 bg-amber-300/[0.06] p-4">
+                  <div className="mt-4 rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.06] p-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
-                        <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-200/60">
+                        <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-200/60">
                           Club Card
                         </p>
 
@@ -447,7 +447,7 @@ export default function AdminUsersPage() {
                           href={user.clubcard_top_up_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="shrink-0 rounded-2xl border border-amber-300/25 bg-amber-400/10 px-5 py-3 text-center text-sm font-black text-amber-100 transition hover:-translate-y-0.5 hover:bg-amber-400/15"
+                          className="shrink-0 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 px-5 py-3 text-center text-sm font-black text-emerald-100 transition hover:-translate-y-0.5 hover:bg-emerald-400/15"
                         >
                           ＋ Geld storten via EventPay
                         </a>

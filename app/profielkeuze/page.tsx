@@ -29,7 +29,7 @@ export default function ProfielKeuzePage() {
             title="Mijn voorspellingen"
             description="Bekijk alle pronostieken die je eerder hebt ingediend."
             action="Bekijk voorspellingen"
-            accent="sky"
+            accent="emerald"
           />
 
           <HubCard
@@ -39,7 +39,7 @@ export default function ProfielKeuzePage() {
             title="Mijn opstellingen"
             description="Bekijk je eerdere basiselftallen per wedstrijd."
             action="Bekijk opstellingen"
-            accent="amber"
+            accent="emerald"
           />
 
           <HubCard

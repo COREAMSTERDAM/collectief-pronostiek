@@ -29,7 +29,7 @@ export default function AdminKeuzePage() {
             title="Wedstrijden en scores"
             description="Beheer wedstrijden, uitslagen, pronostieken en klassementgegevens."
             action="Open Pronostiek admin"
-            accent="sky"
+            accent="emerald"
           />
 
           <HubCard
@@ -39,7 +39,7 @@ export default function AdminKeuzePage() {
             title="Spelersbeheer"
             description="Beheer spelers en gegevens voor Man van de Wedstrijd."
             action="Open spelersbeheer"
-            accent="purple"
+            accent="emerald"
           />
 
           <HubCard
@@ -49,7 +49,7 @@ export default function AdminKeuzePage() {
             title="Coachwedstrijden"
             description="Beheer actieve spelers, deadlines en finaliseer beoordelingen."
             action="Open Iedereen Coach admin"
-            accent="amber"
+            accent="emerald"
           />
           <HubCard
   href="/admin/community"
@@ -58,7 +58,7 @@ export default function AdminKeuzePage() {
   title="Communitybeheer"
   description="Beheer rollen, categorieën, kanalen en toegangsrechten."
   action="Open Community Admin"
-  accent="purple"
+  accent="emerald"
 />
 
 

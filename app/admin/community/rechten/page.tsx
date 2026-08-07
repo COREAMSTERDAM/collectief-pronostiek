@@ -112,7 +112,7 @@ export default function CommunityPermissionsAdminPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-[92rem]">
         <header className="ucl-card">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Community Admin
           </p>
           <h1 className="ucl-title mt-3">Rollenmatrix</h1>

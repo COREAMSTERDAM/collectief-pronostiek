@@ -173,12 +173,12 @@ export default function ClubCardPage() {
       <div className="ucl-container !max-w-3xl">
         <header className="ucl-card overflow-hidden">
           <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl border border-amber-300/25 bg-amber-400/10 text-3xl shadow-xl shadow-black/20">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl border border-emerald-300/25 bg-emerald-400/10 text-3xl shadow-xl shadow-black/20">
               💳
             </div>
 
             <div className="min-w-0">
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
                 Mijn Club Card
               </p>
 
@@ -196,7 +196,7 @@ export default function ClubCardPage() {
 
         {loading ? (
           <section className="ucl-card mt-6 text-center">
-            <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center rounded-full border border-amber-300/20 bg-amber-400/10 text-3xl">
+            <div className="mx-auto flex h-16 w-16 animate-pulse items-center justify-center rounded-full border border-emerald-300/20 bg-emerald-400/10 text-3xl">
               €
             </div>
 
@@ -210,10 +210,10 @@ export default function ClubCardPage() {
           </section>
         ) : data ? (
           <>
-            <section className="mt-6 overflow-hidden rounded-[2rem] border border-amber-300/25 bg-gradient-to-br from-amber-300/15 via-white/[0.05] to-black p-6 shadow-2xl shadow-black/30 sm:p-8">
+            <section className="mt-6 overflow-hidden rounded-[2rem] border border-emerald-300/25 bg-gradient-to-br from-emerald-300/15 via-white/[0.05] to-black p-6 shadow-2xl shadow-black/30 sm:p-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-amber-100/60">
+                  <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-100/60">
                     Current balance
                   </p>
 

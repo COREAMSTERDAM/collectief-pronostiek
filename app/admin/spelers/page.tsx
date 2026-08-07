@@ -537,7 +537,7 @@ export default function SpelersbeheerPage() {
     <main className="ucl-page">
       <div className="ucl-container">
         <header className="mb-7">
-          <p className="mb-2 text-sm font-black uppercase tracking-[0.2em] text-sky-300">
+          <p className="mb-2 text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
             Admin
           </p>
 
@@ -630,7 +630,7 @@ export default function SpelersbeheerPage() {
                   setSearch(event.target.value)
                 }
                 placeholder="Naam, positie of nummer"
-                className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/35 focus:border-sky-300"
+                className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-white/35 focus:border-emerald-300"
               />
             </div>
           </div>

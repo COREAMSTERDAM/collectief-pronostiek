@@ -86,7 +86,7 @@ export default function WachtwoordVergetenPage() {
               />
             </div>
 
-            <div className="rounded-xl border border-sky-400/20 bg-sky-500/10 p-4">
+            <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-4">
               <p className="text-sm text-slate-300">
                 Na het openen van de link in de e-mail kun je
                 direct een nieuw wachtwoord kiezen.
@@ -111,7 +111,7 @@ export default function WachtwoordVergetenPage() {
 
             <a
               href="/login"
-              className="mt-3 inline-block font-bold text-sky-300 transition hover:text-sky-200"
+              className="mt-3 inline-block font-bold text-emerald-300 transition hover:text-emerald-200"
             >
               Terug naar inloggen
             </a>

@@ -99,7 +99,7 @@ export default function FeedbackPage() {
             className="ucl-logo"
           />
 
-          <p className="mt-4 text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+          <p className="mt-4 text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Collectief Wit en Zwet
           </p>
 
@@ -128,7 +128,7 @@ export default function FeedbackPage() {
 
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="font-black text-amber-200">
+              <p className="font-black text-emerald-200">
                 💡 Nieuwe uitbreidingen
               </p>
 
@@ -138,7 +138,7 @@ export default function FeedbackPage() {
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <p className="font-black text-sky-200">
+              <p className="font-black text-emerald-200">
                 🚀 Verbeterpunten
               </p>
 
@@ -193,7 +193,7 @@ export default function FeedbackPage() {
                   key={item.value}
                   className={`cursor-pointer rounded-2xl border p-4 transition ${
                     category === item.value
-                      ? "border-amber-300/35 bg-amber-300/10"
+                      ? "border-emerald-300/35 bg-emerald-300/10"
                       : "border-white/10 bg-black/20 hover:border-white/20"
                   }`}
                 >

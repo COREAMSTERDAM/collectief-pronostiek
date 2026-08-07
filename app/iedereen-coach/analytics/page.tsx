@@ -48,8 +48,8 @@ export default function CommunityAnalyticsPage() {
   return (
     <main className="min-h-screen bg-black px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <header className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-amber-300/[0.07] p-6 sm:p-8">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+        <header className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-emerald-300/[0.07] p-6 sm:p-8">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Iederiejn Coach
           </p>
           <h1 className="mt-3 text-3xl font-black sm:text-5xl">
@@ -95,8 +95,8 @@ export default function CommunityAnalyticsPage() {
                   <p className="mt-1 text-xs text-white/40">coaches</p>
                 </article>
 
-                <article className="rounded-3xl border border-amber-300/20 bg-amber-300/10 p-5">
-                  <p className="text-xs font-black uppercase tracking-wide text-amber-100/60">
+                <article className="rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-5">
+                  <p className="text-xs font-black uppercase tracking-wide text-emerald-100/60">
                     Jouw overlap
                   </p>
                   <p className="mt-2 text-4xl font-black">

@@ -111,7 +111,7 @@ export default function SpelerVanHetSeizoenPage() {
       <div className="ucl-container">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.28em] text-sky-300">
+            <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300">
               Seizoensklassement
             </p>
 
@@ -146,7 +146,7 @@ export default function SpelerVanHetSeizoenPage() {
               <p className="cp-player-name mt-2 truncate text-white">
                 {leader?.name}
               </p>
-              <p className="mt-1 font-black text-sky-300">
+              <p className="mt-1 font-black text-emerald-300">
                 {leader?.points} punten
               </p>
             </div>

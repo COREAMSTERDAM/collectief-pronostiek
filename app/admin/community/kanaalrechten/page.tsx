@@ -125,7 +125,7 @@ export default function ChannelPermissionsPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-[92rem]">
         <header className="ucl-card">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Community Admin
           </p>
           <h1 className="ucl-title mt-3">
@@ -157,7 +157,7 @@ export default function ChannelPermissionsPage() {
                     onClick={() => setSelectedChannelId(channel.id)}
                     className={`w-full rounded-2xl border p-3 text-left text-sm font-black ${
                       channel.id === selectedChannelId
-                        ? "border-amber-300/30 bg-amber-400/10 text-white"
+                        ? "border-emerald-300/30 bg-emerald-400/10 text-white"
                         : "border-white/10 bg-black/20 text-white/45"
                     }`}
                   >

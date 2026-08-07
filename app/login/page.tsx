@@ -77,8 +77,8 @@ export default function LoginPage() {
           </div>
 
           {reason === "login-required" && (
-            <div className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4">
-              <p className="font-bold text-amber-300">
+            <div className="mb-6 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
+              <p className="font-bold text-emerald-300">
                 🔒 Je bent niet ingelogd.
               </p>
 
@@ -160,7 +160,7 @@ export default function LoginPage() {
 
           <a
             href="/wachtwoord-vergeten"
-            className="mt-5 block text-center text-sky-300 hover:text-sky-200"
+            className="mt-5 block text-center text-emerald-300 hover:text-emerald-200"
           >
             Wachtwoord vergeten?
           </a>

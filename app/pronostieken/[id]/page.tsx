@@ -343,19 +343,19 @@ function PredictionCard({
         }
       : prediction.points === 3
       ? {
-          card: "border-sky-400/35 bg-sky-400/10",
+          card: "border-emerald-400/35 bg-emerald-400/10",
           badge:
-            "border-sky-400/30 bg-sky-400/15 text-sky-200",
-          points: "text-sky-300",
+            "border-emerald-400/30 bg-emerald-400/15 text-emerald-200",
+          points: "text-emerald-300",
           icon: "±",
           label: "Juist doelpuntensaldo",
         }
       : prediction.points === 2
       ? {
-          card: "border-amber-400/35 bg-amber-400/10",
+          card: "border-emerald-400/35 bg-emerald-400/10",
           badge:
-            "border-amber-400/30 bg-amber-400/15 text-amber-200",
-          points: "text-amber-300",
+            "border-emerald-400/30 bg-emerald-400/15 text-emerald-200",
+          points: "text-emerald-300",
           icon: "✓",
           label: "Juiste winnaar of gelijkspel",
         }

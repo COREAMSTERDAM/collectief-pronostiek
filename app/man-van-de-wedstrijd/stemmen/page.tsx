@@ -163,7 +163,7 @@ export default function StemmenPage() {
     <main className="ucl-page">
       <div className="ucl-container">
         <section className="ucl-card text-center">
-          <span className="inline-flex rounded-full border border-purple-400/30 bg-purple-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-purple-200">
+          <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-200">
             🟣 Man van de wedstrijd
           </span>
 
@@ -233,8 +233,8 @@ export default function StemmenPage() {
                     )}
                   </div>
 
-                  <div className="mt-5 rounded-3xl border border-purple-400/15 bg-purple-500/[0.06] p-6">
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-purple-200/70">
+                  <div className="mt-5 rounded-3xl border border-emerald-400/15 bg-emerald-500/[0.06] p-6">
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-200/70">
                       ⚽ Wedstrijd
                     </p>
 
@@ -242,7 +242,7 @@ export default function StemmenPage() {
                       {match.home_team}
                     </h2>
 
-                    <p className="my-2 text-sm font-black uppercase tracking-[0.25em] text-purple-300">
+                    <p className="my-2 text-sm font-black uppercase tracking-[0.25em] text-emerald-300">
                       VS
                     </p>
 

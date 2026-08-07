@@ -19,7 +19,7 @@ export default function ManVanDeWedstrijdPage() {
             title="Breng je stem uit"
             description="Kies de 3 beste spelers van een wedstrijd zolang de stemming open is."
             action="Open stemmingen"
-            accent="purple"
+            accent="emerald"
           />
 
           <HubCard
@@ -29,7 +29,7 @@ export default function ManVanDeWedstrijdPage() {
             title="Uitslagen per wedstrijd"
             description="Bekijk eerdere winnaars en de verdeling van de stemmen."
             action="Bekijk uitslagen"
-            accent="sky"
+            accent="emerald"
           />
 
           <HubCard
@@ -39,7 +39,7 @@ export default function ManVanDeWedstrijdPage() {
             title="Speler van het seizoen"
             description="Volg welke speler over het hele seizoen de meeste stemmen verzamelt."
             action="Open seizoensklassement"
-            accent="amber"
+            accent="emerald"
           />
         </section>
       </div>

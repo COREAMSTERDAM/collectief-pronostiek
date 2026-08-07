@@ -108,10 +108,10 @@ export default function MatchCollectiveLineupPage() {
   return (
     <main className="min-h-screen bg-black px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-amber-300/[0.07] p-6 shadow-2xl shadow-black/30 sm:p-8">
+        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-emerald-300/[0.07] p-6 shadow-2xl shadow-black/30 sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-3xl">
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-amber-200/70">
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-200/70">
                 Iedereen Coach
               </p>
 
@@ -123,7 +123,7 @@ export default function MatchCollectiveLineupPage() {
                 <>
                   <p className="mt-4 text-xl font-black text-white">
                     {match.home_team}
-                    <span className="mx-3 text-amber-200/60">
+                    <span className="mx-3 text-emerald-200/60">
                       VS
                     </span>
                     {match.away_team}
@@ -203,8 +203,8 @@ export default function MatchCollectiveLineupPage() {
                   </p>
                 </article>
 
-                <article className="rounded-3xl border border-amber-300/20 bg-amber-300/10 p-5">
-                  <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-100/65">
+                <article className="rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-5">
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-100/65">
                     Favoriete formatie
                   </p>
 
@@ -213,7 +213,7 @@ export default function MatchCollectiveLineupPage() {
                       ?.formation_name ?? "—"}
                   </p>
 
-                  <p className="mt-1 text-sm font-bold text-amber-200">
+                  <p className="mt-1 text-sm font-bold text-emerald-200">
                     {dashboard.most_popular_formation
                       ?.percentage ?? 0}
                     %

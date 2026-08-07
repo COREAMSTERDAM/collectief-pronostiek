@@ -212,7 +212,7 @@ export default function CommunityStructureAdminPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-7xl">
         <header className="ucl-card">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-sky-200/70">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Community Admin
           </p>
           <h1 className="ucl-title mt-3">
@@ -527,7 +527,7 @@ export default function CommunityStructureAdminPage() {
                         </div>
 
                         {channel.is_read_only ? (
-                          <span className="text-[9px] font-black uppercase text-amber-200">
+                          <span className="text-[9px] font-black uppercase text-emerald-200">
                             alleen lezen
                           </span>
                         ) : null}

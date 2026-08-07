@@ -19,7 +19,7 @@ export default function CommunityAdminPage() {
             title="Rollen beheren"
             description="Voeg rollen toe, wijzig hun naam, kleur, icoon en status."
             action="Open rollenbeheer"
-            accent="purple"
+            accent="emerald"
           />
 
           <HubCard
@@ -29,7 +29,7 @@ export default function CommunityAdminPage() {
             title="Categorieën en kanalen"
             description="Bekijk en beheer de Discord-achtige communitystructuur."
             action="Open structuur"
-            accent="sky"
+            accent="emerald"
           />
 
           <HubCard
@@ -39,7 +39,7 @@ export default function CommunityAdminPage() {
             title="Rollenmatrix"
             description="Bepaal per categorie welke rol mag lezen, schrijven of beheren."
             action="Open rechtenmatrix"
-            accent="amber"
+            accent="emerald"
           />
 
           <HubCard
@@ -68,7 +68,7 @@ export default function CommunityAdminPage() {
   title="Kanaalrechten"
   description="Laat kanalen rechten overnemen of stel eigen uitzonderingen in."
   action="Open kanaalrechten"
-  accent="amber"
+  accent="emerald"
 />
         </section>
       </div>

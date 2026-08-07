@@ -232,13 +232,13 @@ export default function CoachRatingAdminMatchPage() {
         {match ? (
           <>
             <header className="ucl-card">
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
                 Iedereen Coach Admin
               </p>
 
               <h1 className="mt-3 text-3xl font-black sm:text-5xl">
                 {match.home_team}
-                <span className="mx-3 text-amber-200/60">
+                <span className="mx-3 text-emerald-200/60">
                   VS
                 </span>
                 {match.away_team}
@@ -319,7 +319,7 @@ export default function CoachRatingAdminMatchPage() {
                     key={player.id}
                     className={`rounded-2xl border p-4 ${
                       player.was_active
-                        ? "border-amber-300/25 bg-amber-300/[0.07]"
+                        ? "border-emerald-300/25 bg-emerald-300/[0.07]"
                         : "border-white/10 bg-black/20"
                     }`}
                   >

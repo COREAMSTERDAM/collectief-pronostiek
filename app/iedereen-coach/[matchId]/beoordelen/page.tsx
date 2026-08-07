@@ -213,13 +213,13 @@ export default function MatchRatingsPage() {
         {match && overview ? (
           <>
             <header className="ucl-card text-center">
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
                 Iedereen Coach
               </p>
               <h1 className="ucl-title mt-3">Spelers beoordelen</h1>
               <p className="mt-4 text-xl font-black">
                 {match.home_team}
-                <span className="mx-3 text-amber-200/60">VS</span>
+                <span className="mx-3 text-emerald-200/60">VS</span>
                 {match.away_team}
               </p>
             </header>
@@ -243,7 +243,7 @@ export default function MatchRatingsPage() {
 
               <div className="mt-4 h-3 overflow-hidden rounded-full bg-white/10">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-white to-amber-300"
+                  className="h-full rounded-full bg-gradient-to-r from-white to-emerald-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>

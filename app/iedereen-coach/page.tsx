@@ -96,10 +96,10 @@ export default function IedereenCoachPage() {
   return (
     <main className="min-h-screen bg-black px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-amber-300/[0.07] p-6 shadow-2xl shadow-black/30 sm:p-8">
+        <header className="overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-emerald-300/[0.07] p-6 shadow-2xl shadow-black/30 sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-3xl">
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-amber-200/70">
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-200/70">
                 Iendracht Manager 26
               </p>
 
@@ -148,8 +148,8 @@ export default function IedereenCoachPage() {
                 </p>
               </article>
 
-              <article className="rounded-3xl border border-sky-300/20 bg-sky-400/10 p-5">
-                <p className="text-xs font-black uppercase tracking-wide text-sky-100/60">
+              <article className="rounded-3xl border border-emerald-300/20 bg-emerald-400/10 p-5">
+                <p className="text-xs font-black uppercase tracking-wide text-emerald-100/60">
                   Gestart
                 </p>
                 <p className="mt-2 text-3xl font-black">
@@ -157,8 +157,8 @@ export default function IedereenCoachPage() {
                 </p>
               </article>
 
-              <article className="rounded-3xl border border-amber-300/20 bg-amber-400/10 p-5">
-                <p className="text-xs font-black uppercase tracking-wide text-amber-100/60">
+              <article className="rounded-3xl border border-emerald-300/20 bg-emerald-400/10 p-5">
+                <p className="text-xs font-black uppercase tracking-wide text-emerald-100/60">
                   Volledig
                 </p>
                 <p className="mt-2 text-3xl font-black">

@@ -160,7 +160,7 @@ export default function RegistrerenPage() {
                 checked={akkoord}
                 onChange={(e) => setAkkoord(e.target.checked)}
                 disabled={loading}
-                className="mt-1 h-4 w-4 shrink-0 accent-sky-500"
+                className="mt-1 h-4 w-4 shrink-0 accent-emerald-500"
               />
 
               <span className="text-sm leading-6 text-slate-300">
@@ -184,7 +184,7 @@ export default function RegistrerenPage() {
 
             <a
               href="/login"
-              className="mt-3 inline-block font-bold text-sky-300 transition hover:text-sky-200"
+              className="mt-3 inline-block font-bold text-emerald-300 transition hover:text-emerald-200"
             >
               Ga naar inloggen
             </a>

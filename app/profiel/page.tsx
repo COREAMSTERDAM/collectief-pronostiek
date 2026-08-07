@@ -625,7 +625,7 @@ export default function ProfielPage() {
           <section className="ucl-card mb-6">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-300">
+                <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
                   Profielinstellingen
                 </p>
                 <h2 className="mt-2 text-2xl font-black text-white">
@@ -649,7 +649,7 @@ export default function ProfielPage() {
 
             <form onSubmit={saveProfile} className="space-y-6">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-sky-300/30 bg-gradient-to-br from-sky-500/25 to-indigo-500/20 text-4xl font-black text-white">
+                <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-emerald-300/30 bg-gradient-to-br from-emerald-500/25 to-emerald-500/20 text-4xl font-black text-white">
                   {avatarPreview ? (
                     <img
                       src={avatarPreview}
@@ -677,7 +677,7 @@ export default function ProfielPage() {
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     onChange={handleAvatarChange}
-                    className="mt-3 block w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-sky-500/15 file:px-4 file:py-2 file:font-black file:text-sky-200"
+                    className="mt-3 block w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-500/15 file:px-4 file:py-2 file:font-black file:text-emerald-200"
                   />
                 </div>
               </div>
@@ -696,7 +696,7 @@ export default function ProfielPage() {
                   onChange={(event) => setEditName(event.target.value)}
                   maxLength={80}
                   required
-                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-sky-400/50 focus:ring-2 focus:ring-sky-400/10"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10"
                 />
               </div>
 
@@ -724,11 +724,11 @@ export default function ProfielPage() {
 
         <section className="ucl-card overflow-hidden">
           <div className="text-center">
-            <p className="text-sm font-black uppercase tracking-[0.24em] text-sky-300">
+            <p className="text-sm font-black uppercase tracking-[0.24em] text-emerald-300">
               Mijn profiel
             </p>
 
-            <div className="mx-auto mt-5 flex h-28 w-28 items-center justify-center overflow-hidden rounded-3xl border border-sky-300/30 bg-gradient-to-br from-sky-500/25 to-indigo-500/20 text-4xl font-black text-white shadow-xl shadow-sky-950/30">
+            <div className="mx-auto mt-5 flex h-28 w-28 items-center justify-center overflow-hidden rounded-3xl border border-emerald-300/30 bg-gradient-to-br from-emerald-500/25 to-emerald-500/20 text-4xl font-black text-white shadow-xl shadow-emerald-950/30">
               {profile.avatarUrl ? (
                 <img
                   src={profile.avatarUrl}
@@ -752,23 +752,23 @@ export default function ProfielPage() {
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <Link
               href="/klassement"
-              className="rounded-2xl border border-amber-300/20 bg-amber-400/10 p-5 text-center transition hover:scale-[1.02] hover:border-amber-300/40 hover:bg-amber-400/15"
+              className="rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-5 text-center transition hover:scale-[1.02] hover:border-emerald-300/40 hover:bg-emerald-400/15"
             >
               <div className="text-3xl">🏆</div>
-              <p className="mt-3 text-sm font-bold uppercase tracking-wide text-amber-200">
+              <p className="mt-3 text-sm font-bold uppercase tracking-wide text-emerald-200">
                 Huidige plaats
               </p>
               <p className="mt-2 text-4xl font-black text-white">
                 {profile.position ? `#${profile.position}` : "—"}
               </p>
-              {/* <p className="mt-3 text-xs font-semibold text-amber-100/80">
+              {/* <p className="mt-3 text-xs font-semibold text-emerald-100/80">
                 Klik om het klassement te bekijken
               </p> */}
             </Link>
 
-            <div className="rounded-2xl border border-sky-300/20 bg-sky-500/10 p-5 text-center">
+            <div className="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-5 text-center">
               <div className="text-3xl">⭐</div>
-              <p className="mt-3 text-sm font-bold uppercase tracking-wide text-sky-200">
+              <p className="mt-3 text-sm font-bold uppercase tracking-wide text-emerald-200">
                 Totaal punten
               </p>
               <p className="mt-2 text-4xl font-black text-white">
@@ -801,14 +801,14 @@ export default function ProfielPage() {
                     : "in het klassement"}
                 </strong>{" "}
                 met{" "}
-                <strong className="text-sky-300">
+                <strong className="text-emerald-300">
                   {profile.totalPoints} punten
                 </strong>
                 .
               </p>
 
               {profile.position === 1 ? (
-                <p className="mt-2 font-bold text-amber-300">
+                <p className="mt-2 font-bold text-emerald-300">
                   👑 Jij staat momenteel aan de leiding!
                 </p>
               ) : profile.pointsToNextPosition !== null ? (
@@ -824,7 +824,7 @@ export default function ProfielPage() {
 
         <section className="ucl-card mt-6">
           <div className="mb-6">
-            <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-300">
+            <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
               Statistieken
             </p>
             <h2 className="mt-2 text-2xl font-black text-white">
@@ -840,14 +840,14 @@ export default function ProfielPage() {
               icon="⚽"
               label="Ingevuld"
               value={profile.pronostiek.predictionsCount}
-              accentClass="border-sky-300/20 bg-sky-500/10 text-sky-200"
+              accentClass="border-emerald-300/20 bg-emerald-500/10 text-emerald-200"
             />
 
             <StatCard
               icon="⭐"
               label="Totaal punten"
               value={profile.totalPoints}
-              accentClass="border-amber-300/20 bg-amber-500/10 text-amber-200"
+              accentClass="border-emerald-300/20 bg-emerald-500/10 text-emerald-200"
             />
 
             <StatCard
@@ -863,7 +863,7 @@ export default function ProfielPage() {
               label="Doelpunten saldo"
               value={profile.pronostiek.correctGoalDifference}
               detail="3 punten"
-              accentClass="border-cyan-300/20 bg-cyan-500/10 text-cyan-200"
+              accentClass="border-emerald-300/20 bg-emerald-500/10 text-emerald-200"
             />
 
             <StatCard
@@ -871,7 +871,7 @@ export default function ProfielPage() {
               label="Juiste winnaar of gelijkspel"
               value={profile.pronostiek.correctResult}
               detail="2 punten"
-              accentClass="border-indigo-300/20 bg-indigo-500/10 text-indigo-200"
+              accentClass="border-emerald-300/20 bg-emerald-500/10 text-emerald-200"
             />
 
             <StatCard
@@ -879,14 +879,14 @@ export default function ProfielPage() {
               label="Gemiddelde punten"
               value={formatAverage(profile.pronostiek.averagePoints)}
               detail={`over ${profile.pronostiek.scoredPredictionsCount} beoordeelde voorspellingen`}
-              accentClass="border-violet-300/20 bg-violet-500/10 text-violet-200"
+              accentClass="border-emerald-300/20 bg-emerald-500/10 text-emerald-200"
             />
 
             <StatCard
               icon="🔥"
               label="Beste voorspelling"
               value={`${profile.pronostiek.bestScore} punten`}
-              accentClass="border-orange-300/20 bg-orange-500/10 text-orange-200"
+              accentClass="border-emerald-300/20 bg-emerald-500/10 text-emerald-200"
             />
 
             <StatCard
@@ -986,7 +986,7 @@ export default function ProfielPage() {
         <section className="ucl-card mt-6">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-amber-300">
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
                 Persoonlijke prestaties
               </p>
               <h2 className="mt-2 text-2xl font-black text-white">
@@ -998,8 +998,8 @@ export default function ProfielPage() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-amber-300/20 bg-amber-400/10 px-5 py-3 text-center">
-              <p className="text-xs font-bold uppercase tracking-wide text-amber-200">
+            <div className="rounded-2xl border border-emerald-300/20 bg-emerald-400/10 px-5 py-3 text-center">
+              <p className="text-xs font-bold uppercase tracking-wide text-emerald-200">
                 Vrijgespeeld
               </p>
               <p className="mt-1 text-2xl font-black text-white">
@@ -1128,7 +1128,7 @@ function SeasonChart({
             points={points}
             fill="none"
             stroke="currentColor"
-            className="text-sky-400"
+            className="text-emerald-400"
             strokeWidth="4"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -1146,7 +1146,7 @@ function SeasonChart({
                   cy={y}
                   r="6"
                   fill="currentColor"
-                  className="text-sky-300"
+                  className="text-emerald-300"
                 />
                 <circle
                   cx={x}
@@ -1249,7 +1249,7 @@ function AchievementCard({
     <article
       className={`rounded-2xl border p-5 transition ${
         achievement.unlocked
-          ? "border-amber-300/30 bg-gradient-to-br from-amber-400/15 to-orange-500/10"
+          ? "border-emerald-300/30 bg-gradient-to-br from-emerald-400/15 to-emerald-500/10"
           : "border-white/10 bg-white/[0.03] opacity-70"
       }`}
     >
@@ -1257,7 +1257,7 @@ function AchievementCard({
         <div
           className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border text-2xl ${
             achievement.unlocked
-              ? "border-amber-300/30 bg-amber-400/15"
+              ? "border-emerald-300/30 bg-emerald-400/15"
               : "border-white/10 bg-white/5 grayscale"
           }`}
         >
@@ -1294,7 +1294,7 @@ function AchievementCard({
 
               <div className="h-2 overflow-hidden rounded-full bg-white/10">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-sky-400 to-indigo-400 transition-all"
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-400 transition-all"
                   style={{ width: `${percentage}%` }}
                 />
               </div>

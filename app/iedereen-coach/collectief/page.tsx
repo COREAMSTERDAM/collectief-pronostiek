@@ -61,8 +61,8 @@ export default function AllMatchesCollectivePage() {
   return (
     <main className="min-h-screen bg-black px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <header className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-amber-300/[0.07] p-6 sm:p-8">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+        <header className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-white/[0.08] via-white/[0.035] to-emerald-300/[0.07] p-6 sm:p-8">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Iedereen Coach
           </p>
 
@@ -127,14 +127,14 @@ export default function AllMatchesCollectivePage() {
                   </p>
                 </article>
 
-                <article className="rounded-3xl border border-amber-300/20 bg-amber-300/10 p-5">
-                  <p className="text-xs font-black uppercase text-amber-100/60">
+                <article className="rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-5">
+                  <p className="text-xs font-black uppercase text-emerald-100/60">
                     Favoriete formatie
                   </p>
                   <p className="mt-2 text-3xl font-black">
                     {dashboard.most_popular_formation?.formation_name ?? "—"}
                   </p>
-                  <p className="mt-1 text-sm font-bold text-amber-200">
+                  <p className="mt-1 text-sm font-bold text-emerald-200">
                     {dashboard.most_popular_formation?.percentage ?? 0}%
                   </p>
                 </article>
@@ -165,7 +165,7 @@ export default function AllMatchesCollectivePage() {
                     <Link
                       key={match.match_id}
                       href={`/iedereen-coach/${match.match_id}/collectief`}
-                      className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-amber-300/30 hover:bg-white/[0.05] sm:flex-row sm:items-center sm:justify-between"
+                      className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-emerald-300/30 hover:bg-white/[0.05] sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div>
                         <p className="font-black">
@@ -177,7 +177,7 @@ export default function AllMatchesCollectivePage() {
                       </div>
 
                       <div className="text-left sm:text-right">
-                        <p className="font-black text-amber-200">
+                        <p className="font-black text-emerald-200">
                           {match.coach_count} coaches
                         </p>
                         <p className="mt-1 text-xs text-white/40">

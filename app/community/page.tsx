@@ -70,7 +70,7 @@ export default function CommunityPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-6xl">
         <header className="ucl-card">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Collectief Wit en Zwet
           </p>
 
@@ -148,7 +148,7 @@ export default function CommunityPage() {
                       <Link
                         key={channel.id}
                         href={`/community/${channel.id}`}
-                        className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-amber-300/25 hover:bg-white/[0.055]"
+                        className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:border-emerald-300/25 hover:bg-white/[0.055]"
                       >
                         <span className="text-lg">
                           {channel.icon}
@@ -181,7 +181,7 @@ export default function CommunityPage() {
                               Alleen lezen
                             </span>
                           ) : (
-                            <span className="text-white/20 transition group-hover:translate-x-1 group-hover:text-amber-200">
+                            <span className="text-white/20 transition group-hover:translate-x-1 group-hover:text-emerald-200">
                               ›
                             </span>
                           )}

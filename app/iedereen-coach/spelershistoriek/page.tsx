@@ -56,7 +56,7 @@ export default function PlayerHistoryOverviewPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-5xl">
         <header className="ucl-card text-center">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Iedereen Coach
           </p>
           <h1 className="ucl-title mt-3">Puntenhistoriek spelers</h1>
@@ -86,7 +86,7 @@ export default function PlayerHistoryOverviewPage() {
               <Link
                 key={player.player_id}
                 href={`/iedereen-coach/spelershistoriek/${player.player_id}`}
-                className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 transition hover:-translate-y-1 hover:border-amber-300/25"
+                className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 transition hover:-translate-y-1 hover:border-emerald-300/25"
               >
                 <div className="flex items-center gap-4">
                   <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-black text-sm font-black">
@@ -116,7 +116,7 @@ export default function PlayerHistoryOverviewPage() {
                   </div>
 
                   <div className="text-right">
-                    <p className="text-3xl font-black text-amber-200">
+                    <p className="text-3xl font-black text-emerald-200">
                       {formatScore(player.overall_average)}
                     </p>
                     <p className="text-[10px] font-black uppercase text-white/35">

@@ -505,7 +505,7 @@ export default function OpenbaarProfielPage() {
 
         <section className="ucl-card mb-8 overflow-hidden">
           <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
-            <div className="flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-sky-300/30 bg-gradient-to-br from-sky-500/25 to-indigo-500/20 text-4xl font-black text-white shadow-xl shadow-sky-950/30">
+            <div className="flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-emerald-300/30 bg-gradient-to-br from-emerald-500/25 to-emerald-500/20 text-4xl font-black text-white shadow-xl shadow-emerald-950/30">
               {profile.avatarUrl ? (
                 <img
                   src={profile.avatarUrl}
@@ -518,7 +518,7 @@ export default function OpenbaarProfielPage() {
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-300">
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
                 Openbaar spelersprofiel
               </p>
               <h1 className="cp-account-name-hero mt-2 truncate text-white">
@@ -542,7 +542,7 @@ export default function OpenbaarProfielPage() {
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                     Punten
                   </p>
-                  <p className="mt-1 text-2xl font-black text-sky-300">
+                  <p className="mt-1 text-2xl font-black text-emerald-300">
                     {profile.totalPoints}
                   </p>
                 </div>
@@ -563,7 +563,7 @@ export default function OpenbaarProfielPage() {
         <section className="ucl-card mb-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-300">
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
                 Laatste vijf afgewerkte wedstrijden
               </p>
               <h2 className="mt-2 text-2xl font-black text-white">
@@ -583,10 +583,10 @@ export default function OpenbaarProfielPage() {
           showComparison && (
             <section
               id="spelers-vergelijking"
-              className="ucl-card mb-8 border-sky-400/25"
+              className="ucl-card mb-8 border-emerald-400/25"
             >
               <div className="mb-6">
-                <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-300">
+                <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
                   Rechtstreeks duel
                 </p>
                 <h2 className="mt-2 text-2xl font-black text-white">
@@ -796,7 +796,7 @@ export default function OpenbaarProfielPage() {
                   key={achievement.title}
                   className={`rounded-2xl border p-4 ${
                     achievement.unlocked
-                      ? "border-amber-300/30 bg-amber-400/10"
+                      ? "border-emerald-300/30 bg-emerald-400/10"
                       : "border-white/10 bg-white/5 opacity-65"
                   }`}
                 >
@@ -824,7 +824,7 @@ export default function OpenbaarProfielPage() {
                     <div className="mt-4">
                       <div className="h-2 overflow-hidden rounded-full bg-white/10">
                         <div
-                          className="h-full rounded-full bg-sky-400"
+                          className="h-full rounded-full bg-emerald-400"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
@@ -898,11 +898,11 @@ export default function OpenbaarProfielPage() {
                           key={point.speeldag}
                           className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2"
                         >
-                          <span className="text-xs font-black text-sky-300">
+                          <span className="text-xs font-black text-emerald-300">
                             {point.totalPoints}
                           </span>
                           <div
-                            className="w-full max-w-10 rounded-t-lg bg-sky-400/70"
+                            className="w-full max-w-10 rounded-t-lg bg-emerald-400/70"
                             style={{ height: `${height}%` }}
                             title={`Speeldag ${point.speeldag}: ${point.totalPoints} punten, positie ${point.position}`}
                           />
@@ -948,9 +948,9 @@ function RecentForm({
           point === 5
             ? "border-emerald-300/30 bg-emerald-500/20 text-emerald-200"
             : point === 3
-            ? "border-sky-300/30 bg-sky-500/20 text-sky-200"
+            ? "border-emerald-300/30 bg-emerald-500/20 text-emerald-200"
             : point === 2
-            ? "border-amber-300/30 bg-amber-500/20 text-amber-200"
+            ? "border-emerald-300/30 bg-emerald-500/20 text-emerald-200"
             : "border-rose-300/25 bg-rose-500/15 text-rose-200";
 
         return (
@@ -988,7 +988,7 @@ function ComparisonPlayerCard({
 
   return (
     <article className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center">
-      <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-sky-300/30 bg-gradient-to-br from-sky-500/25 to-indigo-500/20 text-xl font-black text-white">
+      <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-emerald-300/30 bg-gradient-to-br from-emerald-500/25 to-emerald-500/20 text-xl font-black text-white">
         {player.avatarUrl ? (
           <img
             src={player.avatarUrl}
@@ -1000,7 +1000,7 @@ function ComparisonPlayerCard({
         )}
       </div>
 
-      <p className="mt-3 text-xs font-black uppercase tracking-wider text-sky-300">
+      <p className="mt-3 text-xs font-black uppercase tracking-wider text-emerald-300">
         {label}
       </p>
       <h3 className="cp-account-name mt-1 truncate text-white">

@@ -121,7 +121,7 @@ export default function AdminFeedbackPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-6xl">
         <header className="ucl-card">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Admin
           </p>
 
@@ -164,7 +164,7 @@ export default function AdminFeedbackPage() {
                 onClick={() => setFilter(status)}
                 className={`rounded-full border px-4 py-2 text-xs font-black capitalize ${
                   filter === status
-                    ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
+                    ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
                     : "border-white/10 bg-white/5 text-white/45"
                 }`}
               >

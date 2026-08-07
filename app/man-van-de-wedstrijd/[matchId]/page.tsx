@@ -293,7 +293,7 @@ export default function ManVanDeWedstrijdPage() {
     <main className="ucl-page">
       <div className="ucl-container">
         <section className="ucl-card text-center">
-          <span className="inline-flex rounded-full border border-purple-400/30 bg-purple-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-purple-200">
+          <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.15em] text-emerald-200">
             🟣 Man van de wedstrijd
           </span>
 
@@ -312,7 +312,7 @@ export default function ManVanDeWedstrijdPage() {
                   {match.home_team}
                 </p>
 
-                <p className="my-2 text-sm font-black uppercase tracking-[0.25em] text-purple-300">
+                <p className="my-2 text-sm font-black uppercase tracking-[0.25em] text-emerald-300">
                   VS
                 </p>
 
@@ -395,8 +395,8 @@ export default function ManVanDeWedstrijdPage() {
                 />
 
                 {submitting && (
-                  <div className="rounded-2xl border border-purple-400/30 bg-purple-500/10 p-5">
-                    <p className="font-bold text-purple-100">
+                  <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-5">
+                    <p className="font-bold text-emerald-100">
                       Je stem wordt opgeslagen...
                     </p>
                   </div>
