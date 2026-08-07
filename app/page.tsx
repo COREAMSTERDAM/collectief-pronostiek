@@ -13,6 +13,13 @@ type DashboardProfile = {
   is_admin: boolean | null;
 };
 
+type NextMatch = {
+  id: number;
+  home_team: string;
+  away_team: string;
+  kickoff: string;
+};
+
 function greeting() {
   const hour = new Date().getHours();
 
@@ -27,6 +34,8 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] =
     useState(false);
   const [loading, setLoading] = useState(true);
+  const [nextMatch, setNextMatch] =
+    useState<NextMatch | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -53,6 +62,19 @@ export default function Home() {
           .maybeSingle();
 
         if (mounted) setProfile(data ?? null);
+
+        const { data: nextMatchData } = await supabase
+          .from("matches")
+          .select("id, home_team, away_team, kickoff")
+          .eq("status", "open")
+          .gte("kickoff", new Date().toISOString())
+          .order("kickoff", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (mounted) {
+          setNextMatch(nextMatchData ?? null);
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -149,25 +171,49 @@ export default function Home() {
       >
         <div className="native-primary-card-copy">
           <p className="native-eyebrow">
-            Volgende actie
+            Volgende wedstrijd
           </p>
 
-          <h2 className="native-primary-title">
-            Vul je pronostiek in
-          </h2>
+          {nextMatch ? (
+            <>
+              <h2 className="native-primary-title">
+                {nextMatch.home_team}
+                <span className="mx-2 text-white/40">–</span>
+                {nextMatch.away_team}
+              </h2>
 
-          <p className="native-primary-description">
-            Klaar voor de volgende speelronde?
-          </p>
+              <p className="native-primary-description">
+                {new Intl.DateTimeFormat("nl-BE", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }).format(new Date(nextMatch.kickoff))}
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="native-primary-title">
+                Nog geen wedstrijd gepland
+              </h2>
+
+              <p className="native-primary-description">
+                Zodra een nieuwe wedstrijd beschikbaar is, verschijnt ze hier.
+              </p>
+            </>
+          )}
         </div>
 
-        <NativeButton
-          href="/pronostiekpagina"
-          fullWidth
-        >
-          Nu invullen
-          <span aria-hidden="true">›</span>
-        </NativeButton>
+        {nextMatch ? (
+          <NativeButton
+            href="/pronostiekpagina"
+            fullWidth
+          >
+            Vul je pronostiek in
+            <span aria-hidden="true">›</span>
+          </NativeButton>
+        ) : null}
       </NativeCard>
 
       <section className="native-home-section native-home-section-compact">
