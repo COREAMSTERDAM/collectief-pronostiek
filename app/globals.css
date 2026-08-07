@@ -2091,3 +2091,66 @@ body {
     margin-top: 0.5rem;
   }
 }
+
+/* ==========================================================
+   Browser scroll compatibility
+   Edge / Android browsers / iOS Safari
+   ----------------------------------------------------------
+   Houdt de document-scroll bij html/body en voorkomt dat
+   viewport-containers de pagina onbedoeld vastzetten.
+   PlayerSelectionModal blijft ongemoeid: die gebruikt zelf
+   tijdelijk body overflow:hidden zolang de modal open is.
+   ========================================================== */
+
+html {
+  min-height: 100%;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background-attachment: scroll;
+}
+
+/* Laat de algemene app-containers meegroeien met de inhoud. */
+.native-app-shell,
+.native-app-content,
+.native-screen,
+.ucl-page {
+  height: auto;
+  overflow-y: visible;
+}
+
+/* Veilige viewporthoogte met fallback voor oudere mobiele browsers. */
+.native-app-shell,
+.native-app-content,
+.native-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Voorkomt dat touch-scroll door horizontale clipping wordt geblokkeerd. */
+.native-app-shell,
+.native-screen,
+.ucl-page {
+  touch-action: pan-y;
+}
+
+/* Backgrounds mogen fixed blijven als apart element, maar de body-background
+   zelf scrollt mee. Dit voorkomt bekende mobiele browser-jank. */
+@media (max-width: 900px) {
+  body {
+    background-attachment: scroll;
+  }
+}
+
