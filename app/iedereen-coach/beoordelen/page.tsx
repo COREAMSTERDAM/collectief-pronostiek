@@ -52,7 +52,7 @@ export default function OpenMatchRatingsPage() {
     <main className="ucl-page">
       <div className="ucl-container !max-w-6xl">
         <header className="ucl-card text-center">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-200/70">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-emerald-200/70">
             Iedereen Coach
           </p>
 
@@ -69,13 +69,13 @@ export default function OpenMatchRatingsPage() {
         <div className="mt-6">
           <Link
             href="/iedereen-coach/beoordelingen-archief"
-            className="ucl-card block transition hover:-translate-y-1 hover:border-amber-300/25"
+            className="ucl-card block transition hover:-translate-y-1 hover:border-emerald-300/25"
           >
             <div className="flex flex-col gap-4 text-center sm:flex-row sm:items-center sm:text-left">
               <div className="text-4xl">📚</div>
 
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-200/70">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-200/70">
                   Historiek
                 </p>
 
