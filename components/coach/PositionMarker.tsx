@@ -41,7 +41,7 @@ export default function PositionMarker({
         disabled
           ? "cursor-not-allowed opacity-75"
           : "hover:scale-105",
-        player ? "w-20 sm:w-24" : "h-14 w-14 sm:h-16 sm:w-16",
+        player ? "w-16 sm:w-24" : "h-14 w-14 sm:h-16 sm:w-16",
       ].join(" ")}
       style={{
         left: `${position.x_percent}%`,
@@ -62,7 +62,7 @@ export default function PositionMarker({
     >
       {player ? (
         <>
-          <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-black/80 text-xs font-black text-white shadow-xl shadow-black/50 sm:h-14 sm:w-14">
+          <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-white/70 bg-black/80 text-[11px] font-black text-white shadow-xl shadow-black/50 sm:h-14 sm:w-14 sm:text-xs">
             {player.photo_url ? (
               <img
                 src={player.photo_url}
