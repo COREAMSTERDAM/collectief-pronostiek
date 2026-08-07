@@ -1,58 +1,70 @@
-import HubCard from "@/components/navigation/HubCard";
-import HubHeader from "@/components/navigation/HubHeader";
+import Link from "next/link";
+import NativeTile from "@/components/native/NativeTile";
 
 export default function ProfielKeuzePage() {
   return (
-    <main className="ucl-page">
-      <div className="ucl-container !max-w-5xl">
-        <HubHeader
-          eyebrow="Mijn account"
-          title="Profiel en prestaties"
-          description="Bekijk je persoonlijke gegevens en je resultaten binnen de app."
-        />
+    <div className="native-screen native-home-screen native-home-compact">
+      <header className="native-home-header">
+        <div className="min-w-0">
+          <p className="native-home-greeting">
+            Mijn account
+          </p>
 
-        <section className="mt-6 grid gap-5 md:grid-cols-2">
-          <HubCard
+          <h1 className="native-home-name">
+            Profiel en prestaties
+          </h1>
+
+          <p className="mt-1 text-sm font-semibold text-white/45">
+            Bekijk je persoonlijke gegevens en resultaten.
+          </p>
+        </div>
+
+        <Link
+          href="/"
+          className="native-profile-logo"
+          aria-label="Terug naar home"
+        >
+          <img src="/logo.png" alt="" />
+        </Link>
+      </header>
+
+      <section className="native-home-section native-home-section-compact">
+        <div className="native-quick-grid">
+          <NativeTile
             href="/profiel"
-            icon="👤"
-            eyebrow="Profiel"
             title="Mijn profiel"
-            description="Bekijk je profiel, avatar, statistieken en prestaties."
-            action="Open mijn profiel"
-            accent="white"
+            icon="👤"
           />
 
-          <HubCard
+          <NativeTile
             href="/mijn-pronostieken"
-            icon="📜"
-            eyebrow="Pronostiek"
             title="Mijn voorspellingen"
-            description="Bekijk alle pronostieken die je eerder hebt ingediend."
-            action="Bekijk voorspellingen"
-            accent="emerald"
+            icon="📜"
           />
 
-          <HubCard
+          <NativeTile
             href="/iedereen-coach/mijn-opstellingen"
-            icon="⚽"
-            eyebrow="Iedereen Coach"
             title="Mijn opstellingen"
-            description="Bekijk je eerdere basiselftallen per wedstrijd."
-            action="Bekijk opstellingen"
-            accent="emerald"
+            icon="⚽"
           />
 
-          <HubCard
+          <NativeTile
             href="/klassement"
-            icon="🏆"
-            eyebrow="Rangschikking"
             title="Mijn positie"
-            description="Bekijk je huidige plaats in het pronostiekklassement."
-            action="Open klassement"
-            accent="emerald"
+            icon="🏆"
           />
-        </section>
-      </div>
-    </main>
+        </div>
+      </section>
+
+      <section className="native-home-compact-actions">
+        <Link
+          href="/"
+          className="native-home-action-pill"
+        >
+          <span>←</span>
+          <span>Home</span>
+        </Link>
+      </section>
+    </div>
   );
 }
