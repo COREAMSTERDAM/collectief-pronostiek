@@ -299,7 +299,6 @@ export default function Home() {
 
           <p className="native-primary-description">
             Help ons om samen de beste app voor het collectief te maken.
-            Deel je ideeën, opmerkingen of suggesties met ons.
           </p>
         </div>
 
