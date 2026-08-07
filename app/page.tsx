@@ -144,7 +144,7 @@ export default function Home() {
             {greeting()}
           </p>
 
-          <h1 className="native-home-name">
+          <h1 className="native-home-name !text-2xl sm:!text-3xl">
             {loading ? "Welkom" : `${firstName} 👋`}
           </h1>
         </div>
