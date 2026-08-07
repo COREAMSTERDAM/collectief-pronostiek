@@ -116,8 +116,8 @@ export default function WedstrijdenPage() {
         return;
       }
 
-      const loadedMatches: Match[] = (matchesData ?? []).map(
-        (match) => ({
+      const loadedMatches: Match[] = (matchesData ?? [])
+        .map((match) => ({
           id: Number(match.id),
           home_team: match.home_team,
           away_team: match.away_team,
@@ -127,8 +127,16 @@ export default function WedstrijdenPage() {
             (prediction) =>
               Number(prediction.match_id) === Number(match.id)
           ),
-        })
-      );
+        }))
+        .filter((match) => {
+          const kickoffPassed =
+            new Date(match.kickoff).getTime() <= Date.now();
+
+          const isFinished =
+            match.status === "afgewerkt";
+
+          return !kickoffPassed && !isFinished;
+        });
 
       setMatches(loadedMatches);
       await loadPredictionStats(loadedMatches);
@@ -164,12 +172,19 @@ export default function WedstrijdenPage() {
             Voorspel de uitslagen en strijd mee voor de eerste plaats.
           </p>
 
-          <div className="mt-5">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <a
               href="/"
               className="ucl-button-secondary"
             >
               ← Terug naar dashboard
+            </a>
+
+            <a
+              href="/pronostiekhistoriek"
+              className="ucl-button-secondary"
+            >
+              📚 Pronostiekhistoriek
             </a>
           </div>
         </div>
@@ -177,7 +192,7 @@ export default function WedstrijdenPage() {
         {matches.length === 0 ? (
           <div className="ucl-card">
             <p className="ucl-muted">
-              Er zijn momenteel geen wedstrijden.
+              Er zijn momenteel geen open wedstrijden.
             </p>
           </div>
         ) : (
