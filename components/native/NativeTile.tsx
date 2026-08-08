@@ -27,12 +27,15 @@ export default function NativeTile({
           <Image
             src={image}
             alt=""
-            width={144}
-            height={144}
-            className="native-tile-image"
+            fill
+            sizes="96px"
+            className="native-tile-image object-contain p-1.5"
           />
         ) : (
-          <span className="native-tile-fallback-icon">
+          <span
+            className="native-tile-fallback-icon"
+            aria-hidden="true"
+          >
             {icon ?? "•"}
           </span>
         )}
@@ -45,7 +48,9 @@ export default function NativeTile({
       </div>
 
       <div className="native-tile-copy">
-        <p className="native-tile-title">{title}</p>
+        <p className="native-tile-title">
+          {title}
+        </p>
 
         {subtitle ? (
           <p className="native-tile-subtitle">
@@ -65,7 +70,10 @@ export default function NativeTile({
   }
 
   return (
-    <Link href={href} className="native-tile">
+    <Link
+      href={href}
+      className="native-tile"
+    >
       {content}
     </Link>
   );

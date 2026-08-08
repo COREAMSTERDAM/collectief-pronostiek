@@ -221,7 +221,7 @@ export default function Home() {
     <NativeTile
       href="/pronostiekpagina"
       title="Pronostiek"
-      icon="⚽"
+      image="/pronostiek-logo.png"
     />
 
     {profile?.is_admin ? (
