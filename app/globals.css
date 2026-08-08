@@ -2157,8 +2157,8 @@ body {
 /* Eigen logo's zonder kader */
 .native-tile-icon-wrap-image {
   position: relative;
-  width: 4rem !important;
-  height: 4rem !important;
+  width: 3rem !important;
+  height: 3rem !important;
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
