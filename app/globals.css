@@ -2154,3 +2154,24 @@ body {
   }
 }
 
+/* Eigen logo's zonder kader */
+.native-tile-icon-wrap-image {
+  position: relative;
+  width: 4rem !important;
+  height: 4rem !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+/* Geen glanslaag op eigen logo's */
+.native-tile-icon-wrap-image::after {
+  display: none !important;
+}
+
+/* Logo volledig zichtbaar */
+.native-tile-icon-wrap-image .native-tile-image {
+  object-fit: contain !important;
+  padding: 0 !important;
+}

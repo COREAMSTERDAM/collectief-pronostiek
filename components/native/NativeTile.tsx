@@ -22,14 +22,18 @@ export default function NativeTile({
 }: NativeTileProps) {
   const content = (
     <>
-      <div className="native-tile-icon-wrap">
+      <div
+        className={`native-tile-icon-wrap ${
+          image ? "native-tile-icon-wrap-image" : ""
+        }`}
+      >
         {image ? (
           <Image
             src={image}
             alt=""
             fill
-            sizes="96px"
-            className="native-tile-image object-contain p-1.5"
+            sizes="80px"
+            className="native-tile-image"
           />
         ) : (
           <span
