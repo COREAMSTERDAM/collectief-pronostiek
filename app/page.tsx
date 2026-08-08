@@ -243,7 +243,7 @@ export default function Home() {
     <NativeTile
       href="/iedereencoachkeuze"
       title="Coach"
-      icon="🧠"
+      image="/coach-logo.png"
     />
   </div>
 </section>
