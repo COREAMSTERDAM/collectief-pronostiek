@@ -229,13 +229,13 @@ export default function Home() {
         <NativeTile
           href="/community"
           title="Community"
-          icon="💬"
+          image="/community-logo.png"
         />
 
         <NativeTile
           href="/club-card"
           title="Club Card"
-          icon="▣"
+          image="/clubcard-logo.png"
         />
       </>
     ) : null}
