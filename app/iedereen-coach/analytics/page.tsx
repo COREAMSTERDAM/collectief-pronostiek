@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import AnalyticsTrendList from "@/components/coach/AnalyticsTrendList";
 import PlayerHeatmapList from "@/components/coach/PlayerHeatmapList";
 import { getActiveCoachTeams } from "@/src/lib/coach";
@@ -44,6 +44,62 @@ export default function CommunityAnalyticsPage() {
   useEffect(() => {
     void loadAnalytics();
   }, [loadAnalytics]);
+
+
+  const heatmapsWithoutBench = useMemo(() => {
+    if (!analytics) return [];
+
+    return analytics.player_heatmaps
+      .map((player) => {
+        const positions = player.positions.filter((position) => {
+          const code = position.position_code.trim().toUpperCase();
+          const label = position.position_label.trim().toLowerCase();
+          const group = position.position_group.trim().toLowerCase();
+
+          return (
+            !code.startsWith("BANK") &&
+            !label.startsWith("bank") &&
+            group !== "bench" &&
+            group !== "bank" &&
+            group !== "substitute" &&
+            group !== "substitutes"
+          );
+        });
+
+        const starterCoachCount = positions.reduce(
+          (total, position) => total + position.coach_count,
+          0,
+        );
+
+        if (starterCoachCount === 0) {
+          return null;
+        }
+
+        return {
+          ...player,
+          coach_count: starterCoachCount,
+          selection_percentage:
+            analytics.total_coaches === 0
+              ? 0
+              : Math.round(
+                  (starterCoachCount / analytics.total_coaches) * 1000,
+                ) / 10,
+          positions: positions.map((position) => ({
+            ...position,
+            percentage_of_player_selections:
+              Math.round(
+                (position.coach_count / starterCoachCount) * 1000,
+              ) / 10,
+          })),
+        };
+      })
+      .filter((player) => player !== null)
+      .sort(
+        (a, b) =>
+          b.coach_count - a.coach_count ||
+          a.player_name.localeCompare(b.player_name, "nl"),
+      );
+  }, [analytics]);
 
   return (
     <main className="min-h-screen bg-black px-4 py-8 text-white sm:px-6 lg:px-8">
@@ -141,7 +197,7 @@ export default function CommunityAnalyticsPage() {
               </div>
 
               <div className="mt-6">
-                <PlayerHeatmapList players={analytics.player_heatmaps} />
+                <PlayerHeatmapList players={heatmapsWithoutBench} />
               </div>
             </>
           )
