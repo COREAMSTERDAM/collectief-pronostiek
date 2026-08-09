@@ -2175,3 +2175,183 @@ body {
   object-fit: contain !important;
   padding: 0 !important;
 }
+
+
+/* User Theme Layer — onderaan app/globals.css */
+
+:root {
+  --user-accent: #2ee68a;
+  --user-accent-soft: #8af7bd;
+  --user-accent-deep: #11995b;
+  --user-accent-glow: rgba(46, 230, 138, 0.2);
+  --user-secondary: #2ee68a;
+  --user-bg: #050505;
+  --user-text: #ffffff;
+  --user-muted: rgba(255, 255, 255, 0.46);
+  --user-surface: rgba(255, 255, 255, 0.055);
+  --user-surface-strong: rgba(255, 255, 255, 0.085);
+  --theme-radius: 1.45rem;
+
+  --native-accent: var(--user-accent);
+  --native-accent-soft: var(--user-accent-soft);
+  --native-accent-deep: var(--user-accent-deep);
+  --native-accent-light: var(--user-accent-soft);
+  --native-accent-glow: var(--user-accent-glow);
+  --native-bg: var(--user-bg);
+  --native-text: var(--user-text);
+  --native-muted: var(--user-muted);
+  --native-surface: var(--user-surface);
+  --native-surface-strong: var(--user-surface-strong);
+}
+
+html,
+body,
+.native-app-shell {
+  background-color: var(--user-bg);
+  color: var(--user-text);
+}
+
+html[data-theme-radius="compact"] {
+  --theme-radius: 0.9rem;
+  --native-radius-xl: 1.35rem;
+  --native-radius-lg: 1rem;
+  --native-radius-md: 0.8rem;
+}
+
+html[data-theme-radius="rounded"] {
+  --theme-radius: 1.45rem;
+}
+
+html[data-theme-radius="extra"] {
+  --theme-radius: 2rem;
+  --native-radius-xl: 2.4rem;
+  --native-radius-lg: 1.9rem;
+  --native-radius-md: 1.45rem;
+}
+
+html[data-theme-background="flat"] .native-app-background {
+  background: var(--user-bg) !important;
+}
+
+html[data-theme-background="gradient"] .native-app-background {
+  background:
+    linear-gradient(
+      160deg,
+      var(--user-bg) 0%,
+      color-mix(in srgb, var(--user-accent) 10%, var(--user-bg)) 100%
+    ) !important;
+}
+
+html[data-theme-background="glow"] .native-app-background {
+  background:
+    radial-gradient(
+      circle at 85% 0%,
+      var(--user-accent-glow),
+      transparent 28rem
+    ),
+    radial-gradient(
+      circle at 5% 30%,
+      color-mix(in srgb, var(--user-secondary) 10%, transparent),
+      transparent 24rem
+    ),
+    var(--user-bg) !important;
+}
+
+html[data-theme-cards="standard"] .native-card {
+  background: var(--user-surface);
+}
+
+html[data-theme-cards="glass"] .native-card {
+  background: color-mix(
+    in srgb,
+    var(--user-surface) 78%,
+    transparent
+  ) !important;
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+}
+
+html[data-theme-cards="accent"] .native-card {
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--user-accent) 10%, transparent),
+      var(--user-surface)
+    ) !important;
+  border-color:
+    color-mix(in srgb, var(--user-accent) 28%, transparent) !important;
+}
+
+.native-button-primary {
+  background:
+    linear-gradient(
+      100deg,
+      var(--user-accent-deep),
+      var(--user-accent)
+    ) !important;
+}
+
+.native-eyebrow,
+.native-section-action,
+.native-home-greeting,
+.native-nav-item-active {
+  color: var(--user-accent-soft) !important;
+}
+
+.native-primary-card {
+  border-color:
+    color-mix(in srgb, var(--user-accent) 22%, transparent) !important;
+  background:
+    radial-gradient(
+      circle at 95% 0%,
+      var(--user-accent-glow),
+      transparent 15rem
+    ),
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,0.08),
+      rgba(255,255,255,0.025)
+    ) !important;
+}
+
+.native-tile:hover,
+.native-profile-logo:hover,
+.native-bell-button:hover {
+  border-color:
+    color-mix(in srgb, var(--user-accent) 34%, transparent) !important;
+}
+
+.native-nav-item-active::before {
+  background: var(--user-accent) !important;
+  box-shadow: 0 0 14px var(--user-accent-glow) !important;
+}
+
+html[data-theme-animations="off"] *,
+html[data-theme-animations="off"] *::before,
+html[data-theme-animations="off"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-theme-animations="subtle"] * {
+  transition-duration: 120ms;
+}
+
+html[data-theme-mode="light"] {
+  color-scheme: light;
+}
+
+html[data-theme-mode="light"] .native-home-name,
+html[data-theme-mode="light"] .native-primary-title,
+html[data-theme-mode="light"] .native-section-title,
+html[data-theme-mode="light"] .native-tile-title,
+html[data-theme-mode="light"] .native-list-title {
+  color: #0b0b0b !important;
+}
+
+html[data-theme-mode="light"] .native-primary-description,
+html[data-theme-mode="light"] .native-list-subtitle,
+html[data-theme-mode="light"] .native-tile-subtitle {
+  color: rgba(0,0,0,0.58) !important;
+}

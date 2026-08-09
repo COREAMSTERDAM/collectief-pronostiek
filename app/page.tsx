@@ -150,19 +150,28 @@ export default function Home() {
         </div>
 
         <div className="native-home-header-actions">
-          <Link
-            href="/profielkeuze"
-            className="native-profile-logo"
-            aria-label="Open profiel"
-          >
-            <img src="/logo.png" alt="" />
-          </Link>
+  <Link
+    href="/profielkeuze"
+    className="native-profile-logo"
+    aria-label="Open profiel"
+  >
+    <img src="/logo.png" alt="" />
+  </Link>
 
-          <NotificationBadgeButton
-            label=""
-            className="native-bell-button"
-          />
-        </div>
+  <Link
+    href="/app-uiterlijk"
+    className="native-bell-button"
+    aria-label="App uiterlijk aanpassen"
+    title="App uiterlijk"
+  >
+    <span aria-hidden="true">🎨</span>
+  </Link>
+
+  <NotificationBadgeButton
+    label=""
+    className="native-bell-button"
+  />
+</div>
       </header>
 
       <NativeCard

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import NativeAppFrame from "@/components/native/NativeAppFrame";
+import ThemeBootstrap from "@/components/theme/ThemeBootstrap";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -57,9 +59,13 @@ export default function RootLayout({
     <html
       lang="nl"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full bg-black text-white">
-        <NativeAppFrame>{children}</NativeAppFrame>
+        <ThemeBootstrap />
+        <ThemeProvider>
+          <NativeAppFrame>{children}</NativeAppFrame>
+        </ThemeProvider>
       </body>
     </html>
   );
