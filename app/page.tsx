@@ -159,11 +159,11 @@ export default function Home() {
   </Link>
 
   <Link
-    href="/app-uiterlijk"
-    className="native-bell-button"
-    aria-label="App uiterlijk aanpassen"
-    title="App uiterlijk"
-  >
+  href="/app-uiterlijk"
+  className="native-theme-button"
+  aria-label="App uiterlijk aanpassen"
+  title="App uiterlijk"
+>
     <span aria-hidden="true">🎨</span>
   </Link>
 
