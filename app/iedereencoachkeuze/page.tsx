@@ -78,6 +78,13 @@ export default function IedereenCoachKeuzePage() {
 
         <NativeCard className="native-list-card native-module-list">
           <NativeListRow
+  href="/motmpagina"
+  icon="⭐"
+  title="Man van de wedstrijd"
+  subtitle="Stem op jouw man van de match en bekijk de uitslagen."
+/>
+
+          <NativeListRow
             href="/iedereen-coach/collectief"
             icon="👥"
             title="Collectieve opstellingen"
