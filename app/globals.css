@@ -2356,3 +2356,55 @@ html[data-theme-mode="light"] .native-tile-subtitle {
   color: rgba(0,0,0,0.58) !important;
 }
 
+/* Home header icoontjes volledig zonder cirkels */
+.native-home-header-actions .native-profile-logo,
+.native-home-header-actions .native-theme-button,
+.native-home-header-actions .native-bell-button {
+  display: grid !important;
+  place-items: center !important;
+
+  width: 2.55rem !important;
+  height: 2.55rem !important;
+  min-width: 2.55rem !important;
+
+  padding: 0 !important;
+
+  border: none !important;
+  border-radius: 0 !important;
+
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Ook eventuele hover/focus-cirkels verwijderen */
+.native-home-header-actions .native-profile-logo:hover,
+.native-home-header-actions .native-theme-button:hover,
+.native-home-header-actions .native-bell-button:hover,
+.native-home-header-actions .native-profile-logo:focus,
+.native-home-header-actions .native-theme-button:focus,
+.native-home-header-actions .native-bell-button:focus {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Profiellogo */
+.native-home-header-actions .native-profile-logo img {
+  display: block;
+  width: 2.2rem !important;
+  height: 2.2rem !important;
+  object-fit: contain;
+}
+
+/* Uiterlijk-icoon */
+.native-home-header-actions .native-theme-button > span {
+  display: block;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+/* Meldingenicoon */
+.native-home-header-actions .native-bell-button {
+  color: white !important;
+}
