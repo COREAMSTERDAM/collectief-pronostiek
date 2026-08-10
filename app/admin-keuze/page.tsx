@@ -71,6 +71,16 @@ export default function AdminKeuzePage() {
   action="Open feedback"
   accent="rose"
 />
+          <HubCard
+            href="/admin/onderhoud"
+            icon="🛠️"
+            eyebrow="Systeem"
+            title="Onderhoudsmodus"
+            description="Zet de app tijdelijk in onderhoud en beheer wie toegang behoudt."
+            action="Open onderhoudsbeheer"
+            accent="emerald"
+          />
+
         </section>
       </div>
     </main>
