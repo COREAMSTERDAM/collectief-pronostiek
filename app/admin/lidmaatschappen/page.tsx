@@ -143,10 +143,29 @@ export default function MembershipAdminPage() {
             .limit(10),
         ]);
 
-        if (accessResult.error) throw accessResult.error;
-        if (profileResult.error) throw profileResult.error;
-        if (membershipResult.error) throw membershipResult.error;
-        if (syncResult.error) throw syncResult.error;
+        if (accessResult.error) {
+          throw new Error(
+            `Rechten laden mislukt: ${accessResult.error.message}`,
+          );
+        }
+
+        if (profileResult.error) {
+          throw new Error(
+            `Profielen laden mislukt: ${profileResult.error.message}`,
+          );
+        }
+
+        if (membershipResult.error) {
+          throw new Error(
+            `Lidmaatschappen laden mislukt: ${membershipResult.error.message}`,
+          );
+        }
+
+        if (syncResult.error) {
+          throw new Error(
+            `Synchronisaties laden mislukt: ${syncResult.error.message}`,
+          );
+        }
 
         if (!mounted) return;
 
