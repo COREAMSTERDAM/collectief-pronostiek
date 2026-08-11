@@ -47,9 +47,16 @@ export async function POST(request: NextRequest) {
     const users = Array.isArray(body.users) ? body.users : [];
     let linked = 0;
 
-    for (const snapshot of users) {
-      const result = await syncRuaUser(snapshot);
-      if (result.linked) linked += 1;
+    const concurrency = 4;
+
+    for (let index = 0; index < users.length; index += concurrency) {
+      const batch = users.slice(index, index + concurrency);
+
+      const results = await Promise.all(
+        batch.map((snapshot) => syncRuaUser(snapshot)),
+      );
+
+      linked += results.filter((result) => result.linked).length;
     }
 
     await logMembershipSync({
