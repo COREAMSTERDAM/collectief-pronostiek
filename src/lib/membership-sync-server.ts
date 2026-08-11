@@ -62,6 +62,19 @@ function unixToIso(value: number) {
   return new Date(value * 1000).toISOString();
 }
 
+function oneYearAfter(startIso: string | null) {
+  const base = startIso ? new Date(startIso) : new Date();
+
+  if (Number.isNaN(base.getTime())) {
+    return new Date(
+      Date.now() + 365 * 24 * 60 * 60 * 1000,
+    ).toISOString();
+  }
+
+  base.setDate(base.getDate() + 365);
+  return base.toISOString();
+}
+
 async function findProfileBySnapshot(snapshot: RuaUserSnapshot) {
   const supabase = getServiceClient();
 
@@ -120,6 +133,32 @@ export async function syncRuaUser(snapshot: RuaUserSnapshot) {
   }
 
   const now = new Date().toISOString();
+
+  // WordPress / Restrict User Access is de bron van waarheid.
+  // Eerst zetten we ALLE betaalde app-memberships van deze gebruiker uit.
+  // Daarna activeren we alleen de White/Black-levels die WordPress NU doorgeeft.
+  //
+  // Gevolg:
+  // - geen White/Black in WordPress => gebruiker valt terug op Gast;
+  // - White in WordPress => White actief;
+  // - Black in WordPress => Black actief;
+  // - oude initial_migration / foutieve betaalde records kunnen niet blijven winnen.
+  const { error: resetError } = await supabase
+    .from("user_memberships")
+    .update({
+      active: false,
+      last_synced_at: now,
+      updated_at: now,
+    })
+    .eq("user_id", profile.id)
+    .in("membership_level_key", ["white_member", "black_member"]);
+
+  if (resetError) {
+    throw new Error(
+      `Bestaande betaalde memberships uitschakelen mislukt: ${resetError.message}`,
+    );
+  }
+
   const validLevels = snapshot.levels
     .map((level) => ({
       ...level,
@@ -139,6 +178,17 @@ export async function syncRuaUser(snapshot: RuaUserSnapshot) {
 
   for (const level of validLevels) {
     const sourceRef = `rua:${level.id}`;
+    const startsAt = unixToIso(level.start) ?? now;
+    const ruaExpiresAt = unixToIso(level.expiry);
+
+    // White Member en Black Member zijn altijd maximaal 365 dagen geldig.
+    // Als Restrict User Access geen einddatum doorgeeft (expiry = 0),
+    // berekent de app zelf 365 dagen vanaf de startdatum.
+    const expiresAt =
+      level.app_level_key === "white_member" ||
+      level.app_level_key === "black_member"
+        ? ruaExpiresAt ?? oneYearAfter(startsAt)
+        : ruaExpiresAt;
 
     const { error } = await supabase
       .from("user_memberships")
@@ -148,8 +198,8 @@ export async function syncRuaUser(snapshot: RuaUserSnapshot) {
           membership_level_key: level.app_level_key,
           source: "wordpress_rua",
           source_ref: sourceRef,
-          starts_at: unixToIso(level.start) ?? now,
-          expires_at: unixToIso(level.expiry),
+          starts_at: startsAt,
+          expires_at: expiresAt,
           wordpress_user_id: snapshot.wordpress_user_id,
           rua_level_id: level.id,
           rua_level_title: level.title,

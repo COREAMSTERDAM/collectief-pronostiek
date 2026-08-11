@@ -143,29 +143,10 @@ export default function MembershipAdminPage() {
             .limit(10),
         ]);
 
-        if (accessResult.error) {
-          throw new Error(
-            `Rechten laden mislukt: ${accessResult.error.message}`,
-          );
-        }
-
-        if (profileResult.error) {
-          throw new Error(
-            `Profielen laden mislukt: ${profileResult.error.message}`,
-          );
-        }
-
-        if (membershipResult.error) {
-          throw new Error(
-            `Lidmaatschappen laden mislukt: ${membershipResult.error.message}`,
-          );
-        }
-
-        if (syncResult.error) {
-          throw new Error(
-            `Synchronisaties laden mislukt: ${syncResult.error.message}`,
-          );
-        }
+        if (accessResult.error) throw accessResult.error;
+        if (profileResult.error) throw profileResult.error;
+        if (membershipResult.error) throw membershipResult.error;
+        if (syncResult.error) throw syncResult.error;
 
         if (!mounted) return;
 
@@ -236,6 +217,33 @@ export default function MembershipAdminPage() {
 
     return result;
   }, [memberships]);
+
+  const membershipSummary = useMemo(() => {
+    let guests = 0;
+    let whiteMembers = 0;
+    let blackMembers = 0;
+
+    for (const profile of profiles) {
+      if (profile.is_admin) continue;
+
+      const membership = effectiveByUser.get(profile.id);
+      const level = membership?.membership_level_key ?? "guest";
+
+      if (level === "black_member") {
+        blackMembers += 1;
+      } else if (level === "white_member") {
+        whiteMembers += 1;
+      } else {
+        guests += 1;
+      }
+    }
+
+    return {
+      guests,
+      whiteMembers,
+      blackMembers,
+    };
+  }, [effectiveByUser, profiles]);
 
   const filteredProfiles = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -329,6 +337,35 @@ export default function MembershipAdminPage() {
         >
           ← Terug naar beheer
         </Link>
+
+        <section className="mt-5 grid grid-cols-3 gap-3">
+          <article className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center">
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-white/40">
+              White members
+            </p>
+            <p className="mt-2 text-3xl font-black text-white">
+              {membershipSummary.whiteMembers}
+            </p>
+          </article>
+
+          <article className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center">
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-white/40">
+              Black members
+            </p>
+            <p className="mt-2 text-3xl font-black text-white">
+              {membershipSummary.blackMembers}
+            </p>
+          </article>
+
+          <article className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center">
+            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-white/40">
+              Gasten
+            </p>
+            <p className="mt-2 text-3xl font-black text-white">
+              {membershipSummary.guests}
+            </p>
+          </article>
+        </section>
 
         <section className="ucl-card mt-5">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300/70">
