@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import AppShell from "@/components/native/AppShell";
-import MaintenanceGate from "@/components/maintenance/MaintenanceGate";
+import MembershipAccessGate from "@/components/membership/MembershipAccessGate";
 
 const HIDE_NAV_PREFIXES = [
   "/login",
@@ -34,17 +34,17 @@ export default function NativeAppFrame({
   );
 
   if (fullscreen) {
-    return <MaintenanceGate>{children}</MaintenanceGate>;
+    return <MembershipAccessGate>{children}</MembershipAccessGate>;
   }
 
   return (
-    <MaintenanceGate>
-      <AppShell
-        activeHref={pathname}
-        hideBottomNav={hideBottomNav}
-      >
-        {children}
-      </AppShell>
-    </MaintenanceGate>
+    <MembershipAccessGate>
+    <AppShell
+      activeHref={pathname}
+      hideBottomNav={hideBottomNav}
+    >
+      {children}
+    </AppShell>
+    </MembershipAccessGate>
   );
 }

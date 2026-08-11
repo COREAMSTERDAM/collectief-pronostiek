@@ -72,12 +72,12 @@ export default function AdminKeuzePage() {
   accent="rose"
 />
           <HubCard
-            href="/admin/onderhoud"
-            icon="🛠️"
-            eyebrow="Systeem"
-            title="Onderhoudsmodus"
-            description="Zet de app tijdelijk in onderhoud en beheer wie toegang behoudt."
-            action="Open onderhoudsbeheer"
+            href="/admin/lidmaatschappen"
+            icon="🎟️"
+            eyebrow="Toegang"
+            title="Lidmaatschappen"
+            description="Beheer Gast, White Member, Black Member en de automatische WordPress synchronisatie."
+            action="Open lidmaatschapsbeheer"
             accent="emerald"
           />
 
