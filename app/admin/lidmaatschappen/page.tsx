@@ -331,74 +331,85 @@ export default function MembershipAdminPage() {
   return (
     <main className="ucl-page">
       <div className="ucl-container !max-w-6xl">
-        <Link
-          href="/admin-keuze"
-          className="text-sm font-black text-emerald-300"
-        >
-          ← Terug naar beheer
-        </Link>
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            href="/admin-keuze"
+            className="text-sm font-black text-emerald-300"
+          >
+            ← Beheer
+          </Link>
 
-        <section className="mt-5 grid grid-cols-3 gap-3">
-          <article className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center">
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-white/40">
-              White members
-            </p>
-            <p className="mt-2 text-3xl font-black text-white">
-              {membershipSummary.whiteMembers}
-            </p>
-          </article>
+          <span className="text-xs font-bold text-white/30">
+            Lidmaatschappen
+          </span>
+        </div>
 
-          <article className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center">
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-white/40">
-              Black members
-            </p>
-            <p className="mt-2 text-3xl font-black text-white">
-              {membershipSummary.blackMembers}
-            </p>
-          </article>
+        <section className="mt-4 rounded-2xl border border-white/10 bg-white/[0.035] p-3">
+          <div className="grid grid-cols-3 divide-x divide-white/10">
+            <div className="px-2 text-center">
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                White
+              </p>
+              <p className="mt-1 text-2xl font-black text-white">
+                {membershipSummary.whiteMembers}
+              </p>
+            </div>
 
-          <article className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center">
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-white/40">
-              Gasten
-            </p>
-            <p className="mt-2 text-3xl font-black text-white">
-              {membershipSummary.guests}
-            </p>
-          </article>
+            <div className="px-2 text-center">
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                Black
+              </p>
+              <p className="mt-1 text-2xl font-black text-white">
+                {membershipSummary.blackMembers}
+              </p>
+            </div>
+
+            <div className="px-2 text-center">
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-white/35">
+                Gasten
+              </p>
+              <p className="mt-1 text-2xl font-black text-white">
+                {membershipSummary.guests}
+              </p>
+            </div>
+          </div>
         </section>
 
-        <section className="ucl-card mt-5">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300/70">
-            Toegangsbeheer
-          </p>
-          <h1 className="ucl-title mt-2">Lidmaatschappen</h1>
-          <p className="ucl-subtitle">
-            Beheer welke onderdelen Gast, White Member en Black Member mogen openen.
-            WordPress blijft de bron voor betaalde memberships.
-          </p>
+        <section className="ucl-card mt-4 !p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-300/65">
+                Toegangsbeheer
+              </p>
+              <h1 className="mt-1 text-2xl font-black text-white">
+                Rechten per membership
+              </h1>
+            </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-black text-white/40">
+              WordPress = bron
+            </span>
+          </div>
+
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
             {LEVELS.map((level) => (
               <button
                 key={level.key}
                 type="button"
                 onClick={() => setSelectedLevel(level.key)}
                 className={[
-                  "rounded-2xl border p-4 text-left transition",
+                  "shrink-0 rounded-xl border px-3 py-2 text-xs font-black transition",
                   selectedLevel === level.key
-                    ? "border-emerald-300/30 bg-emerald-300/10"
-                    : "border-white/10 bg-white/[0.035]",
+                    ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+                    : "border-white/10 bg-white/[0.03] text-white/45",
                 ].join(" ")}
               >
-                <p className="font-black">{level.title}</p>
-                <p className="mt-1 text-xs leading-5 text-white/40">
-                  {level.description}
-                </p>
+                {level.title}
               </button>
             ))}
           </div>
 
-          <div className="mt-6 grid gap-3">
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {MEMBERSHIP_ROUTES.map((route) => {
               const allowed = Boolean(selectedAccess.get(route.key));
 
@@ -407,24 +418,26 @@ export default function MembershipAdminPage() {
                   key={route.key}
                   type="button"
                   onClick={() => toggleRoute(route.key)}
-                  className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left"
+                  className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2.5 text-left"
                 >
-                  <div>
-                    <p className="font-black">{route.title}</p>
-                    <p className="mt-1 text-xs leading-5 text-white/40">
+                  <div className="min-w-0">
+                    <p className="text-sm font-black text-white">
+                      {route.title}
+                    </p>
+                    <p className="mt-0.5 text-[11px] leading-4 text-white/35">
                       {route.description}
                     </p>
                   </div>
 
                   <span
                     className={[
-                      "shrink-0 rounded-full px-3 py-1 text-xs font-black",
+                      "shrink-0 rounded-full px-2 py-1 text-[10px] font-black",
                       allowed
                         ? "bg-emerald-300/10 text-emerald-200"
-                        : "bg-white/[0.05] text-white/35",
+                        : "bg-white/[0.05] text-white/30",
                     ].join(" ")}
                   >
-                    {allowed ? "Toegang" : "Geblokkeerd"}
+                    {allowed ? "Aan" : "Uit"}
                   </span>
                 </button>
               );
@@ -435,123 +448,122 @@ export default function MembershipAdminPage() {
             type="button"
             onClick={() => void saveAccess()}
             disabled={saving}
-            className="ucl-button-primary mt-6 w-full disabled:opacity-50"
+            className="ucl-button-primary mt-4 w-full disabled:opacity-50"
           >
             {saving ? "Opslaan…" : "Rechten opslaan"}
           </button>
         </section>
 
-        <section className="ucl-card mt-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+        <section className="ucl-card mt-4 !p-4">
+          <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-white/35">
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/30">
                 Synchronisatie
               </p>
-              <h2 className="mt-1 text-2xl font-black">
+              <h2 className="mt-1 text-lg font-black text-white">
                 Restrict User Access
               </h2>
             </div>
 
-            <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-black text-emerald-200">
+            <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[10px] font-black text-emerald-200">
               Automatisch
             </span>
           </div>
 
-          <div className="mt-5 grid gap-3">
+          <div className="mt-3 divide-y divide-white/10 overflow-hidden rounded-xl border border-white/10">
             {syncRuns.length === 0 ? (
-              <p className="text-sm text-white/40">
-                Nog geen synchronisaties geregistreerd.
+              <p className="p-3 text-xs text-white/35">
+                Nog geen synchronisaties.
               </p>
             ) : (
-              syncRuns.map((run) => (
+              syncRuns.slice(0, 4).map((run) => (
                 <div
                   key={run.id}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                  className="flex items-center justify-between gap-3 bg-white/[0.02] px-3 py-2.5"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="font-black">
+                  <div className="min-w-0">
+                    <p className="text-xs font-black text-white">
                       {run.mode === "full" ? "Volledige sync" : "Gebruikerssync"}
                     </p>
-                    <span
-                      className={
-                        run.status === "success"
-                          ? "text-xs font-black text-emerald-200"
-                          : "text-xs font-black text-red-200"
-                      }
-                    >
-                      {run.status}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-white/40">
-                    {formatDate(run.created_at)} · {run.records} record(s)
-                  </p>
-                  {run.message ? (
-                    <p className="mt-2 text-xs leading-5 text-white/55">
-                      {run.message}
+                    <p className="mt-0.5 text-[10px] text-white/30">
+                      {formatDate(run.created_at)} · {run.records} record(s)
                     </p>
-                  ) : null}
+                  </div>
+
+                  <span
+                    className={
+                      run.status === "success"
+                        ? "shrink-0 text-[10px] font-black text-emerald-200"
+                        : "shrink-0 text-[10px] font-black text-red-200"
+                    }
+                  >
+                    {run.status}
+                  </span>
                 </div>
               ))
             )}
           </div>
         </section>
 
-        <section className="ucl-card mt-6">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-white/35">
-            Gebruikers
-          </p>
-          <h2 className="mt-1 text-2xl font-black">
-            Actuele app-toegang
-          </h2>
+        <section className="ucl-card mt-4 !p-4">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/30">
+                Gebruikers
+              </p>
+              <h2 className="mt-1 text-lg font-black text-white">
+                Actuele toegang
+              </h2>
+            </div>
+
+            <p className="text-xs font-bold text-white/30">
+              {filteredProfiles.length} gebruiker(s)
+            </p>
+          </div>
 
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Zoek op naam of e-mail…"
-            className="ucl-input mt-5"
+            placeholder="Zoek naam of e-mail…"
+            className="ucl-input mt-3 !py-2.5"
           />
 
-          <div className="mt-5 divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10">
+          <div className="mt-3 divide-y divide-white/10 overflow-hidden rounded-xl border border-white/10">
             {filteredProfiles.map((profile) => {
               const membership = effectiveByUser.get(profile.id);
 
               return (
                 <div
                   key={profile.id}
-                  className="grid gap-3 bg-white/[0.025] p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                  className="flex items-center justify-between gap-3 bg-white/[0.02] px-3 py-2.5"
                 >
-                  <div>
-                    <p className="font-black">
+                  <div className="min-w-0">
+                    <p className="text-sm font-black text-white">
                       {profile.name || "Naamloos profiel"}
                     </p>
-                    <p className="mt-1 break-all text-xs text-white/40">
+                    <p className="mt-0.5 break-all text-[10px] text-white/30">
                       {profile.email || "Geen e-mail"}
                     </p>
-                    {profile.wordpress_user_id ? (
-                      <p className="mt-1 text-xs text-white/30">
-                        WordPress #{profile.wordpress_user_id}
-                      </p>
-                    ) : null}
                   </div>
 
-                  <div className="sm:text-right">
+                  <div className="shrink-0 text-right">
                     {profile.is_admin ? (
-                      <span className="text-xs font-black text-emerald-200">
-                        Admin · volledige toegang
+                      <span className="text-[10px] font-black text-emerald-200">
+                        Admin
                       </span>
                     ) : (
                       <>
-                        <p className="text-sm font-black">
+                        <p className="text-xs font-black text-white">
                           {membership?.membership_level_key === "black_member"
-                            ? "Black Member"
+                            ? "Black"
                             : membership?.membership_level_key === "white_member"
-                              ? "White Member"
+                              ? "White"
                               : "Gast"}
                         </p>
-                        <p className="mt-1 text-xs text-white/35">
+                        <p className="mt-0.5 text-[10px] text-white/30">
                           {membership?.expires_at
                             ? `Tot ${formatDate(membership.expires_at)}`
-                            : "Onbeperkt / fallback"}
+                            : "Fallback"}
                         </p>
                       </>
                     )}
@@ -563,13 +575,13 @@ export default function MembershipAdminPage() {
         </section>
 
         {message ? (
-          <div className="mt-5 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4 text-sm font-bold text-emerald-100">
+          <div className="mt-4 rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-3 text-xs font-bold text-emerald-100">
             {message}
           </div>
         ) : null}
 
         {errorMessage ? (
-          <div className="mt-5 rounded-2xl border border-red-400/25 bg-red-400/10 p-4 text-sm font-bold text-red-100">
+          <div className="mt-4 rounded-xl border border-red-400/25 bg-red-400/10 p-3 text-xs font-bold text-red-100">
             {errorMessage}
           </div>
         ) : null}
