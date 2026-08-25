@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../src/lib/supabase";
 
 type Match = {
@@ -21,6 +21,7 @@ export default function AdminPage() {
   const [homeTeam, setHomeTeam] = useState("");
   const [awayTeam, setAwayTeam] = useState("");
   const [kickoff, setKickoff] = useState("");
+  const [showAddMatch, setShowAddMatch] = useState(false);
 
   useEffect(() => {
     async function checkAdminAndLoad() {
@@ -168,6 +169,26 @@ export default function AdminPage() {
     await loadMatches();
   }
 
+  const matchSummary = useMemo(() => {
+    const now = Date.now();
+    const finished = matches.filter(
+      (match) => match.status === "afgewerkt",
+    ).length;
+    const upcoming = matches.filter(
+      (match) =>
+        match.status !== "afgewerkt" &&
+        new Date(match.kickoff).getTime() >= now,
+    ).length;
+    const open = matches.length - finished;
+
+    return {
+      total: matches.length,
+      finished,
+      upcoming,
+      open,
+    };
+  }, [matches]);
+
   if (loading) {
     return (
       <main className="ucl-page">
@@ -202,109 +223,135 @@ export default function AdminPage() {
 
   return (
     <main className="ucl-page">
-      <div className="ucl-container">
-        <div className="mb-7">
-          <h1 className="ucl-title">Admin</h1>
-
-          <p className="ucl-subtitle">
-            Voeg wedstrijden toe en verwerk de officiële uitslagen.
-          </p>
-        </div>
-
-        <section className="ucl-card mb-8">
-          <div className="mb-5">
-            <h2 className="text-xl font-black text-white">
-              Wedstrijd toevoegen
-            </h2>
-
-            <p className="ucl-muted">
-              Vul de ploegen en het aanvangsuur in.
+      <div className="ucl-container !max-w-5xl">
+        <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-300/70">
+              Beheer
+            </p>
+            <h1 className="mt-1 text-3xl font-black text-white sm:text-4xl">
+              Wedstrijden
+            </h1>
+            <p className="mt-1 text-sm font-semibold text-white/40">
+              Voeg wedstrijden toe en verwerk officiële uitslagen.
             </p>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="home-team"
-                className="mb-2 block text-sm font-bold text-slate-200"
-              >
-                Thuisploeg
-              </label>
+          <button
+            type="button"
+            onClick={() => setShowAddMatch((current) => !current)}
+            className="ucl-button-primary !mt-0 sm:w-auto"
+          >
+            {showAddMatch ? "Sluiten" : "+ Wedstrijd"}
+          </button>
+        </header>
 
-              <input
-                id="home-team"
-                type="text"
-                placeholder="Bijvoorbeeld Eendracht Aalst Lede"
-                value={homeTeam}
-                onChange={(e) => setHomeTeam(e.target.value)}
-                className="ucl-input"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="away-team"
-                className="mb-2 block text-sm font-bold text-slate-200"
-              >
-                Uitploeg
-              </label>
-
-              <input
-                id="away-team"
-                type="text"
-                placeholder="Bijvoorbeeld SK Berlare"
-                value={awayTeam}
-                onChange={(e) => setAwayTeam(e.target.value)}
-                className="ucl-input"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="kickoff"
-                className="mb-2 block text-sm font-bold text-slate-200"
-              >
-                Aftrap
-              </label>
-
-              <input
-                id="kickoff"
-                type="datetime-local"
-                value={kickoff}
-                onChange={(e) => setKickoff(e.target.value)}
-                className="ucl-input"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={saveMatch}
-              className="ucl-button-primary"
-            >
-              Wedstrijd toevoegen
-            </button>
-          </div>
+        <section className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <SummaryCard label="Totaal" value={matchSummary.total} />
+          <SummaryCard label="Open" value={matchSummary.open} />
+          <SummaryCard label="Komend" value={matchSummary.upcoming} />
+          <SummaryCard label="Afgewerkt" value={matchSummary.finished} />
         </section>
 
-        <section>
-          <div className="mb-4">
-            <h2 className="text-xl font-black text-white">
-              Bestaande wedstrijden
-            </h2>
+        {showAddMatch ? (
+          <section className="ucl-card mb-6 !p-4 sm:!p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-black text-white">
+                  Wedstrijd toevoegen
+                </h2>
+                <p className="mt-1 text-xs font-semibold text-white/35">
+                  Vul ploegen en aftrap in.
+                </p>
+              </div>
+            </div>
 
-            <p className="ucl-muted">
-              Vul na de wedstrijd de officiële uitslag in.
-            </p>
+            <div className="grid gap-3 md:grid-cols-[1fr_1fr_0.9fr_auto] md:items-end">
+              <div>
+                <label
+                  htmlFor="home-team"
+                  className="mb-1.5 block text-xs font-black uppercase tracking-wide text-white/45"
+                >
+                  Thuis
+                </label>
+                <input
+                  id="home-team"
+                  type="text"
+                  placeholder="Thuisploeg"
+                  value={homeTeam}
+                  onChange={(e) => setHomeTeam(e.target.value)}
+                  className="ucl-input"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="away-team"
+                  className="mb-1.5 block text-xs font-black uppercase tracking-wide text-white/45"
+                >
+                  Uit
+                </label>
+                <input
+                  id="away-team"
+                  type="text"
+                  placeholder="Uitploeg"
+                  value={awayTeam}
+                  onChange={(e) => setAwayTeam(e.target.value)}
+                  className="ucl-input"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="kickoff"
+                  className="mb-1.5 block text-xs font-black uppercase tracking-wide text-white/45"
+                >
+                  Aftrap
+                </label>
+                <input
+                  id="kickoff"
+                  type="datetime-local"
+                  value={kickoff}
+                  onChange={(e) => setKickoff(e.target.value)}
+                  className="ucl-input"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={saveMatch}
+                className="ucl-button-primary !mt-0 md:w-auto"
+              >
+                Toevoegen
+              </button>
+            </div>
+          </section>
+        ) : null}
+
+        <section>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-black text-white">
+                Wedstrijden
+              </h2>
+              <p className="mt-0.5 text-xs font-semibold text-white/35">
+                Vul na afloop de officiële score in.
+              </p>
+            </div>
+
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-black text-white/45">
+              {matches.length}
+            </span>
           </div>
 
           {matches.length === 0 ? (
-            <div className="ucl-card">
-              <p className="ucl-muted">
+            <div className="ucl-card !p-5 text-center">
+              <p className="text-sm font-semibold text-white/40">
                 Er zijn nog geen wedstrijden toegevoegd.
               </p>
             </div>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-3">
               {matches.map((match) => (
                 <MatchResultCard
                   key={match.id}
@@ -317,6 +364,23 @@ export default function AdminPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+}: {
+  label: string;
+  value: number;
+}) {
+  return (
+    <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-3.5">
+      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/35">
+        {label}
+      </p>
+      <p className="mt-1 text-2xl font-black text-white">{value}</p>
+    </article>
   );
 }
 
@@ -364,47 +428,36 @@ function MatchResultCard({
   }
 
   return (
-    <article className="ucl-card">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="ucl-match-title">
-            {match.home_team} - {match.away_team}
-          </p>
+    <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+      <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="truncate text-sm font-black text-white sm:text-base">
+              {match.home_team}
+              <span className="mx-1.5 text-white/25">–</span>
+              {match.away_team}
+            </p>
 
-          <p className="ucl-muted">
+            <span
+              className={`rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                isFinished
+                  ? "border-emerald-300/20 bg-emerald-400/10 text-emerald-200"
+                  : "border-white/10 bg-white/[0.04] text-white/40"
+              }`}
+            >
+              {isFinished ? "Afgewerkt" : match.status}
+            </span>
+          </div>
+
+          <p className="mt-1 text-xs font-semibold text-white/35">
             {new Date(match.kickoff).toLocaleString("nl-BE")}
           </p>
         </div>
 
-        <span className="ucl-status">
-          <span>{isFinished ? "✓" : "●"}</span>
-          <span>{isFinished ? "Afgewerkt" : match.status}</span>
-        </span>
-      </div>
-
-      {isFinished &&
-        match.home_score !== null &&
-        match.away_score !== null && (
-          <div className="ucl-card-dark text-center">
-            <p className="ucl-muted">Huidige uitslag</p>
-
-            <p className="mt-1 text-3xl font-black text-white">
-              {match.home_score} - {match.away_score}
-            </p>
-          </div>
-        )}
-
-      <div className="mt-5 grid grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor={`home-score-${match.id}`}
-            className="mb-2 block text-center text-sm font-bold text-slate-200"
-          >
-            {match.home_team}
-          </label>
-
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
           <input
             id={`home-score-${match.id}`}
+            aria-label={`Score ${match.home_team}`}
             type="number"
             min="0"
             step="1"
@@ -412,20 +465,14 @@ function MatchResultCard({
             placeholder="0"
             value={homeScore}
             onChange={(e) => setHomeScore(e.target.value)}
-            className="ucl-input text-center text-xl font-black"
+            className="ucl-input !h-11 !w-16 !px-2 text-center text-lg font-black"
           />
-        </div>
 
-        <div>
-          <label
-            htmlFor={`away-score-${match.id}`}
-            className="mb-2 block text-center text-sm font-bold text-slate-200"
-          >
-            {match.away_team}
-          </label>
+          <span className="text-sm font-black text-white/25">–</span>
 
           <input
             id={`away-score-${match.id}`}
+            aria-label={`Score ${match.away_team}`}
             type="number"
             min="0"
             step="1"
@@ -433,20 +480,18 @@ function MatchResultCard({
             placeholder="0"
             value={awayScore}
             onChange={(e) => setAwayScore(e.target.value)}
-            className="ucl-input text-center text-xl font-black"
+            className="ucl-input !h-11 !w-16 !px-2 text-center text-lg font-black"
           />
         </div>
-      </div>
 
-      <button
-        type="button"
-        onClick={handleSave}
-        className="ucl-button-primary"
-      >
-        {isFinished
-          ? "Uitslag opnieuw opslaan"
-          : "Uitslag opslaan + punten berekenen"}
-      </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          className="min-h-11 rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-black text-black transition active:scale-[0.98]"
+        >
+          {isFinished ? "Bijwerken" : "Opslaan"}
+        </button>
+      </div>
     </article>
   );
 }
