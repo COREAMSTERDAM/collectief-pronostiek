@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "../../src/lib/supabase";
+import MembershipEntryGate from "@/components/membership/MembershipEntryGate";
 
 export default function RegistrerenPage() {
   const [naam, setNaam] = useState("");
@@ -72,7 +73,8 @@ export default function RegistrerenPage() {
   }
 
   return (
-    <main className="ucl-page">
+    <MembershipEntryGate>
+      <main className="ucl-page">
       <div className="ucl-container">
         <section className="ucl-card">
           <img
@@ -191,6 +193,7 @@ export default function RegistrerenPage() {
           </div>
         </section>
       </div>
-    </main>
+      </main>
+    </MembershipEntryGate>
   );
 }

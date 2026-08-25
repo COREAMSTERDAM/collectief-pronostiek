@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/lib/supabase";
+import MembershipEntryGate from "@/components/membership/MembershipEntryGate";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -57,7 +58,8 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="ucl-page">
+    <MembershipEntryGate>
+      <main className="ucl-page">
       <div className="ucl-container">
         <div className="ucl-card">
           <img
@@ -175,6 +177,7 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </main>
+      </main>
+    </MembershipEntryGate>
   );
 }
