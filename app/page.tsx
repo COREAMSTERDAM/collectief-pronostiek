@@ -244,7 +244,7 @@ export default function Home() {
     <NativeTile
       href="/motmpagina"
       title="Man van de Wedstrijd"
-      icon="🟣"
+      icon="🏅"
     />
 
     <NativeTile
