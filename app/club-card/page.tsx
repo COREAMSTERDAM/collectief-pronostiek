@@ -6,6 +6,7 @@ import { supabase } from "@/src/lib/supabase";
 
 type CardBalance = {
   id: string;
+  clubcard_code: string;
   balance: {
     formatted: string;
     amount: number;
@@ -143,6 +144,7 @@ export default function ClubCardPage() {
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-100/60">Club Card {index + 1}</p>
+                      <p className="mt-2 break-all font-mono text-sm font-black tracking-[0.12em] text-emerald-100">{card.clubcard_code}</p>
                       <p className="mt-3 text-5xl font-black tabular-nums text-white sm:text-6xl">{card.balance.formatted}</p>
                     </div>
                     <span className="inline-flex items-center rounded-full border border-emerald-300/25 bg-emerald-400/10 px-3 py-2 text-xs font-black text-emerald-200">● Live opgehaald</span>

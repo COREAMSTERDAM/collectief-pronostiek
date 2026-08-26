@@ -51,7 +51,7 @@ async function fetchCardBalance(card: ClubCardRow) {
 
     if (!response.ok) throw new Error(`EventPay gaf een onverwachte status terug (${response.status}).`);
     const balance = parseBalance(await response.text());
-    return { id: card.id, balance, fetched_at: new Date().toISOString(), source: "eventpay" as const };
+    return { id: card.id, clubcard_code: card.clubcard_code, balance, fetched_at: new Date().toISOString(), source: "eventpay" as const };
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") throw new Error("EventPay reageerde niet op tijd. Probeer straks opnieuw.");
     throw error;
