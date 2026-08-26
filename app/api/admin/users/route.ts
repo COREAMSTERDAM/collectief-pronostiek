@@ -75,8 +75,9 @@ export async function GET(request: NextRequest) {
         ? { data: [], error: null }
         : await supabaseAdmin
             .from("profile_club_cards")
-            .select("user_id, clubcard_code")
-            .in("user_id", userIds);
+            .select("user_id, clubcard_code, created_at")
+            .in("user_id", userIds)
+            .order("created_at", { ascending: true });
 
     if (clubCardsError) {
       throw new Error(
@@ -84,12 +85,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const clubCardsByUserId = new Map(
-      (clubCards ?? []).map((clubCard) => [
-        clubCard.user_id,
-        clubCard.clubcard_code,
-      ]),
-    );
+    const clubCardsByUserId = new Map<string, string>();
+
+    for (const clubCard of clubCards ?? []) {
+      if (!clubCardsByUserId.has(clubCard.user_id)) {
+        clubCardsByUserId.set(
+          clubCard.user_id,
+          clubCard.clubcard_code,
+        );
+      }
+    }
 
     return NextResponse.json({
       users: users.map((user) => {
