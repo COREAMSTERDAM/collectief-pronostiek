@@ -114,7 +114,7 @@ export default function Home() {
           </h1>
 
           <p className="native-welcome-copy">
-            Community, pronostiek, Club Card en
+            Community, pronostiek, Man van de Wedstrijd en
             Iedereen Coach.
           </p>
 
@@ -234,20 +234,18 @@ export default function Home() {
     />
 
     {profile?.is_admin ? (
-      <>
-        <NativeTile
-          href="/community"
-          title="Community"
-          image="/community-logo.png"
-        />
-
-        <NativeTile
-          href="/club-card"
-          title="Club Card"
-          image="/clubcard-logo.png"
-        />
-      </>
+      <NativeTile
+        href="/community"
+        title="Community"
+        image="/community-logo.png"
+      />
     ) : null}
+
+    <NativeTile
+      href="/motmpagina"
+      title="Man van de Wedstrijd"
+      icon="🟣"
+    />
 
     <NativeTile
       href="/iedereencoachkeuze"
