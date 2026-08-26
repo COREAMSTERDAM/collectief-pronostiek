@@ -53,7 +53,12 @@ export default function NativeTile({
 
       <div className="native-tile-copy">
         <p className="native-tile-title">
-          {title}
+          {title.split("\n").map((line, index) => (
+            <span key={`${line}-${index}`}>
+              {index > 0 ? <br /> : null}
+              {line}
+            </span>
+          ))}
         </p>
 
         {subtitle ? (
