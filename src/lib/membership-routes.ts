@@ -31,12 +31,6 @@ export const MEMBERSHIP_ROUTES: MembershipRoute[] = [
     patterns: ["/community", "/community/*"],
   },
   {
-    key: "club-card",
-    title: "Club Card",
-    description: "Club Card en gerelateerde pagina's.",
-    patterns: ["/club-card", "/club-card/*"],
-  },
-  {
     key: "iedereen-coach",
     title: "Iedereen Coach",
     description: "Opstellingen, beoordelingen en coachanalytics.",
