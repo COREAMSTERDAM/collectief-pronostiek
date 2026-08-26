@@ -49,11 +49,11 @@ export default function MembershipRequiredScreen({
           </Link>
 
           <a
-            href={process.env.NEXT_PUBLIC_MEMBERSHIP_SHOP_URL || "/"}
-            className="membership-required-secondary"
-          >
-            Bekijk lidmaatschappen
-          </a>
+  href="https://collectiefwitenzwet.be/shop/"
+  className="membership-required-secondary"
+>
+  Bekijk lidmaatschappen
+</a>
         </div>
       </section>
     </main>
