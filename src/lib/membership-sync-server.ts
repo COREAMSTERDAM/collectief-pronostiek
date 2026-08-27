@@ -134,8 +134,9 @@ export async function syncRuaUser(snapshot: RuaUserSnapshot) {
 
   const now = new Date().toISOString();
 
-  // WordPress / Restrict User Access is de bron van waarheid.
-  // Eerst zetten we ALLE betaalde app-memberships van deze gebruiker uit.
+  // WordPress / Restrict User Access beheert alleen memberships met bron wordpress_rua.
+  // Handmatige admin-memberships (admin_manual) worden nooit door de sync gewijzigd.
+  // Eerst zetten we de betaalde WordPress-memberships van deze gebruiker uit.
   // Daarna activeren we alleen de White/Black-levels die WordPress NU doorgeeft.
   //
   // Gevolg:
@@ -151,6 +152,7 @@ export async function syncRuaUser(snapshot: RuaUserSnapshot) {
       updated_at: now,
     })
     .eq("user_id", profile.id)
+    .eq("source", "wordpress_rua")
     .in("membership_level_key", ["white_member", "black_member"]);
 
   if (resetError) {

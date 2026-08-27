@@ -15,11 +15,17 @@ type AdminUser = {
   created_at: string;
   clubcard_code: string | null;
   clubcard_top_up_url: string | null;
+  membership_level_key: "guest" | "white_member" | "black_member";
+  membership_source: string;
+  membership_starts_at: string | null;
+  membership_expires_at: string | null;
 };
 
 type EditingState = {
   name: string;
   email: string;
+  membership_level_key: "guest" | "white_member" | "black_member";
+  membership_starts_at: string;
 };
 
 async function getAccessToken() {
@@ -90,6 +96,10 @@ export default function AdminUsersPage() {
             {
               name: user.name,
               email: user.email,
+              membership_level_key: user.membership_level_key,
+              membership_starts_at: user.membership_starts_at
+                ? user.membership_starts_at.slice(0, 10)
+                : new Date().toISOString().slice(0, 10),
             },
           ]),
         ),
@@ -162,6 +172,8 @@ export default function AdminUsersPage() {
         body: JSON.stringify({
           name: values.name,
           email: values.email,
+          membership_level_key: values.membership_level_key,
+          membership_starts_at: values.membership_starts_at,
         }),
       });
 
@@ -184,6 +196,38 @@ export default function AdminUsersPage() {
           ? error.message
           : "Gebruiker aanpassen mislukt.",
       );
+    } finally {
+      setBusyUserId(null);
+    }
+  }
+
+  async function deleteUser(user: AdminUser) {
+    if (user.is_admin) {
+      setErrorMessage("Administratoraccounts kunnen niet verwijderd worden.");
+      return;
+    }
+    if (busyUserId) return;
+
+    const confirmed = window.confirm(
+      `Gebruiker ${user.name || user.email} volledig verwijderen? Dit verwijdert ook alle gekoppelde appgegevens en kan niet ongedaan gemaakt worden.`,
+    );
+    if (!confirmed) return;
+
+    try {
+      setBusyUserId(user.id);
+      setErrorMessage("");
+      setSuccessMessage("");
+      const token = await getAccessToken();
+      const response = await fetch(`/api/admin/users/${user.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = (await response.json()) as { error?: string; message?: string };
+      if (!response.ok) throw new Error(result.error ?? "Gebruiker verwijderen mislukt.");
+      setSuccessMessage(result.message ?? "Gebruiker verwijderd.");
+      await loadUsers();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Gebruiker verwijderen mislukt.");
     } finally {
       setBusyUserId(null);
     }
@@ -323,6 +367,10 @@ export default function AdminUsersPage() {
               const values = editing[user.id] ?? {
                 name: user.name,
                 email: user.email,
+                membership_level_key: user.membership_level_key,
+                membership_starts_at: user.membership_starts_at
+                  ? user.membership_starts_at.slice(0, 10)
+                  : new Date().toISOString().slice(0, 10),
               };
               const busy = busyUserId === user.id;
               const locked = user.is_admin;
@@ -418,6 +466,57 @@ export default function AdminUsersPage() {
                     </p>
                   </div>
 
+                  {!locked ? (
+                    <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+                      <div className="flex flex-col gap-4 md:flex-row md:items-end">
+                        <label className="flex-1">
+                          <span className="text-xs font-black uppercase tracking-wide text-white/40">
+                            Lidmaatschap
+                          </span>
+                          <select
+                            value={values.membership_level_key}
+                            disabled={busy}
+                            onChange={(event) =>
+                              updateEditing(user.id, {
+                                membership_level_key: event.target.value as EditingState["membership_level_key"],
+                              })
+                            }
+                            className="ucl-input mt-2"
+                          >
+                            <option value="guest">Gast</option>
+                            <option value="white_member">White Member</option>
+                            <option value="black_member">Black Member</option>
+                          </select>
+                        </label>
+
+                        <label className="flex-1">
+                          <span className="text-xs font-black uppercase tracking-wide text-white/40">
+                            Startdatum
+                          </span>
+                          <input
+                            type="date"
+                            value={values.membership_starts_at}
+                            disabled={busy}
+                            onChange={(event) =>
+                              updateEditing(user.id, { membership_starts_at: event.target.value })
+                            }
+                            className="ucl-input mt-2"
+                          />
+                        </label>
+                      </div>
+
+                      <p className="mt-3 text-xs leading-5 text-white/40">
+                        Huidige bron: {user.membership_source === "admin_manual" ? "Handmatig door admin" : user.membership_source === "wordpress_rua" ? "WordPress sync" : "Gast/fallback"}.
+                        {user.membership_source === "admin_manual" ? " Deze handmatige keuze wordt niet overschreven door WordPress-sync." : " Opslaan maakt dit een handmatige admin-keuze."}
+                      </p>
+                      {user.membership_expires_at ? (
+                        <p className="mt-1 text-xs font-bold text-white/55">
+                          Geldig tot {formatDate(user.membership_expires_at)}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+
                   <div className="mt-4 rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.06] p-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
@@ -470,7 +569,7 @@ export default function AdminUsersPage() {
                   </div>
 
                   {!locked ? (
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
                       <button
                         type="button"
                         disabled={Boolean(busyUserId)}
@@ -487,6 +586,15 @@ export default function AdminUsersPage() {
                         className="ucl-button-secondary disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         🔐 Wachtwoord-resetmail
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={Boolean(busyUserId)}
+                        onClick={() => void deleteUser(user)}
+                        className="rounded-2xl border border-red-400/25 bg-red-400/10 px-5 py-3 text-sm font-black text-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        {busy ? "Bezig…" : "🗑️ Gebruiker verwijderen"}
                       </button>
                     </div>
                   ) : null}

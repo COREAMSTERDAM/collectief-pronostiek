@@ -85,6 +85,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
+
+    const { data: memberships, error: membershipsError } =
+      userIds.length === 0
+        ? { data: [], error: null }
+        : await supabaseAdmin
+            .from("user_memberships")
+            .select("user_id, membership_level_key, source, starts_at, expires_at, active")
+            .in("user_id", userIds)
+            .eq("active", true);
+
+    if (membershipsError) {
+      throw new Error(
+        `Lidmaatschappen ophalen mislukt: ${membershipsError.message}`,
+      );
+    }
+
+    const priority: Record<string, number> = { guest: 0, white_member: 1, black_member: 2 };
+    const membershipsByUserId = new Map<string, any>();
+    for (const row of memberships ?? []) {
+      if (row.expires_at && new Date(row.expires_at).getTime() <= Date.now()) continue;
+      const current = membershipsByUserId.get(row.user_id);
+      if (!current || row.source === "admin_manual" || (current.source !== "admin_manual" && (priority[row.membership_level_key] ?? -1) > (priority[current.membership_level_key] ?? -1))) {
+        membershipsByUserId.set(row.user_id, row);
+      }
+    }
+
     const clubCardsByUserId = new Map<string, string>();
 
     for (const clubCard of clubCards ?? []) {
@@ -103,6 +129,8 @@ export async function GET(request: NextRequest) {
         const clubcardCode =
           clubCardsByUserId.get(user.id) ?? null;
 
+        const membership = membershipsByUserId.get(user.id) ?? null;
+
         return {
           id: user.id,
           email: user.email ?? "",
@@ -118,6 +146,10 @@ export async function GET(request: NextRequest) {
                 clubcardCode,
               )}/wallet`
             : null,
+          membership_level_key: membership?.membership_level_key ?? "guest",
+          membership_source: membership?.source ?? "fallback",
+          membership_starts_at: membership?.starts_at ?? null,
+          membership_expires_at: membership?.expires_at ?? null,
         };
       }),
       page,
