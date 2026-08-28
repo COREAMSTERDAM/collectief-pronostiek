@@ -118,6 +118,50 @@ function cleanGoogleNewsTitle(title: string, source: ClubNewsSource) {
 
 
 
+
+async function fetchPublisherOgImage(url: string, expectedDomain: string) {
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      redirect: "follow",
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (compatible; CollectiefWitEnZwetNewsBot/1.0; +https://app.collectiefwitenzwet.be)",
+        accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
+      },
+    });
+
+    if (!response.ok) return null;
+
+    const finalHost = new URL(response.url).hostname.replace(/^www\./, "").toLowerCase();
+    const wantedHost = expectedDomain.replace(/^www\./, "").toLowerCase();
+
+    // Alleen metadata van de echte uitgeverssite gebruiken.
+    // Zo vermijden we generieke Google News-afbeeldingen.
+    if (!(finalHost === wantedHost || finalHost.endsWith(`.${wantedHost}`))) {
+      return null;
+    }
+
+    const html = await response.text();
+    const rawImage =
+      html.match(/<meta[^>]+property=["']og:image(?::secure_url)?["'][^>]+content=["']([^"']+)["']/i)?.[1] ??
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image(?::secure_url)?["']/i)?.[1];
+
+    if (!rawImage) return null;
+
+    const imageUrl = new URL(decodeEntities(rawImage), response.url);
+    const imageHost = imageUrl.hostname.toLowerCase();
+
+    if (imageHost.includes("google") || imageHost.includes("gstatic")) {
+      return null;
+    }
+
+    return imageUrl.toString();
+  } catch {
+    return null;
+  }
+}
+
 async function fetchXml(url: string, errorLabel: string) {
   const response = await fetch(url, {
     cache: "no-store",
@@ -181,16 +225,24 @@ async function fetchPublisherNews(
         title,
         excerpt: description ? description.slice(0, 500) : null,
         category: SOURCE_LABELS[source],
-        // Externe nieuwsbronnen gebruiken in de UI altijd een vast lokaal bronlogo.
-        // Zo vermijden we onbetrouwbare Google-/artikelafbeeldingen en extra requests.
-        image_url: null,
+        image_url: extractImage(block),
         published_at: toIsoDate(pick(block, "pubDate")),
         matched_keyword: matchedKeyword,
       };
     })
     .filter((item) => item.source_url && item.title && item.matched_keyword);
 
-  return parsed;
+  const enriched = await Promise.all(
+    parsed.map(async (item, index) => {
+      // Beperk externe page-fetches om de 15-minutencron licht te houden.
+      if (item.image_url || index >= 12) return item;
+
+      const imageUrl = await fetchPublisherOgImage(item.source_url, domain);
+      return imageUrl ? { ...item, image_url: imageUrl } : item;
+    }),
+  );
+
+  return enriched;
 }
 
 export async function fetchHlnNews() {
