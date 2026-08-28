@@ -54,15 +54,25 @@ export default function ClubNieuwsAdminPage() {
 
   useEffect(() => {
     let active = true;
+
     (async () => {
       try {
-        await sync(true);
+        await load();
+      } catch (error) {
+        if (active) {
+          setMessage(
+            error instanceof Error ? error.message : "Nieuws laden mislukt.",
+          );
+        }
       } finally {
         if (active) setLoading(false);
       }
     })();
-    return () => { active = false; };
-  }, [sync]);
+
+    return () => {
+      active = false;
+    };
+  }, [load]);
 
   return (
     <main className="ucl-page">
@@ -71,7 +81,7 @@ export default function ClubNieuwsAdminPage() {
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500">Admin preview</p>
             <h1 className="mt-1 text-3xl font-black">Clubnieuws</h1>
-            <p className="mt-2 text-zinc-500">Automatisch ingelezen van eendracht-aalst-lede.be. Voorlopig alleen voor admins.</p>
+            <p className="mt-2 text-zinc-500">Automatisch ingelezen van eendracht-aalst-lede.be. De feed wordt elke 15 minuten gecontroleerd. Voorlopig alleen voor admins.</p>
           </div>
           <button
             type="button"
