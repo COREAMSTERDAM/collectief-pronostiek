@@ -89,9 +89,20 @@ export default function ClubNieuwsAdminPage() {
           {loading ? <p>Nieuws laden…</p> : null}
           {!loading && !items.length ? <p>Er zijn nog geen nieuwsberichten geïmporteerd.</p> : null}
           {items.map((item) => (
-            <article key={item.id} className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm sm:grid sm:grid-cols-[180px_1fr]">
+            <a
+              key={item.id}
+              href={item.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Lees artikel: ${item.title}`}
+              className="group block overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 sm:grid sm:grid-cols-[180px_1fr]"
+            >
               {item.image_url ? (
-                <img src={item.image_url} alt="" className="h-44 w-full object-cover sm:h-full" />
+                <img
+                  src={item.image_url}
+                  alt=""
+                  className="h-44 w-full object-cover transition duration-200 group-hover:scale-[1.02] sm:h-full"
+                />
               ) : (
                 <div className="flex h-32 items-center justify-center bg-zinc-100 text-4xl sm:h-full">📰</div>
               )}
@@ -100,11 +111,13 @@ export default function ClubNieuwsAdminPage() {
                   {item.category ? <span>{item.category}</span> : null}
                   {item.published_at ? <span>· {new Intl.DateTimeFormat("nl-BE", { day: "numeric", month: "long", year: "numeric" }).format(new Date(item.published_at))}</span> : null}
                 </div>
-                <h2 className="mt-2 text-xl font-black">{item.title}</h2>
+                <h2 className="mt-2 text-xl font-black group-hover:underline">{item.title}</h2>
                 {item.excerpt ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-zinc-600">{item.excerpt}</p> : null}
-                <a href={item.source_url} target="_blank" rel="noreferrer" className="mt-4 inline-flex font-bold underline">Lees origineel artikel</a>
+                <span className="mt-4 inline-flex items-center gap-1 font-bold underline underline-offset-4">
+                  Lees artikel <span aria-hidden="true">→</span>
+                </span>
               </div>
-            </article>
+            </a>
           ))}
         </section>
 
