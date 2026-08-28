@@ -27,8 +27,8 @@ const SOURCE_LABELS: Record<NewsSource, string> = {
 
 
 const SOURCE_IMAGES: Partial<Record<NewsSource, string>> = {
-  hln: "/news-sources/hln.svg",
-  nieuwsblad: "/news-sources/nieuwsblad.svg",
+  hln: "/news-sources/hln.png",
+  nieuwsblad: "/news-sources/nieuwsblad.png",
 };
 
 const FILTERS: Array<{ value: NewsFilter; label: string }> = [
@@ -151,7 +151,7 @@ export default function ClubNieuwsAdminPage() {
           <p className="mt-4 rounded-xl bg-zinc-100 p-3 text-sm">{message}</p>
         ) : null}
 
-        <div className="mt-6 flex gap-2 overflow-x-auto pb-1">
+        <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-4">
           {FILTERS.map((item) => {
             const active = filter === item.value;
             return (
@@ -159,7 +159,7 @@ export default function ClubNieuwsAdminPage() {
                 key={item.value}
                 type="button"
                 onClick={() => setFilter(item.value)}
-                className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm font-bold transition ${
+                className={`w-full rounded-xl border px-4 py-3 text-left text-sm font-bold transition sm:text-center ${
                   active
                     ? "border-black bg-black text-white"
                     : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400"
