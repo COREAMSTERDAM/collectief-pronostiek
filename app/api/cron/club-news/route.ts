@@ -10,7 +10,12 @@ function isAuthorizedCron(request: NextRequest) {
   if (!secret) return false;
 
   const authorization = request.headers.get("authorization");
-  return authorization === `Bearer ${secret}`;
+  const cronSecret = request.headers.get("x-cron-secret");
+
+  return (
+    authorization === `Bearer ${secret}` ||
+    cronSecret === secret
+  );
 }
 
 export async function GET(request: NextRequest) {
@@ -36,13 +41,20 @@ export async function GET(request: NextRequest) {
       if (error) throw new Error(error.message);
     }
 
-    return NextResponse.json({
-      ok: true,
-      checked: result.items.length,
-      counts: result.counts,
-      source_errors: result.errors,
-      checked_at: new Date().toISOString(),
-    });
+    return NextResponse.json(
+      {
+        ok: true,
+        checked: result.items.length,
+        counts: result.counts,
+        source_errors: result.errors,
+        checked_at: new Date().toISOString(),
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      },
+    );
   } catch (error) {
     return NextResponse.json(
       {
