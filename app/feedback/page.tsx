@@ -240,7 +240,7 @@ export default function FeedbackPage() {
           <label className="mt-5 block">
             <span className="text-sm font-black text-white">
               Beschrijving
-            </span>a
+            </span>
 
             <textarea
               rows={8}
