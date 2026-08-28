@@ -72,6 +72,16 @@ export default function AdminKeuzePage() {
   accent="rose"
 />
           <HubCard
+            href="/admin/clubnieuws"
+            icon="📰"
+            eyebrow="Content"
+            title="Clubnieuws"
+            description="Preview en synchroniseer automatisch nieuws van de clubwebsite. Voorlopig alleen zichtbaar voor admins."
+            action="Open clubnieuws"
+            accent="emerald"
+          />
+
+          <HubCard
             href="/admin/lidmaatschappen"
             icon="🎟️"
             eyebrow="Toegang"
