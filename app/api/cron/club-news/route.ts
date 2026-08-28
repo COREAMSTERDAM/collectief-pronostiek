@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchClubNewsFeed } from "@/src/lib/club-news";
+import { fetchAllClubNewsSources } from "@/src/lib/club-news";
 import { getSupabaseAdmin } from "@/src/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
@@ -7,7 +7,6 @@ export const maxDuration = 60;
 
 function isAuthorizedCron(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
-
   if (!secret) return false;
 
   const authorization = request.headers.get("authorization");
@@ -20,14 +19,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const items = await fetchClubNewsFeed();
+    const result = await fetchAllClubNewsSources();
     const supabaseAdmin = getSupabaseAdmin();
 
-    if (items.length) {
+    if (result.items.length) {
       const { error } = await supabaseAdmin
         .from("club_news")
         .upsert(
-          items.map((item) => ({
+          result.items.map((item) => ({
             ...item,
             imported_at: new Date().toISOString(),
           })),
@@ -39,7 +38,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      checked: items.length,
+      checked: result.items.length,
+      counts: result.counts,
+      source_errors: result.errors,
       checked_at: new Date().toISOString(),
     });
   } catch (error) {
