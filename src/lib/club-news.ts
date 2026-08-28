@@ -117,36 +117,6 @@ function cleanGoogleNewsTitle(title: string, source: ClubNewsSource) {
 }
 
 
-async function fetchArticleImage(url: string) {
-  try {
-    const response = await fetch(url, {
-      cache: "no-store",
-      redirect: "follow",
-      headers: {
-        "user-agent":
-          "Mozilla/5.0 (compatible; CollectiefWitEnZwetNewsBot/1.0; +https://app.collectiefwitenzwet.be)",
-        accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
-      },
-    });
-
-    if (!response.ok) return null;
-
-    const html = await response.text();
-    const candidates = [
-      html.match(/<meta[^>]+property=["']og:image(?::secure_url)?["'][^>]+content=["']([^"']+)["']/i)?.[1],
-      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image(?::secure_url)?["']/i)?.[1],
-      html.match(/<meta[^>]+name=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["']/i)?.[1],
-      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image(?::src)?["']/i)?.[1],
-    ].filter(Boolean) as string[];
-
-    const image = candidates[0];
-    if (!image) return null;
-
-    return new URL(decodeEntities(image), response.url).toString();
-  } catch {
-    return null;
-  }
-}
 
 async function fetchXml(url: string, errorLabel: string) {
   const response = await fetch(url, {
@@ -211,26 +181,16 @@ async function fetchPublisherNews(
         title,
         excerpt: description ? description.slice(0, 500) : null,
         category: SOURCE_LABELS[source],
-        image_url: extractImage(block),
+        // Externe nieuwsbronnen gebruiken in de UI altijd een vast lokaal bronlogo.
+        // Zo vermijden we onbetrouwbare Google-/artikelafbeeldingen en extra requests.
+        image_url: null,
         published_at: toIsoDate(pick(block, "pubDate")),
         matched_keyword: matchedKeyword,
       };
     })
     .filter((item) => item.source_url && item.title && item.matched_keyword);
 
-  // Google News RSS bevat voor uitgevers vaak geen afbeelding.
-  // Verrijk alleen de eerste relevante items zonder afbeelding met og:image/twitter:image
-  // van de uiteindelijke artikelpagina. Dit houdt de 15-minuten sync licht.
-  const enriched = await Promise.all(
-    parsed.map(async (item, index) => {
-      if (item.image_url || index >= 12) return item;
-
-      const imageUrl = await fetchArticleImage(item.source_url);
-      return imageUrl ? { ...item, image_url: imageUrl } : item;
-    }),
-  );
-
-  return enriched;
+  return parsed;
 }
 
 export async function fetchHlnNews() {

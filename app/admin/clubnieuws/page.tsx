@@ -25,6 +25,12 @@ const SOURCE_LABELS: Record<NewsSource, string> = {
   nieuwsblad: "Nieuwsblad",
 };
 
+
+const SOURCE_IMAGES: Partial<Record<NewsSource, string>> = {
+  hln: "/news-sources/hln.svg",
+  nieuwsblad: "/news-sources/nieuwsblad.svg",
+};
+
 const FILTERS: Array<{ value: NewsFilter; label: string }> = [
   { value: "all", label: "Alles" },
   { value: "clubwebsite", label: "Clubwebsite" },
@@ -182,12 +188,18 @@ export default function ClubNieuwsAdminPage() {
               aria-label={`Lees artikel: ${item.title}`}
               className="group block overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 sm:grid sm:grid-cols-[180px_1fr]"
             >
-              {item.image_url ? (
-                <img
-                  src={item.image_url}
-                  alt=""
-                  className="h-44 w-full object-cover transition duration-200 group-hover:scale-[1.02] sm:h-full"
-                />
+              {(item.source === "clubwebsite" ? item.image_url : SOURCE_IMAGES[item.source]) ? (
+                <div className={item.source === "clubwebsite" ? "overflow-hidden" : "flex h-44 items-center justify-center bg-zinc-100 p-5 sm:h-full"}>
+                  <img
+                    src={item.source === "clubwebsite" ? item.image_url! : SOURCE_IMAGES[item.source]!}
+                    alt={item.source === "clubwebsite" ? "" : `${SOURCE_LABELS[item.source]} logo`}
+                    className={
+                      item.source === "clubwebsite"
+                        ? "h-44 w-full object-cover transition duration-200 group-hover:scale-[1.02] sm:h-full"
+                        : "max-h-28 w-full object-contain"
+                    }
+                  />
+                </div>
               ) : (
                 <div className="flex h-32 items-center justify-center bg-zinc-100 text-4xl sm:h-full">
                   📰
