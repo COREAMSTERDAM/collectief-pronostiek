@@ -188,7 +188,7 @@ export default function ClubNieuwsAdminPage() {
               aria-label={`Lees artikel: ${item.title}`}
               className="group block overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 sm:grid sm:grid-cols-[180px_1fr]"
             >
-              {item.image_url ? (
+              {item.source === "clubwebsite" && item.image_url ? (
                 <div className="overflow-hidden">
                   <img
                     src={item.image_url}
@@ -202,7 +202,7 @@ export default function ClubNieuwsAdminPage() {
                 </div>
               ) : null}
 
-              <div className={item.image_url || item.source === "clubwebsite" ? "p-5" : "p-5 sm:col-span-2"}>
+              <div className={item.source === "clubwebsite" ? "p-5" : "p-5 sm:col-span-2"}>
                 <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-zinc-500">
                   {item.source !== "clubwebsite" && SOURCE_IMAGES[item.source] ? (
                     <span className="inline-flex h-9 w-24 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 px-2">
