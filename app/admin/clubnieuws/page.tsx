@@ -151,7 +151,7 @@ export default function ClubNieuwsAdminPage() {
           <p className="mt-4 rounded-xl bg-zinc-100 p-3 text-sm">{message}</p>
         ) : null}
 
-        <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-4">
+        <div className="mt-6 grid grid-cols-1 gap-2">
           {FILTERS.map((item) => {
             const active = filter === item.value;
             return (
@@ -159,7 +159,7 @@ export default function ClubNieuwsAdminPage() {
                 key={item.value}
                 type="button"
                 onClick={() => setFilter(item.value)}
-                className={`w-full rounded-xl border px-4 py-3 text-left text-sm font-bold transition sm:text-center ${
+                className={`w-full rounded-xl border px-4 py-3 text-left text-sm font-bold transition ${
                   active
                     ? "border-black bg-black text-white"
                     : "border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400"
@@ -188,26 +188,31 @@ export default function ClubNieuwsAdminPage() {
               aria-label={`Lees artikel: ${item.title}`}
               className="group block overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 sm:grid sm:grid-cols-[180px_1fr]"
             >
-              {(item.source === "clubwebsite" ? item.image_url : SOURCE_IMAGES[item.source]) ? (
-                <div className={item.source === "clubwebsite" ? "overflow-hidden" : "flex h-44 items-center justify-center bg-zinc-100 p-5 sm:h-full"}>
+              {item.source === "clubwebsite" && item.image_url ? (
+                <div className="overflow-hidden">
                   <img
-                    src={item.source === "clubwebsite" ? item.image_url! : SOURCE_IMAGES[item.source]!}
-                    alt={item.source === "clubwebsite" ? "" : `${SOURCE_LABELS[item.source]} logo`}
-                    className={
-                      item.source === "clubwebsite"
-                        ? "h-44 w-full object-cover transition duration-200 group-hover:scale-[1.02] sm:h-full"
-                        : "max-h-28 w-full object-contain"
-                    }
+                    src={item.image_url}
+                    alt=""
+                    className="h-44 w-full object-cover transition duration-200 group-hover:scale-[1.02] sm:h-full"
                   />
                 </div>
-              ) : (
+              ) : item.source === "clubwebsite" ? (
                 <div className="flex h-32 items-center justify-center bg-zinc-100 text-4xl sm:h-full">
                   📰
                 </div>
-              )}
+              ) : null}
 
-              <div className="p-5">
+              <div className={item.source === "clubwebsite" ? "p-5" : "p-5 sm:col-span-2"}>
                 <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-zinc-500">
+                  {item.source !== "clubwebsite" && SOURCE_IMAGES[item.source] ? (
+                    <span className="inline-flex h-9 w-24 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 px-2">
+                      <img
+                        src={SOURCE_IMAGES[item.source]!}
+                        alt={`${SOURCE_LABELS[item.source]} logo`}
+                        className="max-h-7 max-w-full object-contain"
+                      />
+                    </span>
+                  ) : null}
                   <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-zinc-800">
                     {SOURCE_LABELS[item.source] ?? "Nieuws"}
                   </span>
