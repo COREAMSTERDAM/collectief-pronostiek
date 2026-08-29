@@ -3132,12 +3132,56 @@ html[data-theme-mode="light"] .native-tile-subtitle {
 
 /* Admin preview - Matchcenter */
 .matchcenter-preview-page {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   min-height: 100%;
   padding: 14px 14px 26px;
   background:
-    radial-gradient(circle at 90% 0%, rgba(255,255,255,.08), transparent 28%),
-    linear-gradient(180deg, #0a0a0b 0%, #161719 48%, #0d0e10 100%);
+    radial-gradient(circle at 15% -5%, rgba(255,255,255,.08), transparent 24%),
+    radial-gradient(circle at 86% 3%, rgba(255,255,255,.11), transparent 26%),
+    linear-gradient(180deg, #060607 0%, #101113 46%, #0b0c0f 100%);
   color: #fff;
+}
+
+.matchcenter-preview-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,.075), transparent 18%),
+    radial-gradient(circle at 82% 14%, rgba(255,255,255,.06), transparent 20%),
+    linear-gradient(135deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 18%),
+    linear-gradient(155deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,0) 14%),
+    repeating-linear-gradient(
+      125deg,
+      rgba(255,255,255,.045) 0 2px,
+      transparent 2px 18px
+    );
+  opacity: .45;
+}
+
+.matchcenter-preview-page::after {
+  content: "";
+  position: absolute;
+  inset: auto -28% -14% auto;
+  width: 78%;
+  height: 44%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.13) 0%, rgba(255,255,255,.025) 34%, transparent 66%);
+  filter: blur(30px);
+  opacity: .32;
+  transform: rotate(-9deg);
+}
+
+.matchcenter-preview-page > * {
+  position: relative;
+  z-index: 1;
 }
 
 .matchcenter-preview-topbar {
@@ -3218,8 +3262,9 @@ html[data-theme-mode="light"] .native-tile-subtitle {
   border-radius: 22px;
   padding: 16px 15px 18px;
   background:
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,.11), transparent 20%),
     linear-gradient(135deg, rgba(255,255,255,.07), transparent 38%),
-    #050505;
+    linear-gradient(160deg, #050505 0%, #101114 100%);
   color: #fff;
   box-shadow: 0 16px 36px rgba(0,0,0,.32);
 }
