@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import NotificationBadgeButton from "@/components/notifications/NotificationBadgeButton";
+import SponsorCarousel from "@/components/home/SponsorCarousel";
 import { supabase } from "@/src/lib/supabase";
 
 type DashboardProfile = {
@@ -103,6 +104,8 @@ export default function HomePreview() {
           <NotificationBadgeButton label="" className="native-bell-button" />
         </div>
       </header>
+
+      <SponsorCarousel />
 
       <section className="supporters-hub-compact-match" aria-label="Volgende wedstrijd">
         <div className="supporters-hub-compact-match-copy">

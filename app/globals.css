@@ -3425,3 +3425,86 @@ html[data-theme-mode="light"] .native-tile-subtitle {
   .matchcenter-preview-actions a > span { font-size: 21px; }
 }
 
+
+/* Admin preview - sponsor carousel */
+.supporters-hub-sponsor {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.supporters-hub-sponsor > a {
+  display: block;
+}
+
+.supporters-hub-sponsor-banner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 1;
+  max-height: 4.35rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: .95rem;
+  background: rgba(255,255,255,.04);
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+
+.supporters-hub-sponsor-image {
+  object-fit: cover;
+}
+
+.supporters-hub-sponsor-label {
+  position: absolute;
+  top: .3rem;
+  left: .35rem;
+  z-index: 2;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 999px;
+  padding: .14rem .34rem;
+  background: rgba(0,0,0,.56);
+  color: rgba(255,255,255,.72);
+  font-size: .44rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+.supporters-hub-sponsor-dots {
+  position: absolute;
+  right: .55rem;
+  bottom: .34rem;
+  z-index: 3;
+  display: flex;
+  gap: .22rem;
+}
+
+.supporters-hub-sponsor-dots button {
+  width: .32rem;
+  height: .32rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  background: rgba(255,255,255,.38);
+}
+
+.supporters-hub-sponsor-dots button.is-active {
+  width: .82rem;
+  background: #fff;
+}
+
+@media (max-height: 720px) {
+  .supporters-hub-sponsor-banner {
+    max-height: 3.45rem;
+  }
+
+  .supporters-hub-sponsor-label {
+    display: none;
+  }
+}
+
+@media (max-height: 640px) {
+  .supporters-hub-sponsor-banner {
+    max-height: 2.85rem;
+    border-radius: .72rem;
+  }
+}
