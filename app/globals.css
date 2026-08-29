@@ -3440,7 +3440,7 @@ html[data-theme-mode="light"] .native-tile-subtitle {
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 1;
-  max-height: 4.35rem;
+  max-height: 5.5rem;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.1);
   border-radius: .95rem;
@@ -3494,7 +3494,7 @@ html[data-theme-mode="light"] .native-tile-subtitle {
 
 @media (max-height: 720px) {
   .supporters-hub-sponsor-banner {
-    max-height: 3.45rem;
+    max-height: 4.6rem;
   }
 
   .supporters-hub-sponsor-label {
@@ -3504,7 +3504,7 @@ html[data-theme-mode="light"] .native-tile-subtitle {
 
 @media (max-height: 640px) {
   .supporters-hub-sponsor-banner {
-    max-height: 2.85rem;
+    max-height: 3.8rem;
     border-radius: .72rem;
   }
 }
