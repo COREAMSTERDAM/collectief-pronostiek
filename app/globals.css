@@ -2831,3 +2831,246 @@ html[data-theme-mode="light"] .native-tile-subtitle {
     grid-template-columns: 1fr;
   }
 }
+
+/* Supportershub preview — one-screen mobile dashboard -------------------- */
+.supporters-hub-preview-compact {
+  display: flex;
+  min-height: 0;
+  height: 100dvh;
+  max-width: 34rem;
+  flex-direction: column;
+  gap: 0.55rem;
+  overflow: hidden;
+  padding: max(0.7rem, env(safe-area-inset-top)) 0.8rem calc(5.85rem + env(safe-area-inset-bottom));
+}
+
+.supporters-hub-compact-header {
+  display: flex;
+  min-height: 2.8rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.supporters-hub-compact-greeting {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.supporters-hub-compact-name {
+  margin-top: 0.16rem;
+  overflow: hidden;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.supporters-hub-compact-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.supporters-hub-compact-header-actions .native-profile-logo,
+.supporters-hub-compact-header-actions .native-bell-button {
+  width: 2.35rem;
+  height: 2.35rem;
+  min-width: 2.35rem;
+}
+
+.supporters-hub-compact-match {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 5.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.15rem;
+  padding: 0.7rem 0.75rem;
+  background:
+    radial-gradient(circle at 92% 5%, rgba(46, 230, 138, 0.18), transparent 8rem),
+    rgba(255, 255, 255, 0.045);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.22);
+}
+
+.supporters-hub-compact-match-copy {
+  min-width: 0;
+}
+
+.supporters-hub-compact-eyebrow {
+  margin-bottom: 0.28rem;
+  color: var(--native-accent);
+  font-size: 0.6rem;
+  font-weight: 950;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.supporters-hub-compact-match h2 {
+  overflow: hidden;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.supporters-hub-compact-match p:not(.supporters-hub-compact-eyebrow) {
+  margin-top: 0.22rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.supporters-hub-compact-match-button {
+  display: inline-flex;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 0.82rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--native-accent);
+  color: #020202;
+  font-size: 0.68rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.supporters-hub-compact-grid {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.supporters-hub-compact-tile {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 1rem;
+  padding: 0.55rem 0.65rem;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+.supporters-hub-compact-tile:active,
+.supporters-hub-compact-pill:active,
+.supporters-hub-compact-match-button:active {
+  transform: scale(0.975);
+}
+
+.supporters-hub-compact-tile-icon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: 0 0 2.25rem;
+  place-items: center;
+  border-radius: 0.72rem;
+  background: rgba(46, 230, 138, 0.09);
+  font-size: 1rem;
+}
+
+.supporters-hub-compact-tile-title {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.73rem;
+  font-weight: 900;
+  line-height: 1.08;
+}
+
+.supporters-hub-compact-actions {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.supporters-hub-compact-pill {
+  display: flex;
+  min-width: 0;
+  min-height: 2.45rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 0.85rem;
+  padding: 0.4rem 0.35rem;
+  background: rgba(255, 255, 255, 0.032);
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.61rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+@media (max-height: 720px) {
+  .supporters-hub-preview-compact {
+    gap: 0.4rem;
+    padding-top: max(0.45rem, env(safe-area-inset-top));
+  }
+
+  .supporters-hub-compact-header {
+    min-height: 2.45rem;
+  }
+
+  .supporters-hub-compact-header-actions .native-profile-logo,
+  .supporters-hub-compact-header-actions .native-bell-button {
+    width: 2.05rem;
+    height: 2.05rem;
+    min-width: 2.05rem;
+  }
+
+  .supporters-hub-compact-name {
+    font-size: 1.08rem;
+  }
+
+  .supporters-hub-compact-match {
+    min-height: 4.5rem;
+    padding-block: 0.55rem;
+  }
+
+  .supporters-hub-compact-tile {
+    padding-block: 0.4rem;
+  }
+
+  .supporters-hub-compact-tile-icon {
+    width: 1.95rem;
+    height: 1.95rem;
+    flex-basis: 1.95rem;
+    font-size: 0.88rem;
+  }
+
+  .supporters-hub-compact-pill {
+    min-height: 2.1rem;
+  }
+}
+
+@media (max-height: 640px) {
+  .supporters-hub-compact-greeting,
+  .supporters-hub-compact-match p:not(.supporters-hub-compact-eyebrow) {
+    display: none;
+  }
+
+  .supporters-hub-compact-match {
+    min-height: 3.9rem;
+  }
+
+  .supporters-hub-compact-tile-title {
+    font-size: 0.67rem;
+  }
+}
