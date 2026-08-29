@@ -3074,3 +3074,58 @@ html[data-theme-mode="light"] .native-tile-subtitle {
     font-size: 0.67rem;
   }
 }
+
+/* Preview v2 — smaller dashboard tiles */
+.supporters-hub-preview-compact {
+  gap: 0.42rem;
+}
+
+.supporters-hub-compact-grid {
+  flex: 0 0 auto;
+  grid-template-rows: repeat(3, 3.45rem);
+  gap: 0.4rem;
+}
+
+.supporters-hub-compact-tile {
+  border-radius: 0.82rem;
+  padding: 0.38rem 0.5rem;
+  gap: 0.45rem;
+}
+
+.supporters-hub-compact-tile-icon {
+  width: 1.8rem;
+  height: 1.8rem;
+  flex-basis: 1.8rem;
+  border-radius: 0.58rem;
+  font-size: 0.82rem;
+}
+
+.supporters-hub-compact-tile-title {
+  font-size: 0.66rem;
+  line-height: 1.02;
+}
+
+.supporters-hub-compact-actions {
+  margin-top: 0.05rem;
+}
+
+@media (max-height: 720px) {
+  .supporters-hub-compact-grid {
+    grid-template-rows: repeat(3, 3.1rem);
+  }
+
+  .supporters-hub-compact-tile {
+    padding: 0.3rem 0.45rem;
+  }
+
+  .supporters-hub-compact-tile-icon {
+    width: 1.65rem;
+    height: 1.65rem;
+    flex-basis: 1.65rem;
+    font-size: 0.76rem;
+  }
+
+  .supporters-hub-compact-tile-title {
+    font-size: 0.62rem;
+  }
+}
