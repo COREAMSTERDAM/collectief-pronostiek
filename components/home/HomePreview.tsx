@@ -125,8 +125,8 @@ export default function HomePreview() {
         </div>
 
         {nextMatch ? (
-          <Link href="/pronostiekpagina" className="supporters-hub-compact-match-button">
-            Pronostiek <span aria-hidden="true">›</span>
+          <Link href="/matchcenter-preview" className="supporters-hub-compact-match-button">
+            Matchcenter <span aria-hidden="true">›</span>
           </Link>
         ) : null}
       </section>

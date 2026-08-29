@@ -3129,3 +3129,101 @@ html[data-theme-mode="light"] .native-tile-subtitle {
     font-size: 0.62rem;
   }
 }
+
+/* Admin preview - Matchcenter */
+.matchcenter-preview-page {
+  min-height: 100%;
+  padding: 14px 14px 24px;
+  background: #f4f4f5;
+  color: #111;
+}
+
+.matchcenter-preview-topbar {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.matchcenter-preview-topbar p {
+  margin: 0 0 2px;
+  color: #71717a;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.matchcenter-preview-topbar h1 { margin: 0; font-size: 22px; font-weight: 900; }
+.matchcenter-preview-back {
+  display: grid; place-items: center; width: 40px; height: 40px;
+  border-radius: 13px; background: #fff; border: 1px solid #e4e4e7;
+  font-size: 28px; line-height: 1; box-shadow: 0 4px 16px rgba(0,0,0,.05);
+}
+.matchcenter-preview-badge {
+  border-radius: 999px; padding: 6px 9px; background: #111; color: #fff;
+  font-size: 9px; font-weight: 900; letter-spacing: .12em;
+}
+
+.matchcenter-preview-selector {
+  display: grid; gap: 5px; margin-bottom: 10px; font-size: 11px; font-weight: 800; color: #71717a;
+}
+.matchcenter-preview-selector select {
+  width: 100%; border: 1px solid #e4e4e7; background: #fff; color: #111;
+  border-radius: 12px; padding: 9px 11px; font-size: 13px; font-weight: 700;
+}
+
+.matchcenter-preview-hero {
+  border-radius: 20px; padding: 14px; background: #111; color: #fff;
+  box-shadow: 0 12px 28px rgba(0,0,0,.15);
+}
+.matchcenter-preview-status-row {
+  display: flex; justify-content: space-between; gap: 10px; color: #a1a1aa;
+  font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+}
+.matchcenter-preview-scoreboard {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px;
+  margin-top: 14px; text-align: center;
+}
+.matchcenter-preview-scoreboard strong { font-size: 13px; line-height: 1.15; }
+.matchcenter-preview-score { min-width: 62px; font-size: 24px; font-weight: 950; }
+
+.matchcenter-preview-summary-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 9px;
+}
+.matchcenter-preview-summary-grid article {
+  display: flex; align-items: center; gap: 9px; border: 1px solid #e4e4e7;
+  border-radius: 14px; padding: 10px; background: #fff;
+}
+.matchcenter-preview-summary-icon { font-size: 18px; }
+.matchcenter-preview-summary-grid p { margin: 0; color: #71717a; font-size: 10px; font-weight: 700; }
+.matchcenter-preview-summary-grid strong { display: block; margin-top: 2px; font-size: 12px; }
+
+.matchcenter-preview-actions {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 9px;
+}
+.matchcenter-preview-actions a {
+  min-width: 0; min-height: 84px; display: flex; flex-direction: column; justify-content: center;
+  align-items: center; text-align: center; gap: 2px; border: 1px solid #e4e4e7; border-radius: 15px;
+  background: #fff; padding: 8px 5px; box-shadow: 0 3px 10px rgba(0,0,0,.035);
+}
+.matchcenter-preview-actions a > span { font-size: 19px; line-height: 1; }
+.matchcenter-preview-actions strong { margin-top: 3px; font-size: 11px; font-weight: 900; }
+.matchcenter-preview-actions small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #71717a; font-size: 9px; }
+
+.matchcenter-preview-live-note {
+  margin-top: 9px; border: 1px dashed #d4d4d8; border-radius: 14px; background: #fff; padding: 10px 12px;
+}
+.matchcenter-preview-live-note div { display: flex; align-items: center; gap: 7px; font-size: 11px; }
+.matchcenter-preview-live-note div span { font-size: 8px; }
+.matchcenter-preview-live-note p { margin: 4px 0 0; color: #71717a; font-size: 10px; line-height: 1.35; }
+.matchcenter-preview-loading { margin: 30px auto; max-width: 420px; border-radius: 16px; background: #fff; padding: 20px; text-align: center; font-weight: 700; }
+
+@media (max-height: 700px) {
+  .matchcenter-preview-page { padding-top: 8px; }
+  .matchcenter-preview-hero { padding: 11px 12px; }
+  .matchcenter-preview-scoreboard { margin-top: 9px; }
+  .matchcenter-preview-actions a { min-height: 72px; }
+  .matchcenter-preview-live-note p { display: none; }
+}

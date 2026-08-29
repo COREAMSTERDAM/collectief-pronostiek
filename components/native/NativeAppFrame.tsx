@@ -21,7 +21,7 @@ const FULLSCREEN_PREFIXES = ["/community/"];
 const previewNavigation: NativeNavItem[] = [
   { href: "/", label: "Hub", icon: "⌂" },
   { href: "/admin/clubnieuws", label: "Nieuws", icon: "📰" },
-  { href: "/wedstrijden", label: "Match", icon: "📅" },
+  { href: "/matchcenter-preview", label: "Match", icon: "📅" },
   { href: "/club-card", label: "Club Card", icon: "💳" },
   { href: "/admin-keuze", label: "Beheer", icon: "⚙️" },
 ];
