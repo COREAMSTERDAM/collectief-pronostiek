@@ -2724,3 +2724,110 @@ html[data-theme-mode="light"] .native-tile-subtitle {
   color: rgba(255,255,255,.5);
   font-weight: 800;
 }
+
+/* Admin-only layout preview ------------------------------------------------ */
+.admin-layout-toggle {
+  position: fixed;
+  z-index: 120;
+  left: 50%;
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100vw - 24px);
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.92);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px);
+}
+
+.admin-layout-toggle-label {
+  padding: 0 8px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-layout-toggle button {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.68);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-layout-toggle button.is-active {
+  background: #fff;
+  color: #050505;
+}
+
+.supporters-hub-preview {
+  display: grid;
+  gap: 18px;
+  padding-bottom: 150px;
+}
+
+.supporters-hub-header {
+  align-items: flex-start;
+}
+
+.supporters-hub-preview-tag {
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.supporters-hub-match {
+  display: grid;
+  gap: 14px;
+}
+
+.supporters-hub-match-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.supporters-hub-section {
+  display: grid;
+  gap: 12px;
+}
+
+.supporters-hub-section-heading h2 {
+  margin: 2px 0 0;
+  font-size: clamp(20px, 5vw, 25px);
+  font-weight: 850;
+  letter-spacing: -0.035em;
+}
+
+.supporters-hub-admin-card {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-preview-shell .native-app-background::after {
+  opacity: 0.18;
+}
+
+@media (max-width: 520px) {
+  .admin-layout-toggle {
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .admin-layout-toggle-label {
+    display: none;
+  }
+
+  .supporters-hub-match-actions {
+    grid-template-columns: 1fr;
+  }
+}
