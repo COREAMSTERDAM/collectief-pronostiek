@@ -245,20 +245,8 @@ export default function MatchcenterPreviewPage() {
         <Link href={`/pronostieken/${match.id}`}>
           <span>📊</span><strong>Supporters</strong><small>Pronostieken bekijken</small>
         </Link>
-        <Link href="/community">
-          <span>💬</span><strong>Reacties</strong><small>Naar community</small>
-        </Link>
       </section>
 
-      <section className="matchcenter-preview-live-note">
-        <div>
-          <span aria-hidden="true">●</span>
-          <strong>Wedstrijdverloop</strong>
-        </div>
-        <p>
-          Hier kunnen later live doelpunten, kaarten en wissels samenkomen. De huidige app slaat die gebeurtenissen nog niet apart op.
-        </p>
-      </section>
     </main>
   );
 }
