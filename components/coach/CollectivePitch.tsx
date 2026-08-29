@@ -81,6 +81,13 @@ export default function CollectivePitch({
     (player) => !isSubstitute(player),
   );
 
+  const starterNames = new Set(
+    starters.map((player) =>
+      player.player_name.trim().toLocaleLowerCase("nl-BE").replace(/\s+/g, " "),
+    ),
+  );
+
+  const seenSubstitutes = new Set<string>();
   const substitutes = extendedPlayers
     .filter(isSubstitute)
     .sort((a, b) => {
@@ -94,7 +101,21 @@ export default function CollectivePitch({
         Number.MAX_SAFE_INTEGER;
 
       return aOrder - bOrder;
-    });
+    })
+    .filter((player) => {
+      const normalizedName = player.player_name
+        .trim()
+        .toLocaleLowerCase("nl-BE")
+        .replace(/\s+/g, " ");
+
+      if (starterNames.has(normalizedName) || seenSubstitutes.has(normalizedName)) {
+        return false;
+      }
+
+      seenSubstitutes.add(normalizedName);
+      return true;
+    })
+    .slice(0, 5);
 
   return (
     <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-4 shadow-2xl shadow-black/25 sm:p-6">
