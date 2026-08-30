@@ -225,13 +225,13 @@ export default function ClubPreviewPage() {
                 );
               })}
             </div>
-          ) : <div className="club-preview-empty">Nog geen uitslagen beschikbaar in de gekoppelde bronnen.</div>}
+          ) : <div className="club-preview-empty">Nog geen officiële uitslagen beschikbaar bij Voetbal Vlaanderen / RBFA.</div>}
         </section>
       ) : null}
 
       {data ? (
         <footer className="club-preview-source">
-          Automatisch bijgewerkt · bron: Voetbalexpress · maximaal 1 uur cache
+          Automatisch bijgewerkt · officiële bron: Voetbal Vlaanderen / RBFA · maximaal 15 min cache
         </footer>
       ) : null}
     </main>

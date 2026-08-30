@@ -1,17 +1,30 @@
 import "server-only";
 
-const SOURCE_URL =
-  "https://www.voetbalexpress.be/seizoen2026-2027/herenamateurs2a.html";
-const RESULTS_FALLBACK_URL =
-  "https://footballinfo.net/Leagues/Details/149?season=2026";
+const SERIES_ID = "CHP_136062";
+const GRAPHQL_URL = "https://datalake-prod2018.rbfa.be/graphql";
+const RANKING_URL = `https://www.rbfa.be/nl/competitie/${SERIES_ID}/rangschikking`;
+const CALENDAR_URL = `https://www.rbfa.be/nl/competitie/${SERIES_ID}/kalender`;
+
+const PERSISTED = {
+  GetTeamCalendar: {
+    variable: "teamId",
+    hash: "3f0441e6723b9852b4f0cff2c872f4aa674c5de2d23589efc70c7a4ffb7f6383",
+  },
+  GetSeriesRankings: {
+    variable: "seriesId",
+    hash: "0a53124a9bc8872b686f22d80fd545622dbaf4b27a7596e1207b097b92c87953",
+  },
+} as const;
 
 export type VvaMatch = {
+  id?: string;
   round: number;
   date: string;
   time: string;
   homeTeam: string;
   awayTeam: string;
   score: string | null;
+  state?: string | null;
 };
 
 export type VvaStanding = {
@@ -28,12 +41,46 @@ export type VvaStanding = {
 
 export type VvaClubData = {
   source: string;
+  sourceUrl: string;
   season: string;
   competition: string;
   matches: VvaMatch[];
   standings: VvaStanding[];
   fetchedAt: string;
 };
+
+type JsonRecord = Record<string, unknown>;
+
+function asRecord(value: unknown): JsonRecord | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as JsonRecord)
+    : null;
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function asString(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function asNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && /^-?\d+(?:\.\d+)?$/.test(value.trim())) {
+    return Number(value);
+  }
+  return null;
+}
+
+function firstNumber(record: JsonRecord | null, keys: string[], fallback = 0) {
+  if (!record) return fallback;
+  for (const key of keys) {
+    const value = asNumber(record[key]);
+    if (value !== null) return value;
+  }
+  return fallback;
+}
 
 function decodeHtml(value: string) {
   return value
@@ -50,8 +97,8 @@ function decodeHtml(value: string) {
     .replace(/&ouml;/gi, "ö")
     .replace(/&agrave;/gi, "à")
     .replace(/&egrave;/gi, "è")
-    .replace(/&[a-z]+;/gi, " ")
     .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/&[a-z]+;/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -70,248 +117,295 @@ function normalizeTeam(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
 
-function normalizeKeyTeam(value: string) {
+function normalizeTeamKey(value: string) {
   return normalizeTeam(value)
     .toLowerCase()
-    .replace(/^koninklijke\s+/i, "")
-    .replace(/\b(k\.?)?s\.?(v\.?)?\b/gi, "")
-    .replace(/\bk\.?(v|f|m|s|r|fc|sk)\.?\b/gi, "")
-    .replace(/\bfc\b|\bsk\b/gi, "")
-    .replace(/\s+a$/i, "")
-    .replace(/\s+ii$/i, " b")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\bkoninklijke\b/g, "")
+    .replace(/\b(k|r)\.?\s?(fc|sv|sk|vv|vc|vk)\.?\b/g, "")
+    .replace(/\s+a$/g, "")
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function parseDate(value: string) {
-  const parts = value.split("/").map(Number);
-  if (parts.length < 2) return null;
-  const [day, month, explicitYear] = parts;
-  const year = explicitYear || (month >= 7 ? 2026 : 2027);
-  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+function isVvaSeries(series: JsonRecord | null) {
+  if (!series) return false;
+  const id = asString(series.id);
+  const name = asString(series.name).toLowerCase();
+  return (
+    id === SERIES_ID ||
+    id === SERIES_ID.replace(/^CHP_/, "") ||
+    /2(de|e|nd)\s+afdeling.*(vv|voetb.*vl).*a/.test(name)
+  );
 }
 
-function scoreValue(value: string) {
-  const clean = value.replace(/\s+/g, " ").trim();
-  return /^\d+\s*[-–]\s*\d+$/.test(clean)
-    ? clean.replace(/\s*[–-]\s*/, "-")
-    : null;
-}
-
-function parseMatches(rows: string[][]): VvaMatch[] {
-  const detailed = new Map<string, { time: string; score: string | null }>();
-
-  // Bovenaan staat de actuele speeldag met datum + uur.
-  for (const cells of rows) {
-    if (cells.length < 6) continue;
-    const dateIndex = cells.findIndex((cell) => /^\d{1,2}\/\d{1,2}(?:\/\d{2,4})?$/.test(cell));
-    if (dateIndex < 0 || cells.length < dateIndex + 5) continue;
-
-    const time = cells[dateIndex + 1] ?? "";
-    if (!/^\d{1,2}u\d{2}$/.test(time)) continue;
-
-    const date = parseDate(cells[dateIndex]);
-    const homeTeam = normalizeTeam(cells[dateIndex + 2] ?? "");
-    const awayTeam = normalizeTeam(cells[dateIndex + 4] ?? "");
-    if (!date || !homeTeam || !awayTeam) continue;
-
-    const key = `${date}|${normalizeKeyTeam(homeTeam)}|${normalizeKeyTeam(awayTeam)}`;
-    detailed.set(key, {
-      time,
-      score: scoreValue(cells[dateIndex + 3] ?? ""),
-    });
-  }
-
-  // De volledige kalender staat verder op de pagina in de vorm:
-  // 30/08/2026 | 1 | thuis | - / score | uit | Speeldag
-  const full: VvaMatch[] = [];
-  const seen = new Set<string>();
-
-  for (const cells of rows) {
-    if (cells.length < 5) continue;
-    if (!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(cells[0] ?? "")) continue;
-    if (!/^\d{1,2}$/.test(cells[1] ?? "")) continue;
-
-    const round = Number(cells[1]);
-    if (round < 1 || round > 30) continue;
-
-    const date = parseDate(cells[0]);
-    const homeTeam = normalizeTeam(cells[2] ?? "");
-    const awayTeam = normalizeTeam(cells[4] ?? "");
-    if (!date || !homeTeam || !awayTeam) continue;
-
-    const uniqueKey = `${round}|${normalizeKeyTeam(homeTeam)}|${normalizeKeyTeam(awayTeam)}`;
-    if (seen.has(uniqueKey)) continue;
-    seen.add(uniqueKey);
-
-    const detailedKey = `${date}|${normalizeKeyTeam(homeTeam)}|${normalizeKeyTeam(awayTeam)}`;
-    const detail = detailed.get(detailedKey);
-
-    full.push({
-      round,
-      date,
-      time: detail?.time ?? "",
-      homeTeam,
-      awayTeam,
-      score: scoreValue(cells[3] ?? "") ?? detail?.score ?? null,
-    });
-  }
-
-  full.sort((a, b) => a.round - b.round || a.date.localeCompare(b.date) || a.homeTeam.localeCompare(b.homeTeam));
-  return full;
-}
-
-function parseStandings(rows: string[][]): VvaStanding[] {
-  const candidates: VvaStanding[] = [];
-
-  for (const cells of rows) {
-    if (cells.length < 9) continue;
-    if (!/^\d{1,2}$/.test(cells[0])) continue;
-    if (!cells.slice(2, 9).every((cell) => /^-?\d+$/.test(cell))) continue;
-
-    const position = Number(cells[0]);
-    if (position < 1 || position > 16) continue;
-
-    candidates.push({
-      position,
-      team: normalizeTeam(cells[1]),
-      played: Number(cells[2]),
-      wins: Number(cells[3]),
-      losses: Number(cells[4]),
-      draws: Number(cells[5]),
-      goalsFor: Number(cells[6]),
-      goalsAgainst: Number(cells[7]),
-      points: Number(cells[8]),
-    });
-  }
-
-  for (let start = 0; start <= candidates.length - 16; start += 1) {
-    const block = candidates.slice(start, start + 16);
-    if (block.every((row, index) => row.position === index + 1)) return block;
-  }
-
-  return [];
-}
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-const FOOTBALLINFO_ALIASES: Record<string, string[]> = {
-  "racing club gent": ["KRC Gent", "Racing Club Gent"],
-  "voorde appelterre": ["Voorde Appelterre", "KFC Voorde Appelterre"],
-  "sp petegem deinze": ["Sparta Petegem", "Sp Petegem", "Petegem"],
-  "zulte waregem b": ["Zulte Waregem II", "Zulte-Waregem II", "Zulte Waregem B"],
-  "lebbeke": ["FC Lebbeke"],
-  "oostkamp": ["Oostkamp", "KSV Oostkamp"],
-  "londerzeel": ["Londerzeel", "KSK Londerzeel"],
-  "mechelen b": ["Mechelen II", "KV Mechelen B"],
-  "ho kalken": ["HO Kalken", "KFC HO Kalken"],
-  "oudenaarde": ["Oudenaarde", "KSV Oudenaarde"],
-  "rfc wetteren": ["RFC Wetteren", "Wetteren"],
-  "vw hamme": ["VW Hamme", "KFC VW Hamme"],
-  "eendracht aalst lede": ["Eendracht Aalst", "Eendracht Aalst Lede"],
-  "vk ninove": ["Ninove", "VK Ninove"],
-  "torhout": ["Torhout", "KM Torhout"],
-  "diksmuide oostende": ["Diksmuide", "KV Diksmuide Oostende"],
-};
-
-function aliasesForTeam(team: string) {
-  const key = normalizeKeyTeam(team);
-  const aliases = FOOTBALLINFO_ALIASES[key] ?? [];
-  return Array.from(new Set([normalizeTeam(team), ...aliases]));
-}
-
-/**
- * FootballInfo rendert de fixture/resultaat-lijst niet als klassieke tabel.
- * De zichtbare tekst bevat regels in de vorm:
- *   29 Aug FC Lebbeke 1 – 2 Oostkamp FT
- * Daarom zoeken we per gekende kalenderwedstrijd rechtstreeks in de
- * platte paginatekst. De kalender zelf blijft van Voetbalexpress komen.
- */
-function mergeFootballInfoResults(matches: VvaMatch[], html: string) {
-  const pageText = decodeHtml(html)
-    .replace(/[–—−]/g, "-")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!pageText) return matches;
-
-  return matches.map((match) => {
-    if (match.score) return match;
-
-    const homeAliases = aliasesForTeam(match.homeTeam);
-    const awayAliases = aliasesForTeam(match.awayTeam);
-
-    for (const home of homeAliases) {
-      for (const away of awayAliases) {
-        const homePattern = escapeRegExp(home).replace(/\\ /g, "\\s+");
-        const awayPattern = escapeRegExp(away).replace(/\\ /g, "\\s+");
-
-        // FT is essentieel: zo nemen we geen prognoses, H2H-scores of
-        // andere cijfers op dezelfde pagina als wedstrijduitslag over.
-        const patterns = [
-          new RegExp(`${homePattern}\\s+(\\d{1,2})\\s*-\\s*(\\d{1,2})\\s+${awayPattern}\\s+FT`, "i"),
-          new RegExp(`${homePattern}\\s+(\\d{1,2})\\s+(?:–|—|-)\\s*(\\d{1,2})\\s+${awayPattern}\\s+FT`, "i"),
-        ];
-
-        for (const pattern of patterns) {
-          const found = pageText.match(pattern);
-          if (found) {
-            return { ...match, score: `${Number(found[1])}-${Number(found[2])}` };
-          }
-        }
-      }
-    }
-
-    return match;
+async function fetchPersisted(
+  operation: keyof typeof PERSISTED,
+  value: string | number,
+): Promise<JsonRecord> {
+  const config = PERSISTED[operation];
+  const params = new URLSearchParams({
+    operationName: operation,
+    variables: JSON.stringify({ [config.variable]: String(value), language: "nl" }),
+    extensions: JSON.stringify({
+      persistedQuery: { version: 1, sha256Hash: config.hash },
+    }),
   });
-}
 
-export async function fetchVvaClubData(): Promise<VvaClubData> {
-  const response = await fetch(SOURCE_URL, {
+  const response = await fetch(`${GRAPHQL_URL}?${params.toString()}`, {
     headers: {
-      "user-agent":
-        "Mozilla/5.0 (compatible; CollectiefWitEnZwet/1.0; +https://app.collectiefwitenzwet.be)",
-      accept: "text/html,application/xhtml+xml",
+      accept: "application/json",
+      "user-agent": "CollectiefWitEnZwet/1.0 (+https://app.collectiefwitenzwet.be)",
     },
-    next: { revalidate: 3600 },
+    next: { revalidate: 900 },
   });
 
   if (!response.ok) {
-    throw new Error(`Competitiedata ophalen mislukt (${response.status}).`);
+    throw new Error(`RBFA databron antwoordde met ${response.status}.`);
   }
 
-  const html = await response.text();
+  const json = (await response.json()) as JsonRecord;
+  if (!asRecord(json.data)) {
+    const errors = asArray(json.errors)
+      .map((item) => asString(asRecord(item)?.message))
+      .filter(Boolean)
+      .join("; ");
+    throw new Error(errors || "RBFA databron gaf geen data terug.");
+  }
+
+  return json;
+}
+
+function rankingTeamsFromGraphql(json: JsonRecord) {
+  const data = asRecord(json.data);
+  const seriesRankings = asRecord(data?.seriesRankings);
+  const rankings = asArray(seriesRankings?.rankings);
+  const first = asRecord(rankings[0]);
+  return asArray(first?.teams).map(asRecord).filter(Boolean) as JsonRecord[];
+}
+
+function standingsFromGraphql(teams: JsonRecord[]): VvaStanding[] {
+  return teams
+    .map((team) => ({
+      position: firstNumber(team, ["position", "rank", "ranking"]),
+      team: normalizeTeam(asString(team.name)),
+      played: firstNumber(team, ["played", "matchesPlayed", "gamesPlayed", "matches"]),
+      wins: firstNumber(team, ["wins", "won", "matchesWon"]),
+      draws: firstNumber(team, ["draws", "drawn", "matchesDrawn"]),
+      losses: firstNumber(team, ["losses", "lost", "matchesLost"]),
+      goalsFor: firstNumber(team, ["goalsFor", "goalsScored", "scored", "goalsMade"]),
+      goalsAgainst: firstNumber(team, ["goalsAgainst", "goalsConceded", "conceded"]),
+      points: firstNumber(team, ["points", "pts", "totalPoints"]),
+    }))
+    .filter((row) => row.position > 0 && row.team)
+    .sort((a, b) => a.position - b.position);
+}
+
+function parseOfficialRankingHtml(html: string): VvaStanding[] {
   const rows = rowsFromHtml(html);
-  let matches = parseMatches(rows);
-  const standings = parseStandings(rows);
+  const result: VvaStanding[] = [];
 
-  // Voetbalexpress loopt soms achter met uitslagen. Probeer dan een tweede
-  // publieke bron uitsluitend als score-fallback; kalender/klassement blijven
-  // volledig van Voetbalexpress komen.
-  try {
-    const fallback = await fetch(RESULTS_FALLBACK_URL, {
-      headers: {
-        "user-agent": "Mozilla/5.0 (compatible; CollectiefWitEnZwet/1.0)",
-        accept: "text/html,application/xhtml+xml",
-      },
-      next: { revalidate: 900 },
+  for (const cells of rows) {
+    // Officiële RBFA-tabel: # | Ploeg | PTN | M | W | V | G | + | - | +/- | PTN
+    if (cells.length < 9 || !/^\d{1,2}$/.test(cells[0] ?? "")) continue;
+    const position = Number(cells[0]);
+    if (position < 1 || position > 30) continue;
+
+    const numeric = cells.slice(2).map((cell) => asNumber(cell));
+    if (numeric.filter((value) => value !== null).length < 7) continue;
+
+    result.push({
+      position,
+      team: normalizeTeam(cells[1] ?? ""),
+      points: Number(numeric[0] ?? numeric.at(-1) ?? 0),
+      played: Number(numeric[1] ?? 0),
+      wins: Number(numeric[2] ?? 0),
+      losses: Number(numeric[3] ?? 0),
+      draws: Number(numeric[4] ?? 0),
+      goalsFor: Number(numeric[5] ?? 0),
+      goalsAgainst: Number(numeric[6] ?? 0),
     });
-    if (fallback.ok) {
-      matches = mergeFootballInfoResults(matches, await fallback.text());
-    }
-  } catch {
-    // Geen probleem: de primaire bron blijft bruikbaar.
   }
 
-  if (matches.length < 200) {
-    throw new Error("De volledige kalender kon niet betrouwbaar uit de bron worden gelezen.");
+  return result
+    .filter((row) => row.team)
+    .sort((a, b) => a.position - b.position)
+    .slice(0, 16);
+}
+
+async function fetchOfficialRankingHtml() {
+  const response = await fetch(RANKING_URL, {
+    headers: {
+      accept: "text/html,application/xhtml+xml",
+      "user-agent": "Mozilla/5.0 (compatible; CollectiefWitEnZwet/1.0)",
+    },
+    next: { revalidate: 900 },
+  });
+  return response.ok ? response.text() : "";
+}
+
+type MatchAccumulator = {
+  id: string;
+  startTime: string;
+  homeTeam: string;
+  awayTeam: string;
+  score: string | null;
+  state: string | null;
+  roundHints: number[];
+};
+
+function getCalendarItems(json: JsonRecord) {
+  const data = asRecord(json.data);
+  return asArray(data?.teamCalendar).map(asRecord).filter(Boolean) as JsonRecord[];
+}
+
+function explicitRound(item: JsonRecord): number | null {
+  for (const key of ["round", "matchday", "matchDay", "day", "channel"]) {
+    const value = asNumber(item[key]);
+    if (value !== null && value >= 1 && value <= 30) return Math.trunc(value);
   }
+  const series = asRecord(item.series);
+  if (series) {
+    for (const key of ["round", "matchday", "matchDay", "day"]) {
+      const value = asNumber(series[key]);
+      if (value !== null && value >= 1 && value <= 30) return Math.trunc(value);
+    }
+  }
+  return null;
+}
+
+function itemToMatch(item: JsonRecord) {
+  const home = asRecord(item.homeTeam);
+  const away = asRecord(item.awayTeam);
+  const outcome = asRecord(item.outcome);
+  const series = asRecord(item.series);
+  const id = asString(item.id);
+  const startTime = asString(item.startTime);
+  const homeTeam = normalizeTeam(asString(home?.name));
+  const awayTeam = normalizeTeam(asString(away?.name));
+
+  if (!id || !startTime || !homeTeam || !awayTeam || !isVvaSeries(series)) return null;
+
+  const homeGoals = asNumber(outcome?.homeTeamGoals);
+  const awayGoals = asNumber(outcome?.awayTeamGoals);
 
   return {
-    source: SOURCE_URL,
+    id,
+    startTime,
+    homeTeam,
+    awayTeam,
+    score: homeGoals !== null && awayGoals !== null ? `${homeGoals}-${awayGoals}` : null,
+    state: asString(item.state) || null,
+    explicitRound: explicitRound(item),
+  };
+}
+
+function assignMatchesFromCalendars(calendars: JsonRecord[][]): VvaMatch[] {
+  const matches = new Map<string, MatchAccumulator>();
+
+  for (const calendar of calendars) {
+    const leagueItems = calendar
+      .map(itemToMatch)
+      .filter(Boolean)
+      .sort((a, b) => a!.startTime.localeCompare(b!.startTime)) as NonNullable<ReturnType<typeof itemToMatch>>[];
+
+    leagueItems.forEach((item, index) => {
+      const inferredRound = item.explicitRound ?? index + 1;
+      const existing = matches.get(item.id);
+      if (existing) {
+        existing.roundHints.push(inferredRound);
+        if (!existing.score && item.score) existing.score = item.score;
+        if (!existing.state && item.state) existing.state = item.state;
+        return;
+      }
+
+      matches.set(item.id, {
+        id: item.id,
+        startTime: item.startTime,
+        homeTeam: item.homeTeam,
+        awayTeam: item.awayTeam,
+        score: item.score,
+        state: item.state,
+        roundHints: [inferredRound],
+      });
+    });
+  }
+
+  return [...matches.values()]
+    .map((match) => {
+      const counts = new Map<number, number>();
+      match.roundHints.forEach((value) => counts.set(value, (counts.get(value) ?? 0) + 1));
+      const round = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0]?.[0] ?? 1;
+      const parsed = new Date(match.startTime);
+      const date = Number.isNaN(parsed.getTime())
+        ? match.startTime.slice(0, 10)
+        : `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, "0")}-${String(parsed.getDate()).padStart(2, "0")}`;
+      const time = Number.isNaN(parsed.getTime())
+        ? match.startTime.slice(11, 16)
+        : `${String(parsed.getHours()).padStart(2, "0")}:${String(parsed.getMinutes()).padStart(2, "0")}`;
+
+      return {
+        id: match.id,
+        round,
+        date,
+        time,
+        homeTeam: match.homeTeam,
+        awayTeam: match.awayTeam,
+        score: match.score,
+        state: match.state,
+      } satisfies VvaMatch;
+    })
+    .filter((match) => match.round >= 1 && match.round <= 30)
+    .sort((a, b) => a.round - b.round || a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+}
+
+async function fetchCalendars(teamIds: string[]) {
+  const uniqueIds = [...new Set(teamIds.filter(Boolean))];
+  const results = await Promise.allSettled(
+    uniqueIds.map(async (teamId) => getCalendarItems(await fetchPersisted("GetTeamCalendar", teamId))),
+  );
+
+  const calendars = results
+    .filter((result): result is PromiseFulfilledResult<JsonRecord[]> => result.status === "fulfilled")
+    .map((result) => result.value);
+
+  if (!calendars.length) {
+    throw new Error("De officiële RBFA-kalenders konden niet worden opgehaald.");
+  }
+
+  return calendars;
+}
+
+export async function fetchVvaClubData(): Promise<VvaClubData> {
+  // 1) Officiële rangschikking levert ook de interne RBFA-team-ID's op.
+  const rankingJson = await fetchPersisted("GetSeriesRankings", SERIES_ID);
+  const rankingTeams = rankingTeamsFromGraphql(rankingJson);
+  const teamIds = rankingTeams.map((team) => asString(team.teamId)).filter(Boolean);
+
+  if (teamIds.length < 8) {
+    throw new Error("RBFA gaf onvoldoende ploegen terug voor 2e Afdeling VV A.");
+  }
+
+  // 2) Haal voor elke ploeg de officiële kalender op en dedupliceer op wedstrijd-ID.
+  const calendars = await fetchCalendars(teamIds);
+  const matches = assignMatchesFromCalendars(calendars);
+
+  if (matches.length < 100) {
+    throw new Error("De officiële RBFA-kalender kon niet volledig worden opgebouwd.");
+  }
+
+  // 3) Gebruik officiële ranking-HTML voor de volledige W/G/V/doelpuntenstatistiek.
+  //    Als RBFA die tabel tijdelijk niet rendert, vallen we terug op de GraphQL-data.
+  const rankingHtml = await fetchOfficialRankingHtml();
+  const htmlStandings = rankingHtml ? parseOfficialRankingHtml(rankingHtml) : [];
+  const graphStandings = standingsFromGraphql(rankingTeams);
+  const standings = htmlStandings.length >= 8 ? htmlStandings : graphStandings;
+
+  return {
+    source: "Voetbal Vlaanderen / RBFA",
+    sourceUrl: CALENDAR_URL,
     season: "2026-2027",
     competition: "2e Afdeling VV A",
     matches,
