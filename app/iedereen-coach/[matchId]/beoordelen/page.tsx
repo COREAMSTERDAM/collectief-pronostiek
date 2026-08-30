@@ -32,7 +32,7 @@ function parseRating(value: string) {
   if (!/^\d{1,2}(?:[.,]\d)?$/.test(trimmed)) {
     return {
       value: null,
-      error: "Gebruik één cijfer na de komma, bijvoorbeeld 7,5.",
+      error: "Bijvoorbeeld 7 of 7,5.",
     };
   }
 
