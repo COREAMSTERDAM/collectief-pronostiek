@@ -3508,3 +3508,59 @@ html[data-theme-mode="light"] .native-tile-subtitle {
     border-radius: .72rem;
   }
 }
+
+/* Admin preview - Club / 2e Afdeling VV A */
+.club-preview-page {
+  min-height: 100%;
+  padding: 14px 14px 30px;
+  background:
+    radial-gradient(circle at 88% 0%, rgba(255,255,255,.1), transparent 24%),
+    linear-gradient(180deg, #090a0c 0%, #15171a 48%, #0c0d0f 100%);
+  color: #fff;
+}
+.club-preview-header { display:grid; grid-template-columns:42px 1fr auto; gap:11px; align-items:center; margin-bottom:14px; }
+.club-preview-back { width:42px; height:42px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.07); color:#fff; font-size:29px; }
+.club-preview-header p { margin:0 0 2px; color:#9ca3af; font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.12em; }
+.club-preview-header h1 { margin:0; font-size:23px; line-height:1; font-weight:950; letter-spacing:-.03em; }
+.club-preview-header span { display:block; margin-top:4px; color:#a1a1aa; font-size:11px; font-weight:700; }
+.club-preview-mark { width:42px; height:42px; display:grid; place-items:center; border-radius:13px; background:#fff; color:#080808; font-size:13px; font-weight:1000; letter-spacing:-.05em; }
+.club-preview-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:10px; padding:4px; border:1px solid rgba(255,255,255,.08); border-radius:15px; background:rgba(255,255,255,.055); }
+.club-preview-tabs button { min-height:38px; border:0; border-radius:11px; background:transparent; color:#9ca3af; font-size:11px; font-weight:900; }
+.club-preview-tabs button.is-active { background:#fff; color:#0c0d0f; box-shadow:0 5px 18px rgba(0,0,0,.2); }
+.club-preview-panel { border:1px solid rgba(255,255,255,.09); border-radius:20px; background:rgba(12,13,15,.84); overflow:hidden; box-shadow:0 18px 42px rgba(0,0,0,.22); }
+.club-preview-panel-head { min-height:66px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 13px; border-bottom:1px solid rgba(255,255,255,.08); background:linear-gradient(135deg,rgba(255,255,255,.07),transparent); }
+.club-preview-panel-head p { margin:0 0 2px; color:#90949b; font-size:10px; font-weight:850; text-transform:uppercase; letter-spacing:.08em; }
+.club-preview-panel-head h2 { margin:0; color:#fff; font-size:17px; font-weight:950; }
+.club-preview-panel-head select { max-width:124px; border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:8px 9px; background:#212327; color:#fff; font-size:11px; font-weight:850; }
+.club-preview-live-dot { display:inline-grid; place-items:center; min-width:46px; height:24px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; font-size:9px; font-weight:950; letter-spacing:.08em; }
+.club-preview-match-list { display:grid; }
+.club-preview-match-list article { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.065); background:rgba(255,255,255,.025); }
+.club-preview-match-list article:last-child { border-bottom:0; }
+.club-preview-match-list article.is-eendracht { position:relative; background:linear-gradient(90deg,rgba(255,255,255,.18),rgba(255,255,255,.055)); }
+.club-preview-match-list article.is-eendracht::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:#fff; }
+.club-preview-match-meta { display:flex; gap:7px; margin-bottom:5px; color:#858a92; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; }
+.club-preview-teams { display:grid; grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr); align-items:center; gap:8px; }
+.club-preview-teams strong { min-width:0; color:#dddfe3; font-size:11px; line-height:1.12; font-weight:820; }
+.club-preview-teams strong:last-child { text-align:right; }
+.club-preview-teams .team-eendracht { color:#fff; font-size:12px; font-weight:1000; }
+.club-preview-score { display:grid; place-items:center; min-height:28px; border-radius:9px; background:rgba(255,255,255,.07); color:#a1a1aa; font-size:14px; font-weight:950; }
+.club-preview-score.is-final { background:#fff; color:#111; }
+.club-preview-table-wrap { overflow-x:auto; }
+.club-preview-table { width:100%; border-collapse:collapse; min-width:430px; }
+.club-preview-table th { padding:8px 7px; background:rgba(255,255,255,.035); color:#7f858d; font-size:8px; text-align:center; text-transform:uppercase; }
+.club-preview-table th:nth-child(2) { text-align:left; }
+.club-preview-table td { padding:8px 7px; border-top:1px solid rgba(255,255,255,.055); color:#d4d5d8; font-size:10px; font-weight:750; text-align:center; }
+.club-preview-table td:nth-child(2) { min-width:140px; text-align:left; }
+.club-preview-table td:nth-child(2) strong { display:block; font-size:10.5px; }
+.club-preview-table td:nth-child(2) small { display:block; margin-top:2px; color:#777d85; font-size:8px; }
+.club-preview-table tr.is-eendracht td { background:#fff; color:#080808; }
+.club-preview-table tr.is-eendracht td:nth-child(2) small { color:#555; }
+.club-preview-empty,.club-preview-state { margin:12px 0; padding:18px; border:1px solid rgba(255,255,255,.09); border-radius:15px; background:rgba(255,255,255,.055); color:#d9dadd; text-align:center; font-size:12px; font-weight:800; }
+.club-preview-error { color:#fecaca; }
+.club-preview-source { padding:10px 3px 0; color:#6f747b; font-size:9px; line-height:1.35; text-align:center; }
+@media (max-width: 370px) {
+  .club-preview-page { padding-left:10px; padding-right:10px; }
+  .club-preview-header h1 { font-size:20px; }
+  .club-preview-tabs button { font-size:10px; }
+  .club-preview-teams strong { font-size:10px; }
+}

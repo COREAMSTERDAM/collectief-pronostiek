@@ -30,7 +30,7 @@ const primaryTiles = [
   { href: "/motmpagina", title: "Man van de\nWedstrijd", icon: "🏅" },
   { href: "/admin/clubnieuws", title: "Clubnieuws", icon: "📰" },
   { href: "/club-card", title: "Club Card", icon: "💳" },
-  { href: "/klassement", title: "Klassement", icon: "🏆" },
+  { href: "/club-preview", title: "Club", icon: "🏟️" },
 ];
 
 export default function HomePreview() {
