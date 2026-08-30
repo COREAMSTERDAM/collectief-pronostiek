@@ -194,36 +194,78 @@ function parseStandings(rows: string[][]): VvaStanding[] {
   return [];
 }
 
-function mergeFallbackResults(matches: VvaMatch[], rows: string[][]) {
-  const completed: Array<{ home: string; away: string; score: string }> = [];
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
-  for (const cells of rows) {
-    const scoreIndex = cells.findIndex((cell) => /^\d+\s*[-–]\s*\d+$/.test(cell));
-    if (scoreIndex < 1 || scoreIndex >= cells.length - 1) continue;
-    const hasFinishedMarker = cells.some((cell) => /\bFT\b|finished|afgelopen/i.test(cell));
-    if (!hasFinishedMarker) continue;
+const FOOTBALLINFO_ALIASES: Record<string, string[]> = {
+  "racing club gent": ["KRC Gent", "Racing Club Gent"],
+  "voorde appelterre": ["Voorde Appelterre", "KFC Voorde Appelterre"],
+  "sp petegem deinze": ["Sparta Petegem", "Sp Petegem", "Petegem"],
+  "zulte waregem b": ["Zulte Waregem II", "Zulte-Waregem II", "Zulte Waregem B"],
+  "lebbeke": ["FC Lebbeke"],
+  "oostkamp": ["Oostkamp", "KSV Oostkamp"],
+  "londerzeel": ["Londerzeel", "KSK Londerzeel"],
+  "mechelen b": ["Mechelen II", "KV Mechelen B"],
+  "ho kalken": ["HO Kalken", "KFC HO Kalken"],
+  "oudenaarde": ["Oudenaarde", "KSV Oudenaarde"],
+  "rfc wetteren": ["RFC Wetteren", "Wetteren"],
+  "vw hamme": ["VW Hamme", "KFC VW Hamme"],
+  "eendracht aalst lede": ["Eendracht Aalst", "Eendracht Aalst Lede"],
+  "vk ninove": ["Ninove", "VK Ninove"],
+  "torhout": ["Torhout", "KM Torhout"],
+  "diksmuide oostende": ["Diksmuide", "KV Diksmuide Oostende"],
+};
 
-    const home = normalizeTeam(cells[scoreIndex - 1] ?? "");
-    const away = normalizeTeam(cells[scoreIndex + 1] ?? "");
-    const score = scoreValue(cells[scoreIndex] ?? "");
-    if (home && away && score) completed.push({ home, away, score });
-  }
+function aliasesForTeam(team: string) {
+  const key = normalizeKeyTeam(team);
+  const aliases = FOOTBALLINFO_ALIASES[key] ?? [];
+  return Array.from(new Set([normalizeTeam(team), ...aliases]));
+}
 
-  if (!completed.length) return matches;
+/**
+ * FootballInfo rendert de fixture/resultaat-lijst niet als klassieke tabel.
+ * De zichtbare tekst bevat regels in de vorm:
+ *   29 Aug FC Lebbeke 1 – 2 Oostkamp FT
+ * Daarom zoeken we per gekende kalenderwedstrijd rechtstreeks in de
+ * platte paginatekst. De kalender zelf blijft van Voetbalexpress komen.
+ */
+function mergeFootballInfoResults(matches: VvaMatch[], html: string) {
+  const pageText = decodeHtml(html)
+    .replace(/[–—−]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!pageText) return matches;
 
   return matches.map((match) => {
     if (match.score) return match;
-    const homeKey = normalizeKeyTeam(match.homeTeam);
-    const awayKey = normalizeKeyTeam(match.awayTeam);
-    const found = completed.find((item) => {
-      const fh = normalizeKeyTeam(item.home);
-      const fa = normalizeKeyTeam(item.away);
-      return (
-        (fh.includes(homeKey) || homeKey.includes(fh)) &&
-        (fa.includes(awayKey) || awayKey.includes(fa))
-      );
-    });
-    return found ? { ...match, score: found.score } : match;
+
+    const homeAliases = aliasesForTeam(match.homeTeam);
+    const awayAliases = aliasesForTeam(match.awayTeam);
+
+    for (const home of homeAliases) {
+      for (const away of awayAliases) {
+        const homePattern = escapeRegExp(home).replace(/\\ /g, "\\s+");
+        const awayPattern = escapeRegExp(away).replace(/\\ /g, "\\s+");
+
+        // FT is essentieel: zo nemen we geen prognoses, H2H-scores of
+        // andere cijfers op dezelfde pagina als wedstrijduitslag over.
+        const patterns = [
+          new RegExp(`${homePattern}\\s+(\\d{1,2})\\s*-\\s*(\\d{1,2})\\s+${awayPattern}\\s+FT`, "i"),
+          new RegExp(`${homePattern}\\s+(\\d{1,2})\\s+(?:–|—|-)\\s*(\\d{1,2})\\s+${awayPattern}\\s+FT`, "i"),
+        ];
+
+        for (const pattern of patterns) {
+          const found = pageText.match(pattern);
+          if (found) {
+            return { ...match, score: `${Number(found[1])}-${Number(found[2])}` };
+          }
+        }
+      }
+    }
+
+    return match;
   });
 }
 
@@ -258,7 +300,7 @@ export async function fetchVvaClubData(): Promise<VvaClubData> {
       next: { revalidate: 900 },
     });
     if (fallback.ok) {
-      matches = mergeFallbackResults(matches, rowsFromHtml(await fallback.text()));
+      matches = mergeFootballInfoResults(matches, await fallback.text());
     }
   } catch {
     // Geen probleem: de primaire bron blijft bruikbaar.
