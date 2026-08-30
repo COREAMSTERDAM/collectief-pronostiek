@@ -157,6 +157,8 @@ async function fetchPersisted(
   const response = await fetch(`${GRAPHQL_URL}?${params.toString()}`, {
     headers: {
       accept: "application/json",
+      "x-apollo-operation-name": operation,
+      "apollo-require-preflight": "true",
       "user-agent": "CollectiefWitEnZwet/1.0 (+https://app.collectiefwitenzwet.be)",
     },
     next: { revalidate: 900 },
