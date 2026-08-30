@@ -3546,13 +3546,15 @@ html[data-theme-mode="light"] .native-tile-subtitle {
 .club-preview-score { display:grid; place-items:center; min-height:28px; border-radius:9px; background:rgba(255,255,255,.07); color:#a1a1aa; font-size:14px; font-weight:950; }
 .club-preview-score.is-final { background:#fff; color:#111; }
 .club-preview-table-wrap { overflow-x:auto; }
-.club-preview-table { width:100%; border-collapse:collapse; min-width:430px; }
-.club-preview-table th { padding:8px 7px; background:rgba(255,255,255,.035); color:#7f858d; font-size:8px; text-align:center; text-transform:uppercase; }
+.club-preview-table { width:100%; border-collapse:collapse; table-layout:fixed; }
+.club-preview-table th { padding:6px 3px; background:rgba(255,255,255,.035); color:#7f858d; font-size:8px; text-align:center; text-transform:uppercase; }
 .club-preview-table th:nth-child(2) { text-align:left; }
-.club-preview-table td { padding:8px 7px; border-top:1px solid rgba(255,255,255,.055); color:#d4d5d8; font-size:10px; font-weight:750; text-align:center; }
-.club-preview-table td:nth-child(2) { min-width:140px; text-align:left; }
-.club-preview-table td:nth-child(2) strong { display:block; font-size:10.5px; }
-.club-preview-table td:nth-child(2) small { display:block; margin-top:2px; color:#777d85; font-size:8px; }
+.club-preview-table td { padding:6px 3px; border-top:1px solid rgba(255,255,255,.055); color:#d4d5d8; font-size:10px; font-weight:750; text-align:center; }
+.club-preview-table th:nth-child(1), .club-preview-table td:nth-child(1) { width:24px; }
+.club-preview-table th:nth-child(2), .club-preview-table td:nth-child(2) { width:48%; text-align:left; padding-left:4px; padding-right:4px; }
+.club-preview-table th:nth-child(n+3), .club-preview-table td:nth-child(n+3) { width:8%; }
+.club-preview-table td:nth-child(2) strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; }
+.club-preview-table td:nth-child(2) small { display:none; }
 .club-preview-table tr.is-eendracht td { background:#fff; color:#080808; }
 .club-preview-table tr.is-eendracht td:nth-child(2) small { color:#555; }
 .club-preview-empty,.club-preview-state { margin:12px 0; padding:18px; border:1px solid rgba(255,255,255,.09); border-radius:15px; background:rgba(255,255,255,.055); color:#d9dadd; text-align:center; font-size:12px; font-weight:800; }

@@ -162,7 +162,7 @@ export default function ClubPreviewPage() {
               return (
                 <article key={`${match.date}-${match.homeTeam}-${match.awayTeam}`} className={highlighted ? "is-eendracht" : ""}>
                   <div className="club-preview-match-meta">
-                    <span>{formatDate(match.date)}</span><span>{match.time.replace("u", ":")}</span>
+                    <span>{formatDate(match.date)}</span>{match.time ? <span>{match.time.replace("u", ":")}</span> : null}
                   </div>
                   <div className="club-preview-teams">
                     <strong className={isEendracht(match.homeTeam) ? "team-eendracht" : ""}>{friendlyTeam(match.homeTeam)}</strong>
@@ -225,7 +225,7 @@ export default function ClubPreviewPage() {
                 );
               })}
             </div>
-          ) : <div className="club-preview-empty">Nog geen competitiewedstrijden gespeeld.</div>}
+          ) : <div className="club-preview-empty">Nog geen uitslagen beschikbaar in de gekoppelde bronnen.</div>}
         </section>
       ) : null}
 
