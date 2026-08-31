@@ -218,13 +218,24 @@ export default function HomePreview() {
         </div>
 
         {nextMatch ? (
-          <NativeButton
-            href="/pronostiekpagina"
-            fullWidth
-          >
-            Vul je pronostiek in
-            <span aria-hidden="true">›</span>
-          </NativeButton>
+          <div className="preview-home-match-actions">
+            <NativeButton
+              href="/matchcenter-preview"
+              variant="secondary"
+              fullWidth
+            >
+              Matchcenter
+              <span aria-hidden="true">›</span>
+            </NativeButton>
+
+            <NativeButton
+              href="/pronostiekpagina"
+              fullWidth
+            >
+              Pronostiek
+              <span aria-hidden="true">›</span>
+            </NativeButton>
+          </div>
         ) : null}
       </NativeCard>
 
