@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import NativeButton from "@/components/native/NativeButton";
+import NativeCard from "@/components/native/NativeCard";
+import NativeTile from "@/components/native/NativeTile";
 import NotificationBadgeButton from "@/components/notifications/NotificationBadgeButton";
 import SponsorCarousel from "@/components/home/SponsorCarousel";
 import { supabase } from "@/src/lib/supabase";
 
 type DashboardProfile = {
   name: string | null;
+  is_admin: boolean | null;
 };
 
 type NextMatch = {
@@ -19,56 +23,66 @@ type NextMatch = {
 
 function greeting() {
   const hour = new Date().getHours();
+
   if (hour < 12) return "Goedemorgen";
   if (hour < 18) return "Goedemiddag";
   return "Goedenavond";
 }
 
-const primaryTiles = [
-  { href: "/pronostiekpagina", title: "Pronostiek", icon: "⚽" },
-  { href: "/iedereencoachkeuze", title: "Coach", icon: "▣" },
-  { href: "/motmpagina", title: "Man van de\nWedstrijd", icon: "🏅" },
-  { href: "/admin/clubnieuws", title: "Clubnieuws", icon: "📰" },
-  { href: "/club-card", title: "Club Card", icon: "💳" },
-  { href: "/club-preview", title: "Club", icon: "🏟️" },
-];
-
 export default function HomePreview() {
-  const [profile, setProfile] = useState<DashboardProfile | null>(null);
-  const [nextMatch, setNextMatch] = useState<NextMatch | null>(null);
+  const [profile, setProfile] =
+    useState<DashboardProfile | null>(null);
+  const [isLoggedIn, setIsLoggedIn] =
+    useState(false);
+  const [loading, setLoading] = useState(true);
+  const [nextMatch, setNextMatch] =
+    useState<NextMatch | null>(null);
 
   useEffect(() => {
     let mounted = true;
 
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-      if (!mounted || !user) return;
+        if (!mounted) return;
 
-      const [{ data: profileData }, { data: matchData }] = await Promise.all([
-        supabase
+        if (!user) {
+          setIsLoggedIn(false);
+          return;
+        }
+
+        setIsLoggedIn(true);
+
+        const { data } = await supabase
           .from("profiles")
-          .select("name")
+          .select("name, is_admin")
           .eq("id", user.id)
-          .maybeSingle(),
-        supabase
+          .maybeSingle();
+
+        if (mounted) setProfile(data ?? null);
+
+        const { data: nextMatchData } = await supabase
           .from("matches")
           .select("id, home_team, away_team, kickoff")
           .eq("status", "open")
           .gte("kickoff", new Date().toISOString())
           .order("kickoff", { ascending: true })
           .limit(1)
-          .maybeSingle(),
-      ]);
+          .maybeSingle();
 
-      if (!mounted) return;
-      setProfile(profileData ?? null);
-      setNextMatch(matchData ?? null);
+        if (mounted) {
+          setNextMatch(nextMatchData ?? null);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
 
     void load();
+
     return () => {
       mounted = false;
     };
@@ -76,93 +90,210 @@ export default function HomePreview() {
 
   const firstName = useMemo(() => {
     const value = profile?.name?.trim();
-    return value ? value.split(/\s+/)[0] : "supporter";
+
+    return value
+      ? value.split(/\s+/)[0]
+      : "supporter";
   }, [profile?.name]);
 
-  const matchDate = nextMatch
-    ? new Intl.DateTimeFormat("nl-BE", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(new Date(nextMatch.kickoff))
-    : null;
+  if (!loading && !isLoggedIn) {
+    return (
+      <div className="native-screen native-screen-centered">
+        <div className="native-auth-hero">
+          <img
+            src="/logo.png"
+            alt="Collectief Wit en Zwet"
+            className="native-auth-logo"
+          />
+
+          <p className="native-eyebrow">
+            Supporterscollectief
+          </p>
+
+          <h1 className="native-welcome-title">
+            Alles van het collectief in één app.
+          </h1>
+
+          <p className="native-welcome-copy">
+            Community, pronostiek, Man van de Wedstrijd en
+            Iedereen Coach.
+          </p>
+
+          <div className="native-auth-actions">
+            <NativeButton href="/login" fullWidth>
+              Inloggen
+            </NativeButton>
+
+            <NativeButton
+              href="/registreren"
+              variant="secondary"
+              fullWidth
+            >
+              Account aanmaken
+            </NativeButton>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="native-screen supporters-hub-preview supporters-hub-preview-compact">
-      <header className="supporters-hub-compact-header">
+    <div className="native-screen native-home-screen native-home-compact">
+      <header className="native-home-header">
         <div className="min-w-0">
-          <p className="supporters-hub-compact-greeting">{greeting()}</p>
-          <h1 className="supporters-hub-compact-name">{firstName} 👋</h1>
+          <p className="native-home-greeting">
+            {greeting()}
+          </p>
+
+          <h1 className="native-home-name !text-2xl sm:!text-3xl">
+            {loading ? "Welkom" : `${firstName} 👋`}
+          </h1>
         </div>
 
-        <div className="supporters-hub-compact-header-actions">
-          <Link href="/profielkeuze" className="native-profile-logo" aria-label="Open profiel">
-            <img src="/logo.png" alt="" />
-          </Link>
-          <NotificationBadgeButton label="" className="native-bell-button" />
-        </div>
+        <div className="native-home-header-actions">
+  <Link
+    href="/profielkeuze"
+    className="native-profile-logo"
+    aria-label="Open profiel"
+  >
+    <img src="/logo.png" alt="" />
+  </Link>
+
+  <Link
+  href="/app-uiterlijk"
+  className="native-theme-button"
+  aria-label="App uiterlijk aanpassen"
+  title="App uiterlijk"
+>
+    <span aria-hidden="true">🎨</span>
+  </Link>
+
+  <NotificationBadgeButton
+    label=""
+    className="native-bell-button"
+  />
+</div>
       </header>
 
       <SponsorCarousel />
 
-      <section className="supporters-hub-compact-match" aria-label="Volgende wedstrijd">
-        <div className="supporters-hub-compact-match-copy">
-          <p className="supporters-hub-compact-eyebrow">Volgende wedstrijd</p>
+      <NativeCard
+        className="native-primary-card native-primary-card-compact"
+        elevated
+      >
+        <div className="native-primary-card-copy">
+          <p className="native-eyebrow">
+            Volgende wedstrijd
+          </p>
+
           {nextMatch ? (
             <>
-              <h2>
+              <h2 className="native-primary-title">
                 {nextMatch.home_team}
-                <span> – </span>
+                <span className="mx-2 text-white/40">–</span>
                 {nextMatch.away_team}
               </h2>
-              <p>{matchDate}</p>
+
+              <p className="native-primary-description">
+                {new Intl.DateTimeFormat("nl-BE", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }).format(new Date(nextMatch.kickoff))}
+              </p>
             </>
           ) : (
             <>
-              <h2>Nog geen wedstrijd gepland</h2>
-              <p>Nieuwe wedstrijd verschijnt hier automatisch.</p>
+              <h2 className="native-primary-title">
+                Nog geen wedstrijd gepland
+              </h2>
+
+              <p className="native-primary-description">
+                Zodra een nieuwe wedstrijd beschikbaar is, verschijnt ze hier.
+              </p>
             </>
           )}
         </div>
 
         {nextMatch ? (
-          <Link href="/matchcenter-preview" className="supporters-hub-compact-match-button">
-            Matchcenter <span aria-hidden="true">›</span>
-          </Link>
+          <NativeButton
+            href="/pronostiekpagina"
+            fullWidth
+          >
+            Vul je pronostiek in
+            <span aria-hidden="true">›</span>
+          </NativeButton>
         ) : null}
-      </section>
+      </NativeCard>
 
-      <section className="supporters-hub-compact-grid" aria-label="Hoofdfuncties">
-        {primaryTiles.map((tile) => (
-          <Link key={tile.href} href={tile.href} className="supporters-hub-compact-tile">
-            <span className="supporters-hub-compact-tile-icon" aria-hidden="true">
-              {tile.icon}
-            </span>
-            <span className="supporters-hub-compact-tile-title">
-              {tile.title.split("\n").map((line, index) => (
-                <span key={`${tile.title}-${index}`}>{line}</span>
-              ))}
-            </span>
-          </Link>
-        ))}
-      </section>
+      <section className="native-home-section native-home-section-compact">
+  <div className="native-quick-grid">
+    <NativeTile
+      href="/pronostiekpagina"
+      title="Pronostiek"
+      image="/pronostiek-logo.png"
+    />
 
-      <section className="supporters-hub-compact-actions" aria-label="Extra functies">
-        <Link href="/community" className="supporters-hub-compact-pill">
-          <span aria-hidden="true">👥</span>
-          <span>Community</span>
-        </Link>
-        <Link href="/meldingen" className="supporters-hub-compact-pill">
-          <span aria-hidden="true">🔔</span>
+    {profile?.is_admin ? (
+      <NativeTile
+        href="/community"
+        title="Community"
+        image="/community-logo.png"
+      />
+    ) : null}
+
+    <NativeTile
+      href="/motmpagina"
+      title={"Man van de\nWedstrijd"}
+      icon="🏅"
+    />
+
+    <NativeTile
+      href="/iedereencoachkeuze"
+      title="Coach"
+      image="/coach-logo.png"
+    />
+  </div>
+</section>
+
+      <section className="native-home-compact-actions">
+        <Link
+          href="/meldingen"
+          className="native-home-action-pill"
+        >
+          <span>🔔</span>
           <span>Meldingen</span>
         </Link>
-        <Link href="/profielkeuze" className="supporters-hub-compact-pill">
-          <span aria-hidden="true">•••</span>
-          <span>Meer</span>
+
+        <Link
+          href="/klassement"
+          className="native-home-action-pill"
+        >
+          <span>🏆</span>
+          <span>Klassement</span>
         </Link>
+
+        {profile?.is_admin ? (
+          <Link
+            href="/admin-keuze"
+            className="native-home-action-pill"
+          >
+            <span>⚙️</span>
+            <span>Beheer</span>
+          </Link>
+        ) : (
+          <Link
+            href="/feedback"
+            className="native-home-action-pill"
+          >
+            <span>💡</span>
+            <span>Feedback</span>
+          </Link>
+        )}
       </section>
+
     </div>
   );
 }
