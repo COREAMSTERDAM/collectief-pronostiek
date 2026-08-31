@@ -227,14 +227,6 @@ export default function HomePreview() {
               Matchcenter
               <span aria-hidden="true">›</span>
             </NativeButton>
-
-            <NativeButton
-              href="/pronostiekpagina"
-              fullWidth
-            >
-              Pronostiek
-              <span aria-hidden="true">›</span>
-            </NativeButton>
           </div>
         ) : null}
       </NativeCard>
