@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/src/lib/supabase";
 
 type Tab = "kalender" | "klassement" | "uitslagen";
@@ -60,7 +60,11 @@ function formatDate(value: string) {
 
 export default function ClubPreviewPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("kalender");
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab");
+  const [tab, setTab] = useState<Tab>(
+    initialTab === "klassement" || initialTab === "uitslagen" ? initialTab : "kalender",
+  );
   const [data, setData] = useState<ClubData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
