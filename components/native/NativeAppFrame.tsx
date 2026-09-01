@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import AdminLayoutPreviewToggle from "@/components/admin/AdminLayoutPreviewToggle";
 import AppShell from "@/components/native/AppShell";
+import GlobalBackButton from "@/components/native/GlobalBackButton";
 import type { NativeNavItem } from "@/components/native/NativeBottomNav";
 import MembershipAccessGate from "@/components/membership/MembershipAccessGate";
 import { useAdminLayoutPreview } from "@/src/lib/use-admin-layout-preview";
@@ -43,7 +44,12 @@ export default function NativeAppFrame({ children }: { children: ReactNode }) {
   ].some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
   if (fullscreen) {
-    return <MembershipAccessGate>{children}</MembershipAccessGate>;
+    return (
+      <MembershipAccessGate>
+        <GlobalBackButton />
+        {children}
+      </MembershipAccessGate>
+    );
   }
 
   return (
@@ -54,6 +60,7 @@ export default function NativeAppFrame({ children }: { children: ReactNode }) {
         navigation={previewEnabled ? previewNavigation : undefined}
         className={previewEnabled ? "admin-preview-shell" : ""}
       >
+        <GlobalBackButton />
         {children}
       </AppShell>
       {showPreviewToggle ? <AdminLayoutPreviewToggle /> : null}
