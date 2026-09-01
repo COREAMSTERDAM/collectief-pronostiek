@@ -8,6 +8,7 @@ import NativeTile from "@/components/native/NativeTile";
 import NotificationBadgeButton from "@/components/notifications/NotificationBadgeButton";
 import SponsorCarousel from "@/components/home/SponsorCarousel";
 import { supabase } from "@/src/lib/supabase";
+import { getClubInitials, getClubVisual } from "@/src/lib/club-logos";
 
 type DashboardProfile = {
   name: string | null;
@@ -95,6 +96,9 @@ export default function HomePreview() {
       ? value.split(/\s+/)[0]
       : "supporter";
   }, [profile?.name]);
+
+  const homeClub = nextMatch ? getClubVisual(nextMatch.home_team) : null;
+  const awayClub = nextMatch ? getClubVisual(nextMatch.away_team) : null;
 
   if (!loading && !isLoggedIn) {
     return (
@@ -188,13 +192,33 @@ export default function HomePreview() {
 
           {nextMatch ? (
             <>
-              <h2 className="native-primary-title">
-                {nextMatch.home_team}
-                <span className="mx-2 text-white/40">–</span>
-                {nextMatch.away_team}
-              </h2>
+              <div className="preview-match-clubs" aria-label={`${nextMatch.home_team} tegen ${nextMatch.away_team}`}>
+                <div className="preview-match-club">
+                  <div className="preview-match-club-logo">
+                    {homeClub?.logo ? (
+                      <img src={homeClub.logo} alt={`Logo ${nextMatch.home_team}`} />
+                    ) : (
+                      <span aria-hidden="true">{getClubInitials(nextMatch.home_team)}</span>
+                    )}
+                  </div>
+                  <strong>{nextMatch.home_team}</strong>
+                </div>
 
-              <p className="native-primary-description">
+                <div className="preview-match-versus">VS</div>
+
+                <div className="preview-match-club">
+                  <div className="preview-match-club-logo">
+                    {awayClub?.logo ? (
+                      <img src={awayClub.logo} alt={`Logo ${nextMatch.away_team}`} />
+                    ) : (
+                      <span aria-hidden="true">{getClubInitials(nextMatch.away_team)}</span>
+                    )}
+                  </div>
+                  <strong>{nextMatch.away_team}</strong>
+                </div>
+              </div>
+
+              <p className="native-primary-description preview-match-kickoff">
                 {new Intl.DateTimeFormat("nl-BE", {
                   weekday: "long",
                   day: "numeric",
@@ -258,13 +282,6 @@ export default function HomePreview() {
       title="Coach"
       image="/coach-logo.png"
     />
-
-    <NativeTile
-      href="/supportershub-preview"
-      title="Supportershub"
-      icon="👥"
-    />
-
     <NativeTile
       href="/supportershub-preview"
       title="Supportershub"
