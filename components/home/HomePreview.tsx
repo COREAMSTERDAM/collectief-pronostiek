@@ -258,6 +258,18 @@ export default function HomePreview() {
       title="Coach"
       image="/coach-logo.png"
     />
+
+    <NativeTile
+      href="/supportershub-preview"
+      title="Supportershub"
+      icon="👥"
+    />
+
+    <NativeTile
+      href="/supportershub-preview"
+      title="Supportershub"
+      icon="👥"
+    />
   </div>
 </section>
 
