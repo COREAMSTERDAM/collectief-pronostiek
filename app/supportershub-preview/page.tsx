@@ -26,8 +26,6 @@ const sections: SupportershubSection[] = [
       { href: "/club-preview?tab=kalender", icon: "📅", title: "Kalender", subtitle: "Volledige kalender 2e Afdeling VV A" },
       { href: "/club-preview?tab=uitslagen", icon: "✅", title: "Uitslagen", subtitle: "Officiële uitslagen per speeldag" },
       { href: "/club-preview?tab=klassement", icon: "🏆", title: "Competitieklassement", subtitle: "Stand 2e Afdeling VV A" },
-      { href: "/clubhistoriek-preview", icon: "📖", title: "Clubhistoriek", subtitle: "Geschiedenis, mijlpalen & seizoenen" },
-      { href: "/spelerskern-preview", icon: "👕", title: "Eerste elftal / spelerskern", subtitle: "Spelers, posities & rugnummers" },
     ],
   },
   {
