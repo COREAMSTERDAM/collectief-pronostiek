@@ -140,7 +140,7 @@ export default function ClubCardPage() {
           <>
             <div className="mt-6 grid gap-5">
               {data.cards.map((card, index) => (
-                <section key={card.id} className="overflow-hidden rounded-[2rem] border border-emerald-300/25 bg-gradient-to-br from-emerald-300/15 via-white/[0.05] to-black p-6 shadow-2xl shadow-black/30 sm:p-8">
+                <section id={`club-card-${index + 1}`} key={card.id} className="scroll-mt-24 overflow-hidden rounded-[2rem] border border-emerald-300/25 bg-gradient-to-br from-emerald-300/15 via-white/[0.05] to-black p-6 shadow-2xl shadow-black/30 sm:p-8">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-100/60">Club Card {index + 1}</p>

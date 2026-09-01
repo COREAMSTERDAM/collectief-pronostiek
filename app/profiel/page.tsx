@@ -822,7 +822,7 @@ export default function ProfielPage() {
           </div>
         </section>
 
-        <section className="ucl-card mt-6">
+        <section className="ucl-card mt-6" id="statistieken">
           <div className="mb-6">
             <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
               Statistieken
@@ -983,7 +983,7 @@ export default function ProfielPage() {
           )}
         </section>
 
-        <section className="ucl-card mt-6">
+        <section className="ucl-card mt-6" id="prestaties">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-black uppercase tracking-[0.2em] text-emerald-300">
