@@ -34,13 +34,9 @@ const sections: SupportershubSection[] = [
       { href: "/profiel", icon: "👤", title: "Profiel", subtitle: "Mijn persoonlijke gegevens" },
       { href: "/membership-preview", icon: "🎫", title: "Membership", subtitle: "Mijn lidmaatschap & geldigheid" },
       { href: "/club-card", icon: "💳", title: "Club Card", subtitle: "Beheer mijn gekoppelde kaarten" },
-      { href: "/club-card#club-card-1", icon: "1️⃣", title: "Kaart 1 + saldo", subtitle: "Bekijk kaartcode en actueel saldo" },
-      { href: "/club-card#club-card-2", icon: "2️⃣", title: "Kaart 2 + saldo", subtitle: "Bekijk tweede kaart en saldo" },
       { href: "/pronostiekhistoriek", icon: "⚽", title: "Pronostiekhistoriek", subtitle: "Mijn eerdere voorspellingen" },
       { href: "/iedereen-coach/mijn-opstellingen", icon: "📋", title: "Coach-historiek", subtitle: "Mijn eerdere opstellingen" },
       { href: "/meldingen/instellingen", icon: "🔔", title: "Meldingsvoorkeuren", subtitle: "Kies welke meldingen ik ontvang" },
-      { href: "/profiel#prestaties", icon: "🏅", title: "Badges & achievements", subtitle: "Mijn behaalde en open prestaties" },
-      { href: "/profiel#statistieken", icon: "📊", title: "Mijn statistieken", subtitle: "Punten, positie & pronostiekstats" },
     ],
   },
   {
