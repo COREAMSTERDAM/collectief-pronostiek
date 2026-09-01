@@ -5,7 +5,20 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/src/lib/supabase";
 
-const sections = [
+type SupportershubItem = {
+  href: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+  disabled?: boolean;
+};
+
+type SupportershubSection = {
+  title: string;
+  items: SupportershubItem[];
+};
+
+const sections: SupportershubSection[] = [
   {
     title: "Club",
     items: [
