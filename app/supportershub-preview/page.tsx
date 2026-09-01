@@ -26,7 +26,17 @@ const sections: SupportershubSection[] = [
       { href: "/club-preview", icon: "🏆", title: "2e Amateur VV A", subtitle: "Kalender & klassement" },
     ],
   },
-  {
+    {
+    title: "Supporters",
+    items: [
+      { href: "/community", icon: "👥", title: "Community", subtitle: "Praat mee met supporters" },
+      { href: "/supportersclubs-preview", icon: "🏴", title: "Supportersclubs", subtitle: "Clubs, locaties & contact" },
+      { href: "/meldingen", icon: "🔔", title: "Meldingen", subtitle: "Updates & notificaties" },
+      { href: "/meldingen/instellingen", icon: "⚙️", title: "Voorkeuren", subtitle: "Kies je meldingen" },
+      { href: "/feedback", icon: "💡", title: "Feedback", subtitle: "Help de app verbeteren" },
+    ],
+  },
+    {
     title: "Mijn Collectief",
     items: [
       { href: "/profiel", icon: "👤", title: "Profiel", subtitle: "Mijn persoonlijke gegevens" },
@@ -37,16 +47,8 @@ const sections: SupportershubSection[] = [
       { href: "/meldingen/instellingen", icon: "🔔", title: "Meldingsvoorkeuren", subtitle: "Kies welke meldingen ik ontvang" },
     ],
   },
-  {
-    title: "Supporters",
-    items: [
-      { href: "/community", icon: "👥", title: "Community", subtitle: "Praat mee met supporters" },
-      { href: "/supportersclubs-preview", icon: "🏴", title: "Supportersclubs", subtitle: "Clubs, locaties & contact" },
-      { href: "/meldingen", icon: "🔔", title: "Meldingen", subtitle: "Updates & notificaties" },
-      { href: "/meldingen/instellingen", icon: "⚙️", title: "Voorkeuren", subtitle: "Kies je meldingen" },
-      { href: "/feedback", icon: "💡", title: "Feedback", subtitle: "Help de app verbeteren" },
-    ],
-  },
+  
+  
 ];
 
 export default function SupportershubPreviewPage() {
@@ -80,11 +82,11 @@ export default function SupportershubPreviewPage() {
           <div className="supportershub-menu-grid">
             {section.items.map((item) => item.disabled ? (
               <div className="supportershub-menu-tile is-disabled" key={item.title}>
-                <span className="supportershub-menu-icon">{item.icon}</span><div><strong>{item.title}</strong><small>{item.subtitle}</small></div>
+                <span className="supportershub-menu-icon">{item.icon}</span><div><strong>{item.title}</strong></div>
               </div>
             ) : (
               <Link className="supportershub-menu-tile" href={item.href} key={item.title}>
-                <span className="supportershub-menu-icon">{item.icon}</span><div><strong>{item.title}</strong><small>{item.subtitle}</small></div><span className="supportershub-menu-arrow">›</span>
+                <span className="supportershub-menu-icon">{item.icon}</span><div><strong>{item.title}</strong></div><span className="supportershub-menu-arrow">›</span>
               </Link>
             ))}
           </div>
