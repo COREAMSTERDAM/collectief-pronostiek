@@ -261,7 +261,7 @@ export default function HomePreview() {
     />
     <NativeTile
       href="/supportershub-preview"
-      title="Supportershub"
+      title={"Supporters\nhub"}
       icon="👥"
     />
   </div>
