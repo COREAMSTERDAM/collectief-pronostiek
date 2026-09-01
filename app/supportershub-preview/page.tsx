@@ -23,9 +23,7 @@ const sections: SupportershubSection[] = [
     title: "Club",
     items: [
       { href: "/admin/clubnieuws", icon: "📰", title: "Clubnieuws", subtitle: "Clubwebsite, HLN & Nieuwsblad" },
-      { href: "/club-preview?tab=kalender", icon: "📅", title: "Kalender", subtitle: "Volledige kalender 2e Afdeling VV A" },
-      { href: "/club-preview?tab=uitslagen", icon: "✅", title: "Uitslagen", subtitle: "Officiële uitslagen per speeldag" },
-      { href: "/club-preview?tab=klassement", icon: "🏆", title: "Competitieklassement", subtitle: "Stand 2e Afdeling VV A" },
+      { href: "/club-preview", icon: "🏆", title: "2e Amateur VV A", subtitle: "Kalender, uitslagen & klassement" },
     ],
   },
   {
