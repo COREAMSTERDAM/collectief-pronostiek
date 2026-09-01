@@ -3749,3 +3749,22 @@ html[data-theme-mode="light"] .native-tile-subtitle {
 }
 
 /* Admin preview - club logos on next-match card */
+
+/* Supportershub - compact tiles */
+.supportershub-menu-section { margin-top: 13px; }
+.supportershub-menu-section h2 { margin-bottom: 6px; }
+.supportershub-menu-grid { gap: 7px; }
+.supportershub-menu-tile {
+  min-height: 60px;
+  padding: 8px 9px;
+  grid-template-columns: 32px minmax(0,1fr) auto;
+  gap: 8px;
+  border-radius: 14px;
+}
+.supportershub-menu-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  font-size: 18px;
+}
+.supportershub-menu-arrow { font-size: 18px; }
