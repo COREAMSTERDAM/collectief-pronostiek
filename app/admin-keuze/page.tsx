@@ -82,6 +82,16 @@ export default function AdminKeuzePage() {
           />
 
           <HubCard
+            href="/admin/supportersclubs"
+            icon="🏴"
+            eyebrow="Supportershub"
+            title="Supportersclubs"
+            description="Voeg supportersclubs toe, upload logo’s en beheer contact-, activiteit- en verplaatsingsinfo."
+            action="Open supportersclubs"
+            accent="emerald"
+          />
+
+          <HubCard
             href="/admin/lidmaatschappen"
             icon="🎟️"
             eyebrow="Toegang"
