@@ -23,7 +23,7 @@ const sections: SupportershubSection[] = [
     title: "Club",
     items: [
       { href: "/admin/clubnieuws", icon: "📰", title: "Clubnieuws", subtitle: "Clubwebsite, HLN & Nieuwsblad" },
-      { href: "/club-preview", icon: "🏆", title: "2e Amateur VV A", subtitle: "Kalender, uitslagen & klassement" },
+      { href: "/club-preview", icon: "🏆", title: "2e Amateur VV A", subtitle: "Kalender & klassement" },
     ],
   },
   {

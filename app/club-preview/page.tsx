@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/src/lib/supabase";
 
-type Tab = "kalender" | "klassement" | "uitslagen";
+type Tab = "kalender" | "klassement";
 
 type Match = {
   round: number;
@@ -63,7 +63,7 @@ export default function ClubPreviewPage() {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab");
   const [tab, setTab] = useState<Tab>(
-    initialTab === "klassement" || initialTab === "uitslagen" ? initialTab : "kalender",
+    initialTab === "klassement" ? initialTab : "kalender",
   );
   const [data, setData] = useState<ClubData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,11 +114,6 @@ export default function ClubPreviewPage() {
     [data, round],
   );
 
-  const results = useMemo(
-    () => [...(data?.matches ?? [])].filter((match) => match.score).reverse(),
-    [data],
-  );
-
   return (
     <main className="club-preview-page">
       <header className="club-preview-header">
@@ -132,14 +127,14 @@ export default function ClubPreviewPage() {
       </header>
 
       <nav className="club-preview-tabs" aria-label="Club onderdelen">
-        {(["kalender", "klassement", "uitslagen"] as Tab[]).map((item) => (
+        {(["kalender", "klassement"] as Tab[]).map((item) => (
           <button
             key={item}
             type="button"
             className={tab === item ? "is-active" : ""}
             onClick={() => setTab(item)}
           >
-            {item === "kalender" ? "Kalender" : item === "klassement" ? "Klassement" : "Uitslagen"}
+            {item === "kalender" ? "Kalender" : "Klassement"}
           </button>
         ))}
       </nav>
@@ -204,32 +199,6 @@ export default function ClubPreviewPage() {
               </table>
             </div>
           ) : <div className="club-preview-empty">Klassement nog niet beschikbaar in de bron.</div>}
-        </section>
-      ) : null}
-
-      {!loading && data && tab === "uitslagen" ? (
-        <section className="club-preview-panel">
-          <div className="club-preview-panel-head">
-            <div><p>Alle gespeelde wedstrijden</p><h2>Uitslagen</h2></div>
-            <span className="club-preview-live-dot">AUTO</span>
-          </div>
-          {results.length ? (
-            <div className="club-preview-match-list">
-              {results.map((match) => {
-                const highlighted = isEendracht(match.homeTeam) || isEendracht(match.awayTeam);
-                return (
-                  <article key={`${match.date}-${match.homeTeam}-${match.awayTeam}`} className={highlighted ? "is-eendracht" : ""}>
-                    <div className="club-preview-match-meta"><span>Speeldag {match.round} · {formatDate(match.date)}</span></div>
-                    <div className="club-preview-teams">
-                      <strong className={isEendracht(match.homeTeam) ? "team-eendracht" : ""}>{friendlyTeam(match.homeTeam)}</strong>
-                      <span className="club-preview-score is-final">{match.score}</span>
-                      <strong className={isEendracht(match.awayTeam) ? "team-eendracht" : ""}>{friendlyTeam(match.awayTeam)}</strong>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          ) : <div className="club-preview-empty">Nog geen officiële uitslagen beschikbaar bij Voetbal Vlaanderen / RBFA.</div>}
         </section>
       ) : null}
 
