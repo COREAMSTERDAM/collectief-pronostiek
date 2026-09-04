@@ -252,6 +252,12 @@ export default function HomeCurrent() {
       title="Coach"
       image="/coach-logo.png"
     />
+
+    <NativeTile
+      href="/supportershub"
+      title={"Supporters\nhub"}
+      icon="👥"
+    />
   </div>
 </section>
 
