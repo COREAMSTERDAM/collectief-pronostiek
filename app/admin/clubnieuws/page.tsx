@@ -64,6 +64,20 @@ export default function ClubNieuwsAdminPage() {
     setItems(json.items ?? []);
   }, [authorizedFetch]);
 
+
+  const markAsRead = useCallback(async (newsId: number) => {
+    try {
+      await authorizedFetch("/api/club-news/read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ news_id: newsId }),
+        keepalive: true,
+      });
+    } catch {
+      // Het artikel mag altijd openen; leesstatus is een extra functie.
+    }
+  }, [authorizedFetch]);
+
   const sync = useCallback(async () => {
     setSyncing(true);
     setMessage("");
@@ -186,6 +200,7 @@ export default function ClubNieuwsAdminPage() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`Lees artikel: ${item.title}`}
+              onClick={() => void markAsRead(item.id)}
               className="group block overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 sm:grid sm:grid-cols-[180px_1fr]"
             >
               {item.source === "clubwebsite" && item.image_url ? (

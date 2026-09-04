@@ -3768,3 +3768,25 @@ html[data-theme-mode="light"] .native-tile-subtitle {
   font-size: 18px;
 }
 .supportershub-menu-arrow { font-size: 18px; }
+
+
+/* Supportershub - ongelezen Clubnieuws badge */
+.supportershub-menu-tile {
+  position: relative;
+}
+
+.supportershub-unread-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  margin-left: auto;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
