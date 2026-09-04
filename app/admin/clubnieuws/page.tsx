@@ -26,10 +26,6 @@ const SOURCE_LABELS: Record<NewsSource, string> = {
 };
 
 
-const SOURCE_IMAGES: Partial<Record<NewsSource, string>> = {
-  hln: "/news-sources/hln.png",
-  nieuwsblad: "/news-sources/nieuwsblad.png",
-};
 
 const FILTERS: Array<{ value: NewsFilter; label: string }> = [
   { value: "all", label: "Alles" },
@@ -219,15 +215,6 @@ export default function ClubNieuwsAdminPage() {
 
               <div className={item.source === "clubwebsite" ? "p-5" : "p-5 sm:col-span-2"}>
                 <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide text-zinc-500">
-                  {item.source !== "clubwebsite" && SOURCE_IMAGES[item.source] ? (
-                    <span className="inline-flex h-9 w-24 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 px-2">
-                      <img
-                        src={SOURCE_IMAGES[item.source]!}
-                        alt={`${SOURCE_LABELS[item.source]} logo`}
-                        className="max-h-7 max-w-full object-contain"
-                      />
-                    </span>
-                  ) : null}
                   <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-zinc-800">
                     {SOURCE_LABELS[item.source] ?? "Nieuws"}
                   </span>
