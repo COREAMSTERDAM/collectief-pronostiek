@@ -286,43 +286,8 @@ export default function HomeCurrent() {
             <span>⚙️</span>
             <span>Beheer</span>
           </Link>
-        ) : (
-          <Link
-            href="/feedback"
-            className="native-home-action-pill"
-          >
-            <span>💡</span>
-            <span>Feedback</span>
-          </Link>
-        )}
+        ) : null}
       </section>
-
-      <NativeCard
-        className="native-primary-card native-primary-card-compact mt-4"
-        elevated
-      >
-        <div className="native-primary-card-copy">
-          <p className="native-eyebrow">
-            Bouw mee aan onze app
-          </p>
-
-          <h2 className="native-secondary-title">
-            Jullie feedback is belangrijk
-          </h2>
-
-          <p className="native-primary-description">
-            Help ons om samen de beste app voor het collectief te maken.
-          </p>
-        </div>
-
-        <NativeButton
-          href="/feedback"
-          fullWidth
-        >
-          Geef feedback
-          <span aria-hidden="true">›</span>
-        </NativeButton>
-      </NativeCard>
     </div>
   );
 }
