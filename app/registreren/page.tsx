@@ -166,7 +166,7 @@ export default function RegistrerenPage() {
               />
 
               <span className="text-sm leading-6 text-slate-300">
-                Ik ga akkoord met het reglement van Collectief Pronostiek.
+                Ik ga akkoord met het reglement van Collectief Wit en Zwet.
               </span>
             </label>
 
@@ -181,7 +181,7 @@ export default function RegistrerenPage() {
 
           <div className="mt-5 border-t border-white/10 pt-5 text-center">
             <p className="text-sm text-slate-400">
-              Heb je al een account?
+              Heb je al een account? Let op : dit is niet hetzelfde account als de website
             </p>
 
             <a
