@@ -229,6 +229,12 @@ export default function MatchcenterPreviewPage() {
         </article>
       </section>
 
+      <Link href={`/matchcenter-preview/voorbeschouwing/${match.id}`} className="matchcenter-ai-preview-cta">
+        <span>🤖</span>
+        <div><strong>AI Voorbeschouwing</strong><small>Maak een analyse van de tegenstander</small></div>
+        <b>›</b>
+      </Link>
+
       <section className="matchcenter-preview-actions" aria-label="Wedstrijdonderdelen">
         <Link href={`/pronostiek/${match.id}`}>
           <span>⚽</span><strong>Pronostiek</strong><small>{prediction ? "Bekijk / wijzig" : "Invullen"}</small>
