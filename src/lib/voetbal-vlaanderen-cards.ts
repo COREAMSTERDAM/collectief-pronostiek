@@ -231,58 +231,85 @@ function absoluteUrl(src: string, base: string) {
   try { return new URL(src, base).toString(); } catch { return ""; }
 }
 
-function assetUrls(html: string, base: string) {
+function resourceUrls(text: string, base: string) {
   const urls = new Set<string>();
   const add = (raw: string) => {
-    const url = absoluteUrl(raw, base);
-    if (url && /\.m?js(?:\?|$)/i.test(url)) urls.add(url);
+    if (!raw || raw.startsWith("data:")) return;
+    const url = absoluteUrl(raw.replace(/\\u002F/g, "/").replace(/\\\//g, "/"), base);
+    if (!url) return;
+    if (/\.(?:m?js|json)(?:\?|$)/i.test(url)) urls.add(url);
   };
 
-  for (const match of html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)) add(match[1]);
-  for (const match of html.matchAll(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*>/gi)) add(match[1]);
-  for (const match of html.matchAll(/["']([^"']+\.m?js(?:\?[^"']*)?)["']/gi)) add(match[1]);
+  for (const match of text.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)) add(match[1]);
+  for (const match of text.matchAll(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*>/gi)) add(match[1]);
+  for (const match of text.matchAll(/["']([^"']+\.(?:m?js|json)(?:\?[^"']*)?)["']/gi)) add(match[1]);
+  // Webpack/Vite chunks worden soms zonder afsluitende extensiequote opgebouwd.
+  for (const match of text.matchAll(/(?:src:|href:|import\()\s*["']([^"']+)["']/gi)) add(match[1]);
 
   return [...urls];
+}
+
+function operationCandidates(js: string) {
+  const items: Array<{ operation: string; index: number }> = [];
+  const seen = new Set<string>();
+  const add = (operation: string, index: number) => {
+    if (!/^[A-Za-z][A-Za-z0-9_]{2,90}$/.test(operation)) return;
+    if (!/(club|team|card|yellow|red|sanction|suspens|disciplin|player|member|person|squad)/i.test(operation)) return;
+    const key = `${operation}|${index}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    items.push({ operation, index });
+  };
+
+  for (const match of js.matchAll(/operationName\s*[:=]\s*["']([A-Za-z0-9_]+)/g)) add(match[1], match.index ?? 0);
+  for (const match of js.matchAll(/\bquery\s+([A-Za-z0-9_]+)/g)) add(match[1], match.index ?? 0);
+  for (const match of js.matchAll(/\b((?:Get|Fetch|Load|Find|Search)[A-Z][A-Za-z0-9_]{2,80})\b/g)) add(match[1], match.index ?? 0);
+  for (const match of js.matchAll(/["']([A-Za-z][A-Za-z0-9_]{3,80})["']/g)) add(match[1], match.index ?? 0);
+
+  return items;
 }
 
 function persistedCandidates(js: string): PersistedCandidate[] {
   const found = new Map<string, PersistedCandidate>();
   const hashes = [...js.matchAll(/[a-f0-9]{64}/gi)];
-  const ops = [...js.matchAll(/(?:operationName\s*[:=]\s*["']|query\s+)([A-Za-z0-9_]+)/g)]
-    .map((match) => ({ operation: match[1], index: match.index ?? 0 }));
+  const ops = operationCandidates(js);
 
   for (const hashMatch of hashes) {
     const hash = hashMatch[0].toLowerCase();
     const index = hashMatch.index ?? 0;
-    const nearby = js.slice(Math.max(0, index - 12000), Math.min(js.length, index + 12000));
+    const nearbyText = js.slice(Math.max(0, index - 18000), Math.min(js.length, index + 18000));
     const nearbyOps = ops
-      .filter((item) => Math.abs(item.index - index) <= 12000)
+      .filter((item) => Math.abs(item.index - index) <= 18000)
       .sort((a, b) => Math.abs(a.index - index) - Math.abs(b.index - index))
-      .slice(0, 12);
+      .slice(0, 30);
 
-    for (const { operation } of nearbyOps) {
+    for (const item of nearbyOps) {
+      const operation = item.operation;
       let score = 0;
-      if (/card|yellow|red|sanction|suspens|disciplin|penalt/i.test(operation)) score += 20;
-      if (/club|team|member|player|person|squad/i.test(operation)) score += 5;
-      if (/card|yellow|red|sanction|suspens|disciplin|penalt/i.test(nearby)) score += 8;
-      if (/clubId|teamId|organizationId|season/i.test(nearby)) score += 3;
-      const distance = Math.abs((nearbyOps.find((x) => x.operation === operation)?.index ?? index) - index);
-      if (distance < 800) score += 6;
-      else if (distance < 2500) score += 3;
-      if (score < 6) continue;
+      if (/card|yellow|red|sanction|suspens|disciplin|penalt/i.test(operation)) score += 30;
+      if (/club.*team|team.*club/i.test(operation)) score += 22;
+      if (/club|team/i.test(operation)) score += 10;
+      if (/player|member|person|squad/i.test(operation)) score += 7;
+      if (/card|yellow|red|sanction|suspens|disciplin|penalt/i.test(nearbyText)) score += 10;
+      if (/clubId|teamId|organizationId|organisationId/i.test(nearbyText)) score += 5;
+      const distance = Math.abs(item.index - index);
+      if (distance < 500) score += 12;
+      else if (distance < 1800) score += 8;
+      else if (distance < 5000) score += 4;
+      if (score < 12) continue;
       const key = `${operation}|${hash}`;
       const previous = found.get(key);
       if (!previous || previous.score < score) found.set(key, { operation, hash, score });
     }
   }
 
-  return [...found.values()].sort((a, b) => b.score - a.score).slice(0, 80);
+  return [...found.values()].sort((a, b) => b.score - a.score).slice(0, 140);
 }
 
 async function fetchText(url: string) {
   const response = await fetch(url, {
     headers: {
-      accept: "text/html,application/xhtml+xml,application/javascript,text/javascript,*/*;q=0.8",
+      accept: "text/html,application/xhtml+xml,application/javascript,text/javascript,application/json,*/*;q=0.8",
       "user-agent": "Mozilla/5.0 (compatible; CollectiefWitEnZwet/1.0; +https://app.collectiefwitenzwet.be)",
     },
     cache: "no-store",
@@ -291,35 +318,76 @@ async function fetchText(url: string) {
   return response.text();
 }
 
+async function discoverFrontendResources(html: string, baseUrl: string) {
+  const queue = resourceUrls(html, baseUrl);
+  const visited = new Set<string>();
+  const documents: Array<{ url: string; text: string }> = [];
+
+  // De kaartenpagina gebruikt lazy-loaded chunks. Daarom volgen we ook JS-chunks die
+  // vanuit de eerste bundels worden gerefereerd, met een harde bovengrens.
+  while (queue.length && visited.size < 80) {
+    const url = queue.shift()!;
+    if (visited.has(url)) continue;
+    visited.add(url);
+    try {
+      const text = await fetchText(url);
+      documents.push({ url, text });
+      for (const nested of resourceUrls(text, url)) {
+        if (!visited.has(nested) && queue.length < 140) queue.push(nested);
+      }
+    } catch {
+      // Een ontbrekende lazy chunk is niet fataal.
+    }
+  }
+
+  return documents;
+}
+
 async function callPersisted(candidate: PersistedCandidate, variables: JsonRecord) {
-  const params = new URLSearchParams({
+  const body = {
     operationName: candidate.operation,
-    variables: JSON.stringify({ ...variables, language: "nl" }),
-    extensions: JSON.stringify({ persistedQuery: { version: 1, sha256Hash: candidate.hash } }),
-  });
-  const response = await fetch(`${GRAPHQL_URL}?${params.toString()}`, {
-    headers: {
-      accept: "application/json",
-      "x-apollo-operation-name": candidate.operation,
-      "apollo-require-preflight": "true",
-      "user-agent": "CollectiefWitEnZwet/1.0 (+https://app.collectiefwitenzwet.be)",
-    },
-    cache: "no-store",
-  });
+    variables: { ...variables, language: "nl" },
+    extensions: { persistedQuery: { version: 1, sha256Hash: candidate.hash } },
+  };
 
-  const json = await response.json().catch(() => null);
-  const record = asRecord(json);
-  const errors = asArray(record?.errors)
-    .map((item) => firstString(asRecord(item) ?? {}, ["message"]))
-    .filter(Boolean);
+  const headers = {
+    accept: "application/json",
+    "content-type": "application/json",
+    "x-apollo-operation-name": candidate.operation,
+    "apollo-require-preflight": "true",
+    "user-agent": "CollectiefWitEnZwet/1.0 (+https://app.collectiefwitenzwet.be)",
+  };
 
-  if (!response.ok) {
-    return { payload: null as JsonRecord | null, error: `${candidate.operation}: HTTP ${response.status}${errors[0] ? ` · ${errors[0]}` : ""}` };
+  // Eerst POST: dat is minder gevoelig voor URL-encoding en wordt door de actuele
+  // Apollo-configuratie gebruikt. Bij een niet-bruikbare response proberen we GET.
+  for (const method of ["POST", "GET"] as const) {
+    let response: Response;
+    if (method === "POST") {
+      response = await fetch(GRAPHQL_URL, { method, headers, body: JSON.stringify(body), cache: "no-store" });
+    } else {
+      const params = new URLSearchParams({
+        operationName: candidate.operation,
+        variables: JSON.stringify(body.variables),
+        extensions: JSON.stringify(body.extensions),
+      });
+      response = await fetch(`${GRAPHQL_URL}?${params.toString()}`, { headers, cache: "no-store" });
+    }
+
+    const json = await response.json().catch(() => null);
+    const record = asRecord(json);
+    const errors = asArray(record?.errors)
+      .map((item) => firstString(asRecord(item) ?? {}, ["message"]))
+      .filter(Boolean);
+
+    if (response.ok && record && asRecord(record.data)) {
+      return { payload: record, error: errors[0] ? `${candidate.operation}: ${errors[0]}` : null };
+    }
+
+    const error = `${candidate.operation}: HTTP ${response.status}${errors[0] ? ` · ${errors[0]}` : ""}`;
+    if (method === "GET") return { payload: null as JsonRecord | null, error };
   }
-  if (!record || !asRecord(record.data)) {
-    return { payload: null as JsonRecord | null, error: `${candidate.operation}: ${errors[0] || "geen data"}` };
-  }
-  return { payload: record, error: errors[0] ? `${candidate.operation}: ${errors[0]}` : null };
+
+  return { payload: null as JsonRecord | null, error: `${candidate.operation}: geen data` };
 }
 
 function recordsFromPayload(payload: unknown, fetchedAt: string) {
@@ -331,49 +399,68 @@ function recordsFromPayload(payload: unknown, fetchedAt: string) {
   return dedupe(records);
 }
 
+function variablesForOperation(operation: string) {
+  const sets: JsonRecord[] = [
+    { clubId: CLUB_ID },
+    { clubId: Number(CLUB_ID) },
+    { clubID: CLUB_ID },
+    { id: CLUB_ID },
+    { organizationId: CLUB_ID },
+    { organisationId: CLUB_ID },
+  ];
+
+  // Alleen voor operaties die duidelijk seizoensdata verwachten enkele extra pogingen.
+  if (/card|sanction|suspens|disciplin/i.test(operation)) {
+    sets.push(
+      { clubId: CLUB_ID, season: "2026-2027" },
+      { clubId: CLUB_ID, season: "2026" },
+    );
+  }
+  return sets;
+}
+
 async function fetchFromDiscoveredGraphql(html: string, fetchedAt: string, baseUrl = SOURCE_URL) {
-  const urls = assetUrls(html, baseUrl).slice(0, 120);
+  const documents = await discoverFrontendResources(html, baseUrl);
   const candidates: PersistedCandidate[] = [];
   const graphqlErrors: string[] = [];
 
-  for (const url of urls) {
-    try {
-      const js = await fetchText(url);
-      candidates.push(...persistedCandidates(js));
-    } catch {
-      // Een optionele asset mag de volledige sync niet doen falen.
-    }
-  }
+  for (const document of documents) candidates.push(...persistedCandidates(document.text));
 
   const unique = new Map<string, PersistedCandidate>();
-  for (const candidate of candidates) unique.set(`${candidate.operation}|${candidate.hash}`, candidate);
-  const ordered = [...unique.values()].sort((a, b) => b.score - a.score).slice(0, 60);
+  for (const candidate of candidates) {
+    const key = `${candidate.operation}|${candidate.hash}`;
+    const previous = unique.get(key);
+    if (!previous || candidate.score > previous.score) unique.set(key, candidate);
+  }
+  const ordered = [...unique.values()].sort((a, b) => b.score - a.score).slice(0, 24);
 
-  const variableSets: JsonRecord[] = [
-    { clubId: CLUB_ID }, { clubId: Number(CLUB_ID) },
-    { clubID: CLUB_ID }, { clubID: Number(CLUB_ID) },
-    { club: CLUB_ID }, { club: Number(CLUB_ID) },
-    { id: CLUB_ID }, { id: Number(CLUB_ID) },
-    { organizationId: CLUB_ID }, { organizationId: Number(CLUB_ID) },
-    { organisationId: CLUB_ID }, { organisationId: Number(CLUB_ID) },
-  ];
-
+  // Een candidate met een fout hash/operation is goedkoop om te verwerpen. Zodra
+  // Apollo bevestigt dat de persisted query bestaat, proberen we de variabelen.
   for (const candidate of ordered) {
+    const variableSets = variablesForOperation(candidate.operation);
     for (const variables of variableSets) {
       try {
         const result = await callPersisted(candidate, variables);
-        if (result.error && graphqlErrors.length < 12) graphqlErrors.push(result.error);
-        if (!result.payload) continue;
+        if (result.error && graphqlErrors.length < 20) graphqlErrors.push(result.error);
+        if (!result.payload) {
+          // Als Apollo de persisted query zelf niet kent, hebben andere variabelen geen zin.
+          if (/PersistedQueryNotFound|persisted query not found/i.test(result.error ?? "")) break;
+          continue;
+        }
         const records = recordsFromPayload(result.payload, fetchedAt);
         if (records.length) {
           return {
             records,
             operation: candidate.operation,
-            diagnostics: { assetCount: urls.length, candidates: ordered.map((x) => x.operation).slice(0, 12), graphqlErrors },
+            diagnostics: {
+              assetCount: documents.length,
+              candidates: ordered.map((x) => x.operation).slice(0, 18),
+              graphqlErrors,
+            },
           };
         }
       } catch (error) {
-        if (graphqlErrors.length < 12) graphqlErrors.push(error instanceof Error ? error.message : "GraphQL-fout");
+        if (graphqlErrors.length < 20) graphqlErrors.push(error instanceof Error ? error.message : "GraphQL-fout");
       }
     }
   }
@@ -381,7 +468,11 @@ async function fetchFromDiscoveredGraphql(html: string, fetchedAt: string, baseU
   return {
     records: [] as FootballCardRecord[],
     operation: null as string | null,
-    diagnostics: { assetCount: urls.length, candidates: ordered.map((x) => x.operation).slice(0, 12), graphqlErrors },
+    diagnostics: {
+      assetCount: documents.length,
+      candidates: ordered.map((x) => x.operation).slice(0, 18),
+      graphqlErrors,
+    },
   };
 }
 
