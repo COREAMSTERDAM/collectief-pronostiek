@@ -3,6 +3,8 @@ import "server-only";
 import { getSupabaseAdmin } from "@/src/lib/supabase-admin";
 
 const SOURCE_URL = "https://www.voetbalvlaanderen.be/club/1676/kaarten";
+const CLUB_TEAMS_URL = "https://www.voetbalvlaanderen.be/club/1676/ploegen";
+const GRAPHQL_URL = "https://datalake-prod2018.rbfa.be/graphql";
 const CLUB_ID = "1676";
 
 export type FootballCardRecord = {
@@ -18,11 +20,16 @@ export type FootballCardRecord = {
 };
 
 type JsonRecord = Record<string, unknown>;
+type PersistedCandidate = { operation: string; hash: string; score: number };
 
 function asRecord(value: unknown): JsonRecord | null {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as JsonRecord)
     : null;
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
 }
 
 function asString(value: unknown) {
@@ -52,11 +59,15 @@ function firstNumber(record: JsonRecord, keys: string[]) {
 }
 
 function normalizeTeamLabel(value: string) {
-  return value
+  const cleaned = value
     .replace(/\s+/g, " ")
     .replace(/^koninklijke\s+eendracht\s+aalst\s+lede\s*/i, "")
     .replace(/^eendracht\s+aalst[- ]lede\s*/i, "")
-    .trim() || "Eerste elftal";
+    .replace(/^k\.?\s*eendracht\s+aalst\s+lede\s*/i, "")
+    .trim();
+
+  if (!cleaned || /^(a|1|eerste|eerste ploeg|eerste elftal)$/i.test(cleaned)) return "Eerste elftal";
+  return cleaned;
 }
 
 function teamKey(value: string) {
@@ -80,21 +91,6 @@ function decodeHtml(value: string) {
     .trim();
 }
 
-function findEmbeddedJson(html: string): unknown[] {
-  const payloads: unknown[] = [];
-
-  for (const match of html.matchAll(/<script\b[^>]*type=["']application\/json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
-    try { payloads.push(JSON.parse(match[1])); } catch { /* ignore */ }
-  }
-
-  const next = html.match(/<script\b[^>]*id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i);
-  if (next) {
-    try { payloads.push(JSON.parse(next[1])); } catch { /* ignore */ }
-  }
-
-  return payloads;
-}
-
 function recursiveObjects(value: unknown, output: JsonRecord[] = []): JsonRecord[] {
   if (Array.isArray(value)) {
     value.forEach((item) => recursiveObjects(item, output));
@@ -107,32 +103,58 @@ function recursiveObjects(value: unknown, output: JsonRecord[] = []): JsonRecord
   return output;
 }
 
+function cardCount(record: JsonRecord, keys: string[]) {
+  for (const key of keys) {
+    const number = asNumber(record[key]);
+    if (number !== null) return number;
+    const nested = asRecord(record[key]);
+    if (nested) {
+      const nestedCount = firstNumber(nested, ["count", "total", "amount", "value"]);
+      if (nestedCount) return nestedCount;
+    }
+  }
+  return 0;
+}
+
 function recordFromObject(obj: JsonRecord, fetchedAt: string): FootballCardRecord | null {
-  const player = asRecord(obj.player) ?? asRecord(obj.person) ?? asRecord(obj.member);
-  const playerName = firstString(obj, ["playerName", "fullName", "displayName", "name"]) ||
-    (player ? firstString(player, ["fullName", "displayName", "name"]) : "");
+  const player = asRecord(obj.player) ?? asRecord(obj.person) ?? asRecord(obj.member) ?? asRecord(obj.athlete);
+  const playerName = firstString(obj, ["playerName", "fullName", "displayName", "memberName", "personName"]) ||
+    (player ? firstString(player, ["fullName", "displayName", "name", "memberName"]) : "");
 
-  const yellow = firstNumber(obj, ["yellowCards", "yellowCard", "yellow", "cardsYellow", "yellowCount"]);
-  const secondYellow = firstNumber(obj, ["secondYellowRed", "secondYellow", "yellowRedCards", "doubleYellowRed"]);
-  const red = firstNumber(obj, ["redCards", "redCard", "red", "cardsRed", "redCount"]);
+  // Een generiek `name`-veld gebruiken we alleen wanneer dit object duidelijk kaartvelden bevat.
+  const hasCardKey = Object.keys(obj).some((key) => /yellow|red|card|sanction|suspens/i.test(key));
+  const safePlayerName = playerName || (hasCardKey ? firstString(obj, ["name"]) : "");
 
-  if (!playerName || (yellow === 0 && secondYellow === 0 && red === 0)) return null;
-  if (/eendracht|aalst|lede|eerste elftal|u\d{2}|reserve|beloft/i.test(playerName) && playerName.split(" ").length < 4) return null;
+  const yellow = cardCount(obj, [
+    "yellowCards", "yellowCard", "yellow", "cardsYellow", "yellowCount",
+    "numberOfYellowCards", "yellowCardsCount", "yellowCardCount",
+  ]);
+  const secondYellow = cardCount(obj, [
+    "secondYellowRed", "secondYellow", "yellowRedCards", "doubleYellowRed",
+    "secondYellowCards", "yellowRed", "yellowRedCount",
+  ]);
+  const red = cardCount(obj, [
+    "redCards", "redCard", "red", "cardsRed", "redCount",
+    "numberOfRedCards", "redCardsCount", "redCardCount",
+  ]);
 
-  const team = asRecord(obj.team) ?? asRecord(obj.squad) ?? asRecord(obj.clubTeam);
-  const rawTeam = firstString(obj, ["teamName", "teamLabel", "squadName", "categoryName"]) ||
-    (team ? firstString(team, ["displayName", "name", "label", "categoryName"]) : "") ||
+  if (!safePlayerName || (yellow === 0 && secondYellow === 0 && red === 0)) return null;
+  if (/eendracht|aalst|lede|eerste elftal|u\d{1,2}|reserve|beloft/i.test(safePlayerName) && safePlayerName.split(" ").length < 4) return null;
+
+  const team = asRecord(obj.team) ?? asRecord(obj.squad) ?? asRecord(obj.clubTeam) ?? asRecord(obj.teamInfo);
+  const rawTeam = firstString(obj, ["teamName", "teamLabel", "squadName", "categoryName", "teamDescription"]) ||
+    (team ? firstString(team, ["displayName", "name", "label", "categoryName", "description"]) : "") ||
     "Eerste elftal";
   const label = normalizeTeamLabel(rawTeam);
 
   return {
     team_key: teamKey(label),
     team_label: label,
-    player_name: playerName,
+    player_name: safePlayerName,
     yellow_cards: yellow,
     second_yellow_red: secondYellow,
     red_cards: red,
-    suspension_note: firstString(obj, ["suspension", "suspensionNote", "sanction", "status"]) || null,
+    suspension_note: firstString(obj, ["suspension", "suspensionNote", "sanction", "sanctionText", "status"]) || null,
     source_url: SOURCE_URL,
     fetched_at: fetchedAt,
   };
@@ -175,6 +197,18 @@ function parseTables(html: string, fetchedAt: string) {
   return results;
 }
 
+function findEmbeddedJson(html: string): unknown[] {
+  const payloads: unknown[] = [];
+  for (const match of html.matchAll(/<script\b[^>]*type=["']application\/json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try { payloads.push(JSON.parse(match[1])); } catch { /* ignore */ }
+  }
+  const next = html.match(/<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i);
+  if (next) {
+    try { payloads.push(JSON.parse(next[1])); } catch { /* ignore */ }
+  }
+  return payloads;
+}
+
 function dedupe(records: FootballCardRecord[]) {
   const map = new Map<string, FootballCardRecord>();
   for (const record of records) {
@@ -192,33 +226,155 @@ function dedupe(records: FootballCardRecord[]) {
   );
 }
 
-export async function fetchFootballCardsFromSource() {
-  const response = await fetch(SOURCE_URL, {
+function absoluteUrl(src: string, base: string) {
+  try { return new URL(src, base).toString(); } catch { return ""; }
+}
+
+function scriptUrls(html: string, base: string) {
+  const urls = new Set<string>();
+  for (const match of html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)) {
+    const url = absoluteUrl(match[1], base);
+    if (url && /\.js(?:\?|$)/i.test(url)) urls.add(url);
+  }
+  return [...urls];
+}
+
+function persistedCandidates(js: string): PersistedCandidate[] {
+  const found = new Map<string, PersistedCandidate>();
+  const hashes = [...js.matchAll(/[a-f0-9]{64}/gi)];
+  for (const hashMatch of hashes) {
+    const hash = hashMatch[0].toLowerCase();
+    const index = hashMatch.index ?? 0;
+    const nearby = js.slice(Math.max(0, index - 1400), Math.min(js.length, index + 1400));
+    const operationNames = [...nearby.matchAll(/(?:operationName\s*[:=]\s*["']|query\s+)([A-Za-z0-9_]+)/g)]
+      .map((match) => match[1]);
+    for (const operation of operationNames) {
+      let score = 0;
+      if (/card|yellow|red|sanction|suspens|disciplin/i.test(operation)) score += 10;
+      if (/club|team|member|player/i.test(operation)) score += 3;
+      if (/card|yellow|red|sanction|suspens|disciplin/i.test(nearby)) score += 5;
+      if (/clubId|teamId/i.test(nearby)) score += 2;
+      if (score < 5) continue;
+      const key = `${operation}|${hash}`;
+      const previous = found.get(key);
+      if (!previous || previous.score < score) found.set(key, { operation, hash, score });
+    }
+  }
+  return [...found.values()].sort((a, b) => b.score - a.score).slice(0, 24);
+}
+
+async function fetchText(url: string) {
+  const response = await fetch(url, {
     headers: {
-      accept: "text/html,application/xhtml+xml",
+      accept: "text/html,application/xhtml+xml,application/javascript,text/javascript,*/*;q=0.8",
       "user-agent": "Mozilla/5.0 (compatible; CollectiefWitEnZwet/1.0; +https://app.collectiefwitenzwet.be)",
     },
     cache: "no-store",
   });
-  if (!response.ok) throw new Error(`Voetbal Vlaanderen antwoordde met ${response.status}.`);
-  const html = await response.text();
-  const fetchedAt = new Date().toISOString();
+  if (!response.ok) throw new Error(`${new URL(url).hostname} antwoordde met ${response.status}.`);
+  return response.text();
+}
 
-  const records = parseTables(html, fetchedAt);
-  for (const payload of findEmbeddedJson(html)) {
-    for (const obj of recursiveObjects(payload)) {
-      const record = recordFromObject(obj, fetchedAt);
-      if (record) records.push(record);
+async function callPersisted(candidate: PersistedCandidate, variables: JsonRecord) {
+  const params = new URLSearchParams({
+    operationName: candidate.operation,
+    variables: JSON.stringify({ ...variables, language: "nl" }),
+    extensions: JSON.stringify({ persistedQuery: { version: 1, sha256Hash: candidate.hash } }),
+  });
+  const response = await fetch(`${GRAPHQL_URL}?${params.toString()}`, {
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+      "x-apollo-operation-name": candidate.operation,
+      "apollo-require-preflight": "true",
+      "user-agent": "CollectiefWitEnZwet/1.0 (+https://app.collectiefwitenzwet.be)",
+    },
+    cache: "no-store",
+  });
+  if (!response.ok) return null;
+  const json = await response.json().catch(() => null);
+  const record = asRecord(json);
+  if (!record || !asRecord(record.data)) return null;
+  return record;
+}
+
+function recordsFromPayload(payload: unknown, fetchedAt: string) {
+  const records: FootballCardRecord[] = [];
+  for (const obj of recursiveObjects(payload)) {
+    const record = recordFromObject(obj, fetchedAt);
+    if (record) records.push(record);
+  }
+  return dedupe(records);
+}
+
+async function fetchFromDiscoveredGraphql(html: string, fetchedAt: string) {
+  const urls = scriptUrls(html, SOURCE_URL).slice(0, 40);
+  const candidates: PersistedCandidate[] = [];
+
+  // Bundles worden enkel gebruikt om de actuele operationName + persisted-query hash te vinden.
+  // Zo hoeven we die ongedocumenteerde hashes niet vast in de app te zetten.
+  for (const url of urls) {
+    try {
+      const js = await fetchText(url);
+      candidates.push(...persistedCandidates(js));
+    } catch {
+      // Een optionele bundle mag de volledige sync niet doen falen.
     }
   }
 
-  const clean = dedupe(records);
-  if (!clean.length) {
-    throw new Error(
-      "De kaartenpagina werd bereikt, maar de kaarten-data kon niet betrouwbaar worden herkend. De vorige snapshot blijft behouden.",
-    );
+  const unique = new Map<string, PersistedCandidate>();
+  for (const candidate of candidates) unique.set(`${candidate.operation}|${candidate.hash}`, candidate);
+  const ordered = [...unique.values()].sort((a, b) => b.score - a.score).slice(0, 20);
+
+  const variableSets: JsonRecord[] = [
+    { clubId: CLUB_ID },
+    { clubID: CLUB_ID },
+    { club: CLUB_ID },
+    { id: CLUB_ID },
+  ];
+
+  for (const candidate of ordered) {
+    for (const variables of variableSets) {
+      try {
+        const payload = await callPersisted(candidate, variables);
+        if (!payload) continue;
+        const records = recordsFromPayload(payload, fetchedAt);
+        if (records.length) return { records, operation: candidate.operation };
+      } catch {
+        // Volgende kandidaat proberen.
+      }
+    }
   }
-  return clean;
+
+  return { records: [] as FootballCardRecord[], operation: null as string | null };
+}
+
+export async function fetchFootballCardsFromSource() {
+  const html = await fetchText(SOURCE_URL);
+  const fetchedAt = new Date().toISOString();
+
+  // 1. Eerst eventueel server-gerenderde/embedded data proberen.
+  const records = parseTables(html, fetchedAt);
+  for (const payload of findEmbeddedJson(html)) records.push(...recordsFromPayload(payload, fetchedAt));
+  const direct = dedupe(records);
+  if (direct.length) return direct;
+
+  // 2. De huidige frontendbundles laten vertellen welke persisted GraphQL-query actief is.
+  const graphql = await fetchFromDiscoveredGraphql(html, fetchedAt);
+  if (graphql.records.length) return graphql.records;
+
+  // 3. Soms staat de ploegpagina op een andere bundlegroep. Die ook één keer inspecteren.
+  try {
+    const teamsHtml = await fetchText(CLUB_TEAMS_URL);
+    const fromTeamsBundle = await fetchFromDiscoveredGraphql(teamsHtml, fetchedAt);
+    if (fromTeamsBundle.records.length) return fromTeamsBundle.records;
+  } catch {
+    // De primaire foutmelding hieronder blijft duidelijker.
+  }
+
+  throw new Error(
+    "Voetbal Vlaanderen werd bereikt, maar de actuele kaarten-query kon niet automatisch worden herkend. De vorige snapshot blijft behouden.",
+  );
 }
 
 export async function syncFootballCards() {
