@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/src/lib/supabase";
 
@@ -24,7 +24,6 @@ type Payload = {
 export default function KaartenSchorsingenPreviewPage() {
   const router = useRouter();
   const [payload, setPayload] = useState<Payload | null>(null);
-  const [team, setTeam] = useState("");
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState("");
@@ -32,7 +31,10 @@ export default function KaartenSchorsingenPreviewPage() {
   async function request(method: "GET" | "POST" = "GET") {
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData.session?.access_token;
-    if (!token) { router.replace("/login?reason=login-required"); return null; }
+    if (!token) {
+      router.replace("/login?reason=login-required");
+      return null;
+    }
     const response = await fetch("/api/admin/football-cards", {
       method,
       headers: { Authorization: `Bearer ${token}` },
@@ -52,59 +54,49 @@ export default function KaartenSchorsingenPreviewPage() {
         setPayload(json);
       } catch (caught) {
         if (active) setError(caught instanceof Error ? caught.message : "Laden mislukt.");
-      } finally { if (active) setLoading(false); }
+      } finally {
+        if (active) setLoading(false);
+      }
     })();
     return () => { active = false; };
   }, []);
 
-  const teams = useMemo(() => {
-    const values = [...new Map<string, string>((payload?.records ?? []).map((row) => [row.team_key, row.team_label])).entries()]
-      .map(([key, label]) => ({ key, label }))
-      .sort((a, b) => {
-        if (/eerste/i.test(a.label)) return -1;
-        if (/eerste/i.test(b.label)) return 1;
-        if (/reserven|beloften/i.test(a.label) && !/reserven|beloften/i.test(b.label)) return -1;
-        if (/reserven|beloften/i.test(b.label) && !/reserven|beloften/i.test(a.label)) return 1;
-        const ageA = Number(a.label.match(/U\s?(\d{1,2})/i)?.[1] ?? 0);
-        const ageB = Number(b.label.match(/U\s?(\d{1,2})/i)?.[1] ?? 0);
-        if (ageA && ageB && ageA !== ageB) return ageB - ageA;
-        return a.label.localeCompare(b.label, "nl");
-      });
-    return values;
-  }, [payload]);
-
-  useEffect(() => {
-    if (!team && teams.length) setTeam(teams[0].key);
-  }, [team, teams]);
-
-  const rows = useMemo(() => (payload?.records ?? []).filter((row) => !team || row.team_key === team), [payload, team]);
-
   async function syncNow() {
-    setSyncing(true); setError("");
+    setSyncing(true);
+    setError("");
     try {
       const json = await request("POST");
       if (json) setPayload(json);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Synchroniseren mislukt.");
-    } finally { setSyncing(false); }
+    } finally {
+      setSyncing(false);
+    }
   }
 
-
+  const rows = payload?.records ?? [];
 
   return (
     <main className="football-cards-preview-page">
       <header className="football-cards-preview-header">
-        <div><p>Admin preview · Club</p><h1>Kaarten & schorsingen</h1><span>Bron: Voetbal Vlaanderen</span></div>
+        <div>
+          <p>Admin preview · Club</p>
+          <h1>Kaarten & schorsingen</h1>
+          <span>Bron: officiële clubsite Eendracht Aalst-Lede</span>
+        </div>
         <div className="football-cards-preview-mark">🟨</div>
       </header>
 
       <section className="football-cards-preview-controls">
-        <label><span>Ploeg</span>
-          <select value={team} onChange={(event) => setTeam(event.target.value)} disabled={!teams.length}>
-            {teams.length ? teams.map((item) => <option value={item.key} key={item.key}>{item.label}</option>) : <option>Geen ploegen geladen</option>}
+        <label>
+          <span>Ploeg</span>
+          <select value="eerste-elftal" disabled>
+            <option value="eerste-elftal">Eerste elftal</option>
           </select>
         </label>
-        <button type="button" onClick={syncNow} disabled={syncing}>{syncing ? "Bijwerken…" : "Nu bijwerken"}</button>
+        <button type="button" onClick={syncNow} disabled={syncing}>
+          {syncing ? "Bijwerken…" : "Nu bijwerken"}
+        </button>
       </section>
 
       {loading ? <div className="football-cards-preview-state">Kaarten laden…</div> : null}
@@ -112,26 +104,40 @@ export default function KaartenSchorsingenPreviewPage() {
 
       {!loading && !rows.length ? (
         <div className="football-cards-preview-state">
-          Nog geen kaarten-data opgeslagen. Gebruik <strong>Nu bijwerken</strong> om de eerste synchronisatie te proberen.
+          Nog geen kaartgegevens opgeslagen. Gebruik <strong>Nu bijwerken</strong> voor de eerste synchronisatie met de clubsite.
         </div>
       ) : null}
 
-      {rows.length ? <section className="football-cards-preview-list">
-        {rows.map((row) => (
-          <article key={row.id}>
-            <div className="football-cards-preview-player"><strong>{row.player_name}</strong>{row.suspension_note ? <small>{row.suspension_note}</small> : null}</div>
-            <div className="football-cards-preview-counts">
-              <span title="Gele kaarten">🟨 <b>{row.yellow_cards}</b></span>
-              {row.second_yellow_red ? <span title="Tweede geel / rood">🟨🟥 <b>{row.second_yellow_red}</b></span> : null}
-              {row.red_cards ? <span title="Rode kaarten">🟥 <b>{row.red_cards}</b></span> : null}
-            </div>
-          </article>
-        ))}
-      </section> : null}
+      {rows.length ? (
+        <section className="football-cards-preview-list">
+          {rows.map((row) => (
+            <article key={row.id}>
+              <div className="football-cards-preview-player">
+                <strong>{row.player_name}</strong>
+                {row.suspension_note ? <small>{row.suspension_note}</small> : null}
+              </div>
+              <div className="football-cards-preview-counts">
+                <span title="Gele kaarten">🟨 <b>{row.yellow_cards}</b></span>
+                {row.red_cards ? <span title="Rode kaarten">🟥 <b>{row.red_cards}</b></span> : null}
+              </div>
+            </article>
+          ))}
+        </section>
+      ) : null}
+
+      <p className="football-cards-preview-note">
+        De clubsite vermeldt kaartenaantallen per speler. Schorsingen worden niet afgeleid zolang de bron ze niet expliciet vermeldt.
+      </p>
 
       <footer className="football-cards-preview-footer">
-        <span>{payload?.state?.last_success_at ? `Laatste succesvolle update: ${new Intl.DateTimeFormat("nl-BE", { dateStyle: "medium", timeStyle: "short" }).format(new Date(payload.state.last_success_at))}` : "Nog niet gesynchroniseerd"}</span>
-        <a href={payload?.sourceUrl ?? "https://www.voetbalvlaanderen.be/club/1676/kaarten"} target="_blank" rel="noreferrer">Open bron ↗</a>
+        <span>
+          {payload?.state?.last_success_at
+            ? `Laatste succesvolle update: ${new Intl.DateTimeFormat("nl-BE", { dateStyle: "medium", timeStyle: "short" }).format(new Date(payload.state.last_success_at))}`
+            : "Nog niet gesynchroniseerd"}
+        </span>
+        <a href={payload?.sourceUrl ?? "https://www.eendracht-aalst-lede.be/sportief/eerste-elftal/spelers-staff/"} target="_blank" rel="noreferrer">
+          Open bron ↗
+        </a>
       </footer>
     </main>
   );

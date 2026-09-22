@@ -4,7 +4,7 @@ import {
   getCachedFootballCards,
   rememberFootballCardsError,
   syncFootballCards,
-} from "@/src/lib/voetbal-vlaanderen-cards";
+} from "@/src/lib/clubsite-cards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

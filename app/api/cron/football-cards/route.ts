@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rememberFootballCardsError, syncFootballCards } from "@/src/lib/voetbal-vlaanderen-cards";
+import { rememberFootballCardsError, syncFootballCards } from "@/src/lib/clubsite-cards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
