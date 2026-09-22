@@ -58,11 +58,16 @@ export default function KaartenSchorsingenPreviewPage() {
   }, []);
 
   const teams = useMemo(() => {
-    const values = [...new Map((payload?.records ?? []).map((row) => [row.team_key, row.team_label])).entries()]
+    const values = [...new Map<string, string>((payload?.records ?? []).map((row) => [row.team_key, row.team_label])).entries()]
       .map(([key, label]) => ({ key, label }))
       .sort((a, b) => {
         if (/eerste/i.test(a.label)) return -1;
         if (/eerste/i.test(b.label)) return 1;
+        if (/reserven|beloften/i.test(a.label) && !/reserven|beloften/i.test(b.label)) return -1;
+        if (/reserven|beloften/i.test(b.label) && !/reserven|beloften/i.test(a.label)) return 1;
+        const ageA = Number(a.label.match(/U\s?(\d{1,2})/i)?.[1] ?? 0);
+        const ageB = Number(b.label.match(/U\s?(\d{1,2})/i)?.[1] ?? 0);
+        if (ageA && ageB && ageA !== ageB) return ageB - ageA;
         return a.label.localeCompare(b.label, "nl");
       });
     return values;
@@ -84,33 +89,7 @@ export default function KaartenSchorsingenPreviewPage() {
     } finally { setSyncing(false); }
   }
 
-  async function downloadDiagnostics() {
-    setError("");
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      if (!token) { router.replace("/login?reason=login-required"); return; }
-      const response = await fetch("/api/admin/football-cards/diagnostics", {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
-      if (!response.ok) {
-        const json = await response.json().catch(() => ({}));
-        throw new Error(json.error ?? "Diagnose maken mislukt.");
-      }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "voetbal-vlaanderen-kaarten-diagnose.json";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Diagnose maken mislukt.");
-    }
-  }
+
 
   return (
     <main className="football-cards-preview-page">
@@ -129,10 +108,7 @@ export default function KaartenSchorsingenPreviewPage() {
       </section>
 
       {loading ? <div className="football-cards-preview-state">Kaarten laden…</div> : null}
-      {error ? <div className="football-cards-preview-state is-error">
-        <div>{error}</div>
-        <button type="button" onClick={downloadDiagnostics}>Download diagnose</button>
-      </div> : null}
+      {error ? <div className="football-cards-preview-state is-error">{error}</div> : null}
 
       {!loading && !rows.length ? (
         <div className="football-cards-preview-state">

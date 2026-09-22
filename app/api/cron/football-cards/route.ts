@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rememberFootballCardsError, syncFootballCards } from "@/src/lib/voetbal-vlaanderen-cards";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
+
 function authorized(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;

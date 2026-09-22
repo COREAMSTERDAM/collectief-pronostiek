@@ -6,6 +6,10 @@ import {
   syncFootballCards,
 } from "@/src/lib/voetbal-vlaanderen-cards";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 export async function GET(request: NextRequest) {
   try {
     await requireAppAdmin(request);
