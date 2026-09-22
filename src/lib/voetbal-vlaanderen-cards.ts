@@ -21,6 +21,7 @@ export type FootballCardRecord = {
 
 type JsonRecord = Record<string, unknown>;
 type PersistedCandidate = { operation: string; hash: string; score: number };
+type DiscoveryDiagnostics = { assetCount: number; candidates: string[]; graphqlErrors: string[] };
 
 function asRecord(value: unknown): JsonRecord | null {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -230,37 +231,52 @@ function absoluteUrl(src: string, base: string) {
   try { return new URL(src, base).toString(); } catch { return ""; }
 }
 
-function scriptUrls(html: string, base: string) {
+function assetUrls(html: string, base: string) {
   const urls = new Set<string>();
-  for (const match of html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)) {
-    const url = absoluteUrl(match[1], base);
-    if (url && /\.js(?:\?|$)/i.test(url)) urls.add(url);
-  }
+  const add = (raw: string) => {
+    const url = absoluteUrl(raw, base);
+    if (url && /\.m?js(?:\?|$)/i.test(url)) urls.add(url);
+  };
+
+  for (const match of html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)) add(match[1]);
+  for (const match of html.matchAll(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*>/gi)) add(match[1]);
+  for (const match of html.matchAll(/["']([^"']+\.m?js(?:\?[^"']*)?)["']/gi)) add(match[1]);
+
   return [...urls];
 }
 
 function persistedCandidates(js: string): PersistedCandidate[] {
   const found = new Map<string, PersistedCandidate>();
   const hashes = [...js.matchAll(/[a-f0-9]{64}/gi)];
+  const ops = [...js.matchAll(/(?:operationName\s*[:=]\s*["']|query\s+)([A-Za-z0-9_]+)/g)]
+    .map((match) => ({ operation: match[1], index: match.index ?? 0 }));
+
   for (const hashMatch of hashes) {
     const hash = hashMatch[0].toLowerCase();
     const index = hashMatch.index ?? 0;
-    const nearby = js.slice(Math.max(0, index - 1400), Math.min(js.length, index + 1400));
-    const operationNames = [...nearby.matchAll(/(?:operationName\s*[:=]\s*["']|query\s+)([A-Za-z0-9_]+)/g)]
-      .map((match) => match[1]);
-    for (const operation of operationNames) {
+    const nearby = js.slice(Math.max(0, index - 12000), Math.min(js.length, index + 12000));
+    const nearbyOps = ops
+      .filter((item) => Math.abs(item.index - index) <= 12000)
+      .sort((a, b) => Math.abs(a.index - index) - Math.abs(b.index - index))
+      .slice(0, 12);
+
+    for (const { operation } of nearbyOps) {
       let score = 0;
-      if (/card|yellow|red|sanction|suspens|disciplin/i.test(operation)) score += 10;
-      if (/club|team|member|player/i.test(operation)) score += 3;
-      if (/card|yellow|red|sanction|suspens|disciplin/i.test(nearby)) score += 5;
-      if (/clubId|teamId/i.test(nearby)) score += 2;
-      if (score < 5) continue;
+      if (/card|yellow|red|sanction|suspens|disciplin|penalt/i.test(operation)) score += 20;
+      if (/club|team|member|player|person|squad/i.test(operation)) score += 5;
+      if (/card|yellow|red|sanction|suspens|disciplin|penalt/i.test(nearby)) score += 8;
+      if (/clubId|teamId|organizationId|season/i.test(nearby)) score += 3;
+      const distance = Math.abs((nearbyOps.find((x) => x.operation === operation)?.index ?? index) - index);
+      if (distance < 800) score += 6;
+      else if (distance < 2500) score += 3;
+      if (score < 6) continue;
       const key = `${operation}|${hash}`;
       const previous = found.get(key);
       if (!previous || previous.score < score) found.set(key, { operation, hash, score });
     }
   }
-  return [...found.values()].sort((a, b) => b.score - a.score).slice(0, 24);
+
+  return [...found.values()].sort((a, b) => b.score - a.score).slice(0, 80);
 }
 
 async function fetchText(url: string) {
@@ -284,18 +300,26 @@ async function callPersisted(candidate: PersistedCandidate, variables: JsonRecor
   const response = await fetch(`${GRAPHQL_URL}?${params.toString()}`, {
     headers: {
       accept: "application/json",
-      "content-type": "application/json",
       "x-apollo-operation-name": candidate.operation,
       "apollo-require-preflight": "true",
       "user-agent": "CollectiefWitEnZwet/1.0 (+https://app.collectiefwitenzwet.be)",
     },
     cache: "no-store",
   });
-  if (!response.ok) return null;
+
   const json = await response.json().catch(() => null);
   const record = asRecord(json);
-  if (!record || !asRecord(record.data)) return null;
-  return record;
+  const errors = asArray(record?.errors)
+    .map((item) => firstString(asRecord(item) ?? {}, ["message"]))
+    .filter(Boolean);
+
+  if (!response.ok) {
+    return { payload: null as JsonRecord | null, error: `${candidate.operation}: HTTP ${response.status}${errors[0] ? ` · ${errors[0]}` : ""}` };
+  }
+  if (!record || !asRecord(record.data)) {
+    return { payload: null as JsonRecord | null, error: `${candidate.operation}: ${errors[0] || "geen data"}` };
+  }
+  return { payload: record, error: errors[0] ? `${candidate.operation}: ${errors[0]}` : null };
 }
 
 function recordsFromPayload(payload: unknown, fetchedAt: string) {
@@ -307,46 +331,58 @@ function recordsFromPayload(payload: unknown, fetchedAt: string) {
   return dedupe(records);
 }
 
-async function fetchFromDiscoveredGraphql(html: string, fetchedAt: string) {
-  const urls = scriptUrls(html, SOURCE_URL).slice(0, 40);
+async function fetchFromDiscoveredGraphql(html: string, fetchedAt: string, baseUrl = SOURCE_URL) {
+  const urls = assetUrls(html, baseUrl).slice(0, 120);
   const candidates: PersistedCandidate[] = [];
+  const graphqlErrors: string[] = [];
 
-  // Bundles worden enkel gebruikt om de actuele operationName + persisted-query hash te vinden.
-  // Zo hoeven we die ongedocumenteerde hashes niet vast in de app te zetten.
   for (const url of urls) {
     try {
       const js = await fetchText(url);
       candidates.push(...persistedCandidates(js));
     } catch {
-      // Een optionele bundle mag de volledige sync niet doen falen.
+      // Een optionele asset mag de volledige sync niet doen falen.
     }
   }
 
   const unique = new Map<string, PersistedCandidate>();
   for (const candidate of candidates) unique.set(`${candidate.operation}|${candidate.hash}`, candidate);
-  const ordered = [...unique.values()].sort((a, b) => b.score - a.score).slice(0, 20);
+  const ordered = [...unique.values()].sort((a, b) => b.score - a.score).slice(0, 60);
 
   const variableSets: JsonRecord[] = [
-    { clubId: CLUB_ID },
-    { clubID: CLUB_ID },
-    { club: CLUB_ID },
-    { id: CLUB_ID },
+    { clubId: CLUB_ID }, { clubId: Number(CLUB_ID) },
+    { clubID: CLUB_ID }, { clubID: Number(CLUB_ID) },
+    { club: CLUB_ID }, { club: Number(CLUB_ID) },
+    { id: CLUB_ID }, { id: Number(CLUB_ID) },
+    { organizationId: CLUB_ID }, { organizationId: Number(CLUB_ID) },
+    { organisationId: CLUB_ID }, { organisationId: Number(CLUB_ID) },
   ];
 
   for (const candidate of ordered) {
     for (const variables of variableSets) {
       try {
-        const payload = await callPersisted(candidate, variables);
-        if (!payload) continue;
-        const records = recordsFromPayload(payload, fetchedAt);
-        if (records.length) return { records, operation: candidate.operation };
-      } catch {
-        // Volgende kandidaat proberen.
+        const result = await callPersisted(candidate, variables);
+        if (result.error && graphqlErrors.length < 12) graphqlErrors.push(result.error);
+        if (!result.payload) continue;
+        const records = recordsFromPayload(result.payload, fetchedAt);
+        if (records.length) {
+          return {
+            records,
+            operation: candidate.operation,
+            diagnostics: { assetCount: urls.length, candidates: ordered.map((x) => x.operation).slice(0, 12), graphqlErrors },
+          };
+        }
+      } catch (error) {
+        if (graphqlErrors.length < 12) graphqlErrors.push(error instanceof Error ? error.message : "GraphQL-fout");
       }
     }
   }
 
-  return { records: [] as FootballCardRecord[], operation: null as string | null };
+  return {
+    records: [] as FootballCardRecord[],
+    operation: null as string | null,
+    diagnostics: { assetCount: urls.length, candidates: ordered.map((x) => x.operation).slice(0, 12), graphqlErrors },
+  };
 }
 
 export async function fetchFootballCardsFromSource() {
@@ -359,21 +395,33 @@ export async function fetchFootballCardsFromSource() {
   const direct = dedupe(records);
   if (direct.length) return direct;
 
-  // 2. De huidige frontendbundles laten vertellen welke persisted GraphQL-query actief is.
-  const graphql = await fetchFromDiscoveredGraphql(html, fetchedAt);
+  // 2. De huidige frontendassets laten vertellen welke persisted GraphQL-query actief is.
+  const graphql = await fetchFromDiscoveredGraphql(html, fetchedAt, SOURCE_URL);
   if (graphql.records.length) return graphql.records;
 
-  // 3. Soms staat de ploegpagina op een andere bundlegroep. Die ook één keer inspecteren.
+  // 3. Soms staat de ploegpagina op een andere assetgroep. Die ook inspecteren.
+  let teamsDiagnostics: DiscoveryDiagnostics | null = null;
   try {
     const teamsHtml = await fetchText(CLUB_TEAMS_URL);
-    const fromTeamsBundle = await fetchFromDiscoveredGraphql(teamsHtml, fetchedAt);
+    const fromTeamsBundle = await fetchFromDiscoveredGraphql(teamsHtml, fetchedAt, CLUB_TEAMS_URL);
+    teamsDiagnostics = fromTeamsBundle.diagnostics;
     if (fromTeamsBundle.records.length) return fromTeamsBundle.records;
   } catch {
-    // De primaire foutmelding hieronder blijft duidelijker.
+    // De diagnose van de kaartenpagina blijft beschikbaar.
   }
 
+  const diagnostics = [graphql.diagnostics, teamsDiagnostics].filter(Boolean) as DiscoveryDiagnostics[];
+  const assets = diagnostics.reduce((sum, item) => sum + item.assetCount, 0);
+  const candidates = [...new Set(diagnostics.flatMap((item) => item.candidates))].slice(0, 8);
+  const gqlErrors = [...new Set(diagnostics.flatMap((item) => item.graphqlErrors))].slice(0, 4);
+  const detail = [
+    `assets=${assets}`,
+    candidates.length ? `queries=${candidates.join(", ")}` : "queries=geen",
+    gqlErrors.length ? `GraphQL=${gqlErrors.join(" | ")}` : "GraphQL=geen bruikbare response",
+  ].join(" · ");
+
   throw new Error(
-    "Voetbal Vlaanderen werd bereikt, maar de actuele kaarten-query kon niet automatisch worden herkend. De vorige snapshot blijft behouden.",
+    `Voetbal Vlaanderen werd bereikt, maar de kaarten-data kon nog niet betrouwbaar worden uitgelezen. ${detail}. De vorige snapshot blijft behouden.`,
   );
 }
 
