@@ -379,3 +379,179 @@ export async function getCachedFootballCards() {
   if (error) throw new Error(`Kaarten laden mislukt: ${error.message}`);
   return { records: records ?? [], state: state ?? null, sourceUrl: SOURCE_URL };
 }
+
+export type FootballCardsDiagnostic = {
+  generatedAt: string;
+  clubId: string;
+  sourceUrl: string;
+  pages: Array<{
+    url: string;
+    status: number | null;
+    ok: boolean;
+    contentType: string | null;
+    length: number;
+    scriptCount: number;
+    scripts: string[];
+    htmlHits: Array<{ term: string; snippet: string }>;
+    error?: string;
+  }>;
+  assets: Array<{
+    url: string;
+    status: number | null;
+    ok: boolean;
+    length: number;
+    hits: Array<{ term: string; snippet: string }>;
+    urls: string[];
+    operationNames: string[];
+    error?: string;
+  }>;
+};
+
+function diagnosticSnippet(text: string, index: number, radius = 320) {
+  return text
+    .slice(Math.max(0, index - radius), Math.min(text.length, index + radius))
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function diagnosticHits(text: string) {
+  const terms = [
+    "kaarten", "cards", "card", "disciplinary", "suspension", "schors",
+    "teamId", "teamID", "clubId", "clubID", "clubTeams", "teamsByClub",
+    "GetClub", "GetTeam", "apollo", "graphql", "persistedQuery",
+  ];
+  const hits: Array<{ term: string; snippet: string }> = [];
+  const lower = text.toLowerCase();
+  for (const term of terms) {
+    const idx = lower.indexOf(term.toLowerCase());
+    if (idx >= 0) hits.push({ term, snippet: diagnosticSnippet(text, idx) });
+    if (hits.length >= 12) break;
+  }
+  return hits;
+}
+
+function scriptUrlsFromHtml(html: string, baseUrl: string) {
+  const urls = new Set<string>();
+  for (const match of html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)) {
+    try { urls.add(new URL(match[1], baseUrl).toString()); } catch { /* ignore */ }
+  }
+  for (const match of html.matchAll(/(?:src|href)=["']([^"']+\.(?:js|mjs)(?:\?[^"']*)?)["']/gi)) {
+    try { urls.add(new URL(match[1], baseUrl).toString()); } catch { /* ignore */ }
+  }
+  return [...urls];
+}
+
+function operationNamesFromText(text: string) {
+  const names = new Set<string>();
+  const patterns = [
+    /operationName["']?\s*[:=]\s*["']([A-Za-z0-9_]{3,80})["']/g,
+    /(?:query|mutation)\s+([A-Za-z_][A-Za-z0-9_]{2,79})\b/g,
+    /["'](Get[A-Z][A-Za-z0-9_]{2,79})["']/g,
+  ];
+  for (const pattern of patterns) {
+    for (const match of text.matchAll(pattern)) names.add(match[1]);
+  }
+  return [...names].slice(0, 80);
+}
+
+function endpointUrlsFromText(text: string) {
+  const urls = new Set<string>();
+  for (const match of text.matchAll(/https?:\\?\/\\?\/[^"'`\s)]+/g)) {
+    const clean = match[0].replace(/\\\//g, "/");
+    if (/rbfa|voetbalvlaanderen|graphql|api/i.test(clean)) urls.add(clean.slice(0, 500));
+  }
+  return [...urls].slice(0, 40);
+}
+
+export async function buildFootballCardsDiagnostics(): Promise<FootballCardsDiagnostic> {
+  const pages: FootballCardsDiagnostic["pages"] = [];
+  const assetSet = new Set<string>();
+  const pageUrls = [SOURCE_URL, ...CLUB_TEAMS_URLS];
+
+  for (const url of pageUrls) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          accept: "text/html,application/xhtml+xml,*/*;q=0.8",
+          "accept-language": "nl-BE,nl;q=0.9,en;q=0.5",
+          "user-agent": "Mozilla/5.0 (compatible; CollectiefWitEnZwet/1.0; +https://app.collectiefwitenzwet.be)",
+        },
+        cache: "no-store",
+        redirect: "follow",
+      });
+      const text = await response.text();
+      const scripts = scriptUrlsFromHtml(text, response.url || url);
+      scripts.forEach((item) => assetSet.add(item));
+      pages.push({
+        url,
+        status: response.status,
+        ok: response.ok,
+        contentType: response.headers.get("content-type"),
+        length: text.length,
+        scriptCount: scripts.length,
+        scripts: scripts.slice(0, 40),
+        htmlHits: diagnosticHits(text),
+      });
+    } catch (error) {
+      pages.push({
+        url,
+        status: null,
+        ok: false,
+        contentType: null,
+        length: 0,
+        scriptCount: 0,
+        scripts: [],
+        htmlHits: [],
+        error: error instanceof Error ? error.message : "Onbekende fout",
+      });
+    }
+  }
+
+  const assets: FootballCardsDiagnostic["assets"] = [];
+  for (const url of [...assetSet].slice(0, 40)) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          accept: "*/*",
+          "user-agent": "Mozilla/5.0 (compatible; CollectiefWitEnZwet/1.0; +https://app.collectiefwitenzwet.be)",
+        },
+        cache: "no-store",
+        redirect: "follow",
+      });
+      const text = await response.text();
+      const hits = diagnosticHits(text);
+      const operationNames = operationNamesFromText(text);
+      const urls = endpointUrlsFromText(text);
+      if (hits.length || operationNames.length || urls.length) {
+        assets.push({
+          url,
+          status: response.status,
+          ok: response.ok,
+          length: text.length,
+          hits,
+          urls,
+          operationNames,
+        });
+      }
+    } catch (error) {
+      assets.push({
+        url,
+        status: null,
+        ok: false,
+        length: 0,
+        hits: [],
+        urls: [],
+        operationNames: [],
+        error: error instanceof Error ? error.message : "Onbekende fout",
+      });
+    }
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    clubId: CLUB_ID,
+    sourceUrl: SOURCE_URL,
+    pages,
+    assets,
+  };
+}

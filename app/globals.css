@@ -3898,3 +3898,15 @@ html[data-theme-mode="light"] .native-tile-subtitle {
 .football-cards-preview-footer { display:flex; justify-content:space-between; gap:12px; margin-top:14px; color:#777b81; font-size:10px; font-weight:700; }
 .football-cards-preview-footer a { color:#111; font-weight:900; }
 @media (max-width:390px) { .football-cards-preview-controls { grid-template-columns:1fr; } .football-cards-preview-controls button { width:100%; } }
+
+.football-cards-preview-state.is-error button {
+  margin-top: 12px;
+  border: 1px solid rgba(120, 20, 20, .25);
+  border-radius: 12px;
+  background: #fff;
+  color: #8f1f1f;
+  font: inherit;
+  font-weight: 800;
+  padding: 10px 14px;
+  cursor: pointer;
+}
