@@ -23,13 +23,14 @@ const sections: SupportershubSection[] = [
     title: "Club",
     items: [
       { href: "/admin/clubnieuws", icon: "📰", title: "Clubnieuws", subtitle: "Clubwebsite, HLN & Nieuwsblad" },
+      { href: "/kaarten-schorsingen-preview", icon: "🟨", title: "Kaarten & schorsingen", subtitle: "Per ploeg · Voetbal Vlaanderen" },
       { href: "/club-preview", icon: "🏆", title: "2e Amateur VV A", subtitle: "Kalender & klassement" },
     ],
   },
     {
     title: "Supporters",
     items: [
-      { href: "/community", icon: "👥", title: "Community", subtitle: "Praat mee met supporters" },
+      { href: "/community", icon: "👥", title: "Community", subtitle: "Wordt nog aan gewerkt", disabled: true },
       { href: "/supportersclubs-preview", icon: "🏴", title: "Supportersclubs", subtitle: "Clubs, locaties & contact" },
       { href: "/meldingen", icon: "🔔", title: "Meldingen", subtitle: "Updates & notificaties" },
       { href: "/meldingen/instellingen", icon: "⚙️", title: "Voorkeuren", subtitle: "Kies je meldingen" },
@@ -82,7 +83,11 @@ export default function SupportershubPreviewPage() {
           <div className="supportershub-menu-grid">
             {section.items.map((item) => item.disabled ? (
               <div className="supportershub-menu-tile is-disabled" key={item.title}>
-                <span className="supportershub-menu-icon">{item.icon}</span><div><strong>{item.title}</strong></div>
+                <span className="supportershub-menu-icon">{item.icon}</span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <small>{item.subtitle}</small>
+                </div>
               </div>
             ) : (
               <Link className="supportershub-menu-tile" href={item.href} key={item.title}>
