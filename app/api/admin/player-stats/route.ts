@@ -8,6 +8,7 @@ type PlayerStatUpdate = {
   id: number;
   goals: number;
   yellow_cards: number;
+  second_yellow_red: boolean;
 };
 
 function normalizeCount(value: unknown, label: string) {
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabaseAdmin
       .from("players")
-      .select("id,name,shirt_number,position,active,goals,yellow_cards")
+      .select("id,name,shirt_number,position,active,goals,yellow_cards,second_yellow_red")
       .eq("active", true)
       .order("shirt_number", { ascending: true, nullsFirst: false })
       .order("name", { ascending: true });
@@ -59,10 +60,11 @@ export async function PATCH(request: NextRequest) {
 
       const goals = normalizeCount(raw.goals, "Doelpunten");
       const yellowCards = normalizeCount(raw.yellow_cards, "Gele kaarten");
+      const secondYellowRed = raw.second_yellow_red === true;
 
       const { error } = await supabaseAdmin
         .from("players")
-        .update({ goals, yellow_cards: yellowCards })
+        .update({ goals, yellow_cards: yellowCards, second_yellow_red: secondYellowRed })
         .eq("id", id);
 
       if (error) throw new Error(error.message);

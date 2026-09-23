@@ -12,6 +12,7 @@ type PlayerStat = {
   active: boolean;
   goals: number;
   yellow_cards: number;
+  second_yellow_red: boolean;
 };
 
 export default function AdminSpelersstatistiekenPage() {
@@ -45,6 +46,7 @@ export default function AdminSpelersstatistiekenPage() {
         ...player,
         goals: Number(player.goals ?? 0),
         yellow_cards: Number(player.yellow_cards ?? 0),
+        second_yellow_red: Boolean(player.second_yellow_red),
       })));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Laden mislukt.");
@@ -90,6 +92,7 @@ export default function AdminSpelersstatistiekenPage() {
             id: player.id,
             goals: player.goals,
             yellow_cards: player.yellow_cards,
+            second_yellow_red: player.second_yellow_red,
           })),
         }),
       });
@@ -103,7 +106,7 @@ export default function AdminSpelersstatistiekenPage() {
     }
   }
 
-  const suspended = useMemo(() => players.filter((player) => player.yellow_cards >= 3), [players]);
+  const suspended = useMemo(() => players.filter((player) => player.yellow_cards >= 3 || player.second_yellow_red), [players]);
 
   return (
     <main className="ucl-page">
@@ -111,7 +114,7 @@ export default function AdminSpelersstatistiekenPage() {
         <header className="mb-6">
           <p className="mb-2 text-sm font-black uppercase tracking-[0.2em] text-emerald-300">Admin</p>
           <h1 className="ucl-title">📊 Spelersstatistieken</h1>
-          <p className="ucl-subtitle">Hou doelpunten en gele kaarten zelf bij. Vanaf 3 gele kaarten wordt een speler automatisch als geschorst aangeduid.</p>
+          <p className="ucl-subtitle">Hou doelpunten en kaarten zelf bij. Een speler is automatisch geschorst bij 3 gele kaarten of na 2x geel (rood) in één wedstrijd.</p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link href="/admin/spelers" className="ucl-button-secondary">← Spelersbeheer</Link>
             <button type="button" onClick={saveAll} disabled={saving || loading} className="ucl-button-primary disabled:opacity-50">
@@ -129,7 +132,7 @@ export default function AdminSpelersstatistiekenPage() {
             <div className="mt-3 flex flex-wrap gap-2">
               {suspended.map((player) => (
                 <span key={player.id} className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-sm font-black text-amber-100">
-                  {player.name} · {player.yellow_cards} 🟨
+                  {player.name} · {player.second_yellow_red ? "2x geel → rood" : `${player.yellow_cards} 🟨`}
                 </span>
               ))}
             </div>
@@ -146,14 +149,30 @@ export default function AdminSpelersstatistiekenPage() {
                   <div className="flex items-center gap-2">
                     {player.shirt_number ? <span className="text-sm font-black text-white/40">#{player.shirt_number}</span> : null}
                     <strong className="truncate text-base font-black text-white">{player.name}</strong>
-                    {player.yellow_cards >= 3 ? <span className="rounded-full bg-rose-500/15 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-rose-200">Geschorst</span> : null}
+                    {player.yellow_cards >= 3 || player.second_yellow_red ? <span className="rounded-full bg-rose-500/15 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-rose-200">Geschorst</span> : null}
                   </div>
                   <span className="text-xs font-semibold text-white/35">{player.position ?? "Speler"}</span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 sm:w-[360px]">
+                <div className="grid grid-cols-2 gap-3 sm:w-[520px] sm:grid-cols-3">
                   <Counter label="Doelpunten" value={player.goals} icon="⚽" onMinus={() => change(player.id, "goals", -1)} onPlus={() => change(player.id, "goals", 1)} onChange={(value) => setCount(player.id, "goals", value)} />
                   <Counter label="Gele kaarten" value={player.yellow_cards} icon="🟨" onMinus={() => change(player.id, "yellow_cards", -1)} onPlus={() => change(player.id, "yellow_cards", 1)} onChange={(value) => setCount(player.id, "yellow_cards", value)} />
+                  <label className={`rounded-2xl border p-3 ${player.second_yellow_red ? "border-rose-400/40 bg-rose-500/10" : "border-white/10 bg-black/20"}`}>
+                    <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.14em] text-white/40">🟨🟨→🟥 2x geel</span>
+                    <div className="flex h-9 items-center justify-between gap-3">
+                      <span className="text-xs font-bold text-white/70">Volgende match geschorst</span>
+                      <input
+                        type="checkbox"
+                        checked={player.second_yellow_red}
+                        onChange={(event) => {
+                          setPlayers((current) => current.map((item) => item.id === player.id ? { ...item, second_yellow_red: event.target.checked } : item));
+                          setMessage("");
+                        }}
+                        className="h-5 w-5 accent-rose-500"
+                        aria-label={`${player.name} 2x geel rood`}
+                      />
+                    </div>
+                  </label>
                 </div>
               </div>
             </article>
