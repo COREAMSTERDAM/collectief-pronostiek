@@ -9,6 +9,9 @@ type PlayerStatUpdate = {
   goals: number;
   yellow_cards: number;
   second_yellow_red: boolean;
+  suspension_served: boolean;
+  yellow_suspension_served_at: number;
+  second_yellow_suspension_served: boolean;
 };
 
 function normalizeCount(value: unknown, label: string) {
@@ -26,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabaseAdmin
       .from("players")
-      .select("id,name,shirt_number,position,active,goals,yellow_cards,second_yellow_red")
+      .select("id,name,shirt_number,position,active,goals,yellow_cards,second_yellow_red,suspension_served,yellow_suspension_served_at,second_yellow_suspension_served")
       .eq("active", true)
       .order("shirt_number", { ascending: true, nullsFirst: false })
       .order("name", { ascending: true });
@@ -61,10 +64,25 @@ export async function PATCH(request: NextRequest) {
       const goals = normalizeCount(raw.goals, "Doelpunten");
       const yellowCards = normalizeCount(raw.yellow_cards, "Gele kaarten");
       const secondYellowRed = raw.second_yellow_red === true;
+      const maxYellowThreshold = Math.floor(yellowCards / 3) * 3;
+      const yellowSuspensionServedAt = Math.max(0, Math.min(
+        normalizeCount(raw.yellow_suspension_served_at ?? 0, "Afgewerkte gele schorsingsdrempel"),
+        maxYellowThreshold,
+      ));
+      const secondYellowSuspensionServed = secondYellowRed
+        ? raw.second_yellow_suspension_served === true
+        : false;
 
       const { error } = await supabaseAdmin
         .from("players")
-        .update({ goals, yellow_cards: yellowCards, second_yellow_red: secondYellowRed })
+        .update({
+          goals,
+          yellow_cards: yellowCards,
+          second_yellow_red: secondYellowRed,
+          suspension_served: false,
+          yellow_suspension_served_at: yellowSuspensionServedAt,
+          second_yellow_suspension_served: secondYellowSuspensionServed,
+        })
         .eq("id", id);
 
       if (error) throw new Error(error.message);

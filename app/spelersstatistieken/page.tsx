@@ -12,6 +12,9 @@ type PlayerStat = {
   goals: number | null;
   yellow_cards: number | null;
   second_yellow_red: boolean | null;
+  suspension_served: boolean | null;
+  yellow_suspension_served_at: number | null;
+  second_yellow_suspension_served: boolean | null;
 };
 
 export default function SpelersstatistiekenPage() {
@@ -31,7 +34,7 @@ export default function SpelersstatistiekenPage() {
 
       const { data, error: loadError } = await supabase
         .from("players")
-        .select("id,name,shirt_number,position,goals,yellow_cards,second_yellow_red")
+        .select("id,name,shirt_number,position,goals,yellow_cards,second_yellow_red,suspension_served,yellow_suspension_served_at,second_yellow_suspension_served")
         .eq("active", true)
         .order("shirt_number", { ascending: true, nullsFirst: false })
         .order("name", { ascending: true });
@@ -44,7 +47,13 @@ export default function SpelersstatistiekenPage() {
     return () => { active = false; };
   }, [router]);
 
-  const suspended = useMemo(() => players.filter((player) => Number(player.yellow_cards ?? 0) >= 3 || Boolean(player.second_yellow_red)), [players]);
+  const suspended = useMemo(() => players.filter((player) => {
+    const yellows = Number(player.yellow_cards ?? 0);
+    const threshold = Math.floor(yellows / 3) * 3;
+    const yellowPending = threshold >= 3 && Number(player.yellow_suspension_served_at ?? 0) < threshold;
+    const redPending = Boolean(player.second_yellow_red) && !Boolean(player.second_yellow_suspension_served);
+    return yellowPending || redPending;
+  }), [players]);
 
   return (
     <main className="player-stats-page">
@@ -72,7 +81,7 @@ export default function SpelersstatistiekenPage() {
                 {suspended.map((player) => (
                   <article key={player.id}>
                     <strong>{player.name}</strong>
-                    <span>{player.second_yellow_red ? "2x geel → rood" : `${Number(player.yellow_cards ?? 0)} gele kaarten`}</span>
+                    <span>{Boolean(player.second_yellow_red) && !Boolean(player.second_yellow_suspension_served) ? "2x geel → rood" : `${Math.floor(Number(player.yellow_cards ?? 0) / 3) * 3} gele kaarten`}</span>
                   </article>
                 ))}
               </div>
@@ -88,7 +97,10 @@ export default function SpelersstatistiekenPage() {
             <div className="player-stats-list">
               {players.map((player) => {
                 const yellows = Number(player.yellow_cards ?? 0);
-                const isSuspended = yellows >= 3 || Boolean(player.second_yellow_red);
+                const threshold = Math.floor(yellows / 3) * 3;
+                const yellowPending = threshold >= 3 && Number(player.yellow_suspension_served_at ?? 0) < threshold;
+                const redPending = Boolean(player.second_yellow_red) && !Boolean(player.second_yellow_suspension_served);
+                const isSuspended = yellowPending || redPending;
                 return (
                   <article key={player.id} className={isSuspended ? "is-suspended" : ""}>
                     <div className="player-stats-player">
@@ -100,14 +112,14 @@ export default function SpelersstatistiekenPage() {
                       <span><small>Geel</small><b>🟨 {yellows}</b></span>
                       <span><small>Rood</small><b>🟥 {player.second_yellow_red ? 1 : 0}</b></span>
                     </div>
-                    {isSuspended ? <em>{player.second_yellow_red ? "Geschorst · 2x geel → rood" : "Geschorst"}</em> : null}
+                    {isSuspended ? <em>{redPending ? "Geschorst · 2x geel → rood" : `Geschorst · ${threshold} gele kaarten`}</em> : null}
                   </article>
                 );
               })}
             </div>
           </section>
 
-          <p className="player-stats-note">De statistieken worden handmatig bijgehouden. Een speler wordt als geschorst aangeduid bij 3 gele kaarten of wanneer hij in één wedstrijd 2 gele kaarten en dus rood kreeg.</p>
+          <p className="player-stats-note">De statistieken worden handmatig bijgehouden. Een speler wordt opnieuw als geschorst aangeduid bij elk veelvoud van 3 gele kaarten (3, 6, 9, …) of wanneer hij in één wedstrijd 2 gele kaarten en dus rood kreeg.</p>
         </>
       ) : null}
     </main>
