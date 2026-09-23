@@ -98,6 +98,7 @@ export default function SpelersstatistiekenPage() {
                     <div className="player-stats-numbers">
                       <span><small>Goals</small><b>⚽ {Number(player.goals ?? 0)}</b></span>
                       <span><small>Geel</small><b>🟨 {yellows}</b></span>
+                      <span><small>Rood</small><b>🟥 {player.second_yellow_red ? 1 : 0}</b></span>
                     </div>
                     {isSuspended ? <em>{player.second_yellow_red ? "Geschorst · 2x geel → rood" : "Geschorst"}</em> : null}
                   </article>
