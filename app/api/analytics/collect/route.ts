@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
         screen_height: num(item.screen_height, 0, 20000),
         display_mode: str(item.display_mode, 30),
       }))
-      .filter((row) => row.id && row.session_key);
+      .filter((row: { id: string; session_key: string }) => row.id && row.session_key);
 
     if (pageRows.length) {
       await supabaseAdmin.from("analytics_page_views").upsert(pageRows, { onConflict: "id" });
