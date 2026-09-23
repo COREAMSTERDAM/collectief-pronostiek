@@ -556,6 +556,13 @@ export default function SpelersbeheerPage() {
               ← Terug naar admin
             </Link>
 
+            <Link
+              href="/admin/spelersstatistieken"
+              className="ucl-button-secondary"
+            >
+              📊 Statistieken
+            </Link>
+
             <button
               type="button"
               onClick={openCreateForm}

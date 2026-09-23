@@ -70,6 +70,12 @@ export default function SupportershubPage() {
             <span className="supportershub-menu-arrow">›</span>
           </Link>
 
+          <Link className="supportershub-menu-tile" href="/spelersstatistieken">
+            <span className="supportershub-menu-icon">📊</span>
+            <div><strong>Spelersstatistieken</strong></div>
+            <span className="supportershub-menu-arrow">›</span>
+          </Link>
+
           <Link className="supportershub-menu-tile" href="/club-vva">
             <span className="supportershub-menu-icon">🏆</span>
             <div><strong>2e Amateur VV A</strong></div>
