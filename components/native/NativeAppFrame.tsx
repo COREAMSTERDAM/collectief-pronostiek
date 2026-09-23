@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import AdminLayoutPreviewToggle from "@/components/admin/AdminLayoutPreviewToggle";
+import AnalyticsTracker from "@/components/analytics/AnalyticsTracker";
 import AppShell from "@/components/native/AppShell";
 import GlobalBackButton from "@/components/native/GlobalBackButton";
 import type { NativeNavItem } from "@/components/native/NativeBottomNav";
@@ -46,6 +47,7 @@ export default function NativeAppFrame({ children }: { children: ReactNode }) {
   if (fullscreen) {
     return (
       <MembershipAccessGate>
+        <AnalyticsTracker />
         <GlobalBackButton />
         {children}
       </MembershipAccessGate>
@@ -54,6 +56,7 @@ export default function NativeAppFrame({ children }: { children: ReactNode }) {
 
   return (
     <MembershipAccessGate>
+      <AnalyticsTracker />
       <AppShell
         activeHref={pathname}
         hideBottomNav={hideBottomNav}

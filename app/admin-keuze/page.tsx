@@ -101,6 +101,16 @@ export default function AdminKeuzePage() {
             accent="emerald"
           />
 
+          <HubCard
+            href="/admin/analytics"
+            icon="📊"
+            eyebrow="Inzichten"
+            title="Analytics"
+            description="Bekijk gebruik, populairste pagina’s, sessies, funnels, retentie, performance en technische fouten."
+            action="Open analytics"
+            accent="emerald"
+          />
+
         </section>
       </div>
     </main>
